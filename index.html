@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مساحة الاعتماد المدرسي</title>
+<link rel="icon" href="ibn-khaldun-mark-240.webp">
+<style>
+  @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:swap;
+             src:url("AlJazeeraArabic-Regular.woff2") format("woff2")}
+  @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:swap;
+             src:url("AlJazeeraArabic-Bold.woff2") format("woff2")}
+  :root{
+    --bg:#f4f6f8; --panel:#fff; --ink:#16232e; --muted:#5b7185; --line:#dde5ec;
+    --brand:#1e5b4f; --brand-soft:#e8f2ef; --accent:#b8860b; --danger:#b3261e;
+    --radius:14px; --shadow:0 1px 3px rgba(16,36,52,.08),0 8px 24px rgba(16,36,52,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font-family:"Segoe UI","Tahoma",system-ui,-apple-system,Arial,sans-serif;
+       line-height:1.7;font-size:16px}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 64px}
+  header.top{display:flex;align-items:center;gap:14px;padding:16px 0 22px;border-bottom:1px solid var(--line);margin-bottom:24px}
+  header.top img{width:46px;height:46px;object-fit:contain}
+  header.top h1{font-size:19px;margin:0;font-weight:700}
+  header.top .sub{font-size:13px;color:var(--muted);margin-top:2px}
+  .spacer{flex:1}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+        padding:22px;box-shadow:var(--shadow)}
+  .grid{display:grid;gap:16px}
+  @media(min-width:760px){.grid.cols-2{grid-template-columns:1fr 1fr}
+                          .grid.cols-3{grid-template-columns:repeat(3,1fr)}}
+  h2{font-size:17px;margin:0 0 10px}
+  p.lead{color:var(--muted);margin:0 0 18px}
+  button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid transparent;padding:11px 20px}
+  .btn-main{background:var(--brand);color:#fff;font-weight:600}
+  .btn-main:hover{filter:brightness(1.08)}
+  .btn-ghost{background:transparent;color:var(--brand);border-color:var(--line)}
+  .note{background:var(--brand-soft);border:1px solid #cfe3dd;border-radius:10px;padding:14px 16px;font-size:14.5px}
+  .warn{background:#fdf3e7;border:1px solid #f0dcc0;border-radius:10px;padding:14px 16px;font-size:14.5px}
+  .err{background:#fdecea;border:1px solid #f5c6c2;border-radius:10px;padding:14px 16px;font-size:14.5px;color:var(--danger)}
+  ul.people{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  ul.people button{width:100%;text-align:right;background:#fff;border:1px solid var(--line);
+                   display:flex;align-items:center;gap:12px;padding:13px 16px}
+  ul.people button:hover{border-color:var(--brand);background:var(--brand-soft)}
+  .who{font-weight:600}
+  .role{font-size:13px;color:var(--muted)}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+        padding:18px;box-shadow:var(--shadow)}
+  .tile .n{font-size:30px;font-weight:700;color:var(--brand);line-height:1.2}
+  .tile .lbl{font-size:14px;color:var(--muted);margin-top:2px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{text-align:right;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:13px}
+  .tag{display:inline-block;font-size:12px;background:var(--brand-soft);color:var(--brand);
+       border-radius:999px;padding:2px 10px;white-space:nowrap}
+  .tag.gray{background:#eef2f5;color:var(--muted)}
+  .scroll{overflow-x:auto}
+  .status{position:fixed;inset-inline-start:0;inset-block-end:0;width:100%;background:#0f2a24;color:#cfe3dd;
+          font-size:13px;padding:8px 18px;display:flex;gap:14px;align-items:center}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:#57d29a}
+  /* ── نموذج السجل ── */
+  .field{margin:0 0 16px}
+  .f-label{font-size:14.5px;font-weight:600;margin-bottom:6px}
+  .f-label .req{color:var(--danger)}
+  .f-help{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .f-in{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;
+        font:inherit;background:#fff;color:var(--ink)}
+  .f-in.sm{padding:6px 8px;font-size:13.5px}
+  input.f-in[type=checkbox]{width:20px;height:20px;accent-color:var(--brand)}
+  h3.sec{font-size:15px;margin:26px 0 12px;padding-bottom:7px;border-bottom:2px solid var(--brand-soft);color:var(--brand)}
+  .note.sm,.warn.sm,.err.sm{font-size:13px;padding:9px 12px;margin:0 0 12px}
+  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:8px}
+  table.rec-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
+  table.rec-table th{background:#f7f9fb;font-size:12.5px;padding:7px 8px;white-space:nowrap}
+  table.rec-table td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.rec-table td.num,table.rec-table th.num{width:34px;text-align:center;color:var(--muted)}
+  table.rec-table.ro td{padding:7px 8px}
+  .btn-ghost.sm{padding:4px 10px;font-size:12.5px;margin-top:8px}
+  .sig-pad{border:1px dashed var(--line);border-radius:9px;background:#fff;display:block;
+           touch-action:none;max-width:100%}
+  .primary{display:flex;flex-wrap:wrap;gap:10px 26px;background:var(--brand-soft);
+           border:1px solid #cfe3dd;border-radius:10px;padding:13px 16px;margin-bottom:20px;font-size:14px}
+  .primary-cell .k{color:var(--muted);margin-inline-end:6px}
+  .repeat-item{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  .repeat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .legend,.multi{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12.5px;border-radius:999px;padding:3px 12px;background:#eef2f5}
+  .chk{display:flex;align-items:center;gap:6px;font-size:14px;
+       border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+  .file-row{display:flex;align-items:center;gap:10px;font-size:13.5px;margin-top:6px}
+  tbody tr.click{cursor:pointer}
+  tbody tr.click:hover{background:var(--brand-soft)}
+  .rec-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .saved{font-size:13px;color:var(--muted)}
+  /* ── أدوات التقويم ── */
+  .tools-list{display:grid;gap:10px}
+  .tool-row{display:flex;align-items:center;gap:14px;border:1px solid var(--line);
+            border-radius:10px;padding:13px 16px;background:#fff;cursor:pointer;text-align:right;width:100%;font:inherit}
+  .tool-row:hover{border-color:var(--brand);background:var(--brand-soft)}
+  .tool-row .nm{flex:1;font-weight:600}
+  .item-card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .item-txt{font-size:14.5px;margin-bottom:10px}
+  .item-n{color:var(--muted);font-size:12.5px;margin-inline-end:6px}
+  .scale{display:flex;flex-wrap:wrap;gap:8px}
+  .scale label{display:flex;align-items:center;gap:6px;font-size:13px;border:1px solid var(--line);
+               border-radius:8px;padding:5px 11px;cursor:pointer}
+  .scale label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
+  .obs{display:grid;gap:5px;margin-bottom:10px}
+  .obs label{display:flex;gap:8px;font-size:13.5px;align-items:flex-start}
+  .derived{font-size:13px;font-weight:600;color:var(--brand)}
+  .bar{height:8px;background:#eef2f5;border-radius:4px;overflow:hidden;min-width:110px}
+  .bar>i{display:block;height:100%;background:var(--brand)}
+  .grp{font-size:14px;font-weight:700;color:var(--brand);margin:20px 0 10px;
+       border-bottom:2px solid var(--brand-soft);padding-bottom:6px}
+  /* ── الخطة التحسينية ── */
+  .kpi{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px}
+  .kpi .box{border:1px solid var(--line);border-radius:10px;padding:13px 15px;background:#fff}
+  .kpi .box .v{font-size:24px;font-weight:700;color:var(--brand)}
+  .kpi .box .l{font-size:13px;color:var(--muted)}
+  tr.weak td{background:#fdf3e7}
+  .delta-up{color:#1e7a4f;font-weight:600}
+  .delta-dn{color:var(--danger);font-weight:600}
+  .prog{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .prog h4{margin:0 0 4px;font-size:15px}
+  .prog .stage{border-inline-start:3px solid var(--brand-soft);padding-inline-start:11px;margin-top:9px;font-size:13.5px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <img src="ibn-khaldun-mark-240.webp" alt="">
+    <div>
+      <h1>مساحة الاعتماد المدرسي</h1>
+      <div class="sub" id="ctx">مدارس ابن خلدون · السجلات والشواهد للتقويم الخارجي</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn-ghost hidden" id="switchUser">تبديل المستخدم</button>
+  </header>
+
+  <!-- ① الاتصال بالمجلد -->
+  <section id="screenConnect" class="card">
+    <h2>الاتصال بمساحة مدرستك</h2>
+    <p class="lead">اختر مجلد «مساحة الاعتماد» الذي شاركه معك مدير المدرسة على OneDrive.
+       تختاره مرّة واحدة فقط، ثم يتذكّره المتصفّح.</p>
+    <div id="connectBody"></div>
+  </section>
+
+  <!-- ② الهوية -->
+  <section id="screenWho" class="card hidden">
+    <h2>من أنت؟</h2>
+    <p class="lead">اختر اسمك من منسوبي المدرسة.</p>
+    <ul class="people" id="peopleList"></ul>
+  </section>
+
+  <!-- ⑦ الخطة التحسينية -->
+  <section id="screenImp" class="card hidden">
+    <div class="rec-head">
+      <div style="flex:1"><h2>الخطة التحسينية</h2>
+        <div class="saved" id="impMeta"></div></div>
+      <button class="btn-ghost" id="impPrint">طباعة بالكليشة</button>
+      <button class="btn-ghost" id="impBack">رجوع</button>
+    </div>
+    <div class="kpi" id="impKpi"></div>
+    <div id="impQiyas"></div>
+    <h2>المؤشرات مرتّبة من الأدنى — التقويم الخارجي مقابل تقويمنا الذاتي</h2>
+    <div class="scroll" id="impTable"></div>
+    <h2 style="margin-top:26px">البرامج التحسينية المعتمدة</h2>
+    <div id="impPrograms"></div>
+  </section>
+
+  <!-- ⑤ أدوات التقويم -->
+  <section id="screenTools" class="card hidden">
+    <div class="rec-head">
+      <div style="flex:1"><h2>أدوات دورة التقويم الذاتي</h2>
+        <div class="saved">عشر أدوات معتمدة · النتائج تُحفظ في مجلد المدرسة ويقرؤها المدير</div></div>
+      <button class="btn-ghost" id="toolsBack">رجوع</button>
+    </div>
+    <div class="tools-list" id="toolsList"></div>
+    <h2 style="margin-top:26px">التجميع على مؤشرات ETEC</h2>
+    <div class="scroll" id="etecRollup"></div>
+  </section>
+
+  <!-- ⑥ تشغيل أداة -->
+  <section id="screenTool" class="card hidden">
+    <div class="rec-head">
+      <div style="flex:1"><h2 id="toolTitle"></h2><div class="saved" id="toolMeta"></div></div>
+      <button class="btn-ghost" id="toolBack">رجوع</button>
+    </div>
+    <div class="field" id="respondentBox"></div>
+    <div id="toolItems"></div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:18px">
+      <button class="btn-main" id="toolSave">حفظ الاستجابة</button>
+      <span class="saved" id="toolStatus"></span>
+    </div>
+  </section>
+
+  <!-- ④ السجل -->
+  <section id="screenRecord" class="card hidden">
+    <div class="rec-head">
+      <div style="flex:1">
+        <h2 id="recTitle"></h2>
+        <div class="saved" id="recMeta"></div>
+      </div>
+      <button class="btn-ghost" id="recBack">رجوع</button>
+    </div>
+    <div id="recSaved"></div>
+    <form id="recForm" onsubmit="return false"></form>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:18px">
+      <button class="btn-main" id="recSave">حفظ في مجلدي</button>
+      <button class="btn-ghost" id="recPrint">طباعة بالكليشة</button>
+      <span class="saved" id="recStatus"></span>
+    </div>
+  </section>
+
+  <!-- ③ اللوحة -->
+  <section id="screenDash" class="hidden">
+    <div class="grid cols-3" id="tiles" style="margin-bottom:20px"></div>
+    <div class="grid cols-2">
+      <div class="card"><h2>سجلاتي</h2><div class="scroll" id="myRecords"></div></div>
+      <div class="card">
+        <h2>الخطط المرجعية</h2><div id="myPlans"></div>
+        <h2 style="margin-top:22px">نتائج المدرسة</h2><div id="myResults"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
+
+<script type="module">
+import { FolderStore } from "./storage.js";
+import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
+         stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
+         entryPath, entryDir, evidenceDir, newEntryId,
+         countSavedRecords, loadToolResponses } from "./app.js";
+import { renderRecordForm, UNSUPPORTED } from "./record.js";
+import { printRecord, preparePrint, printDocument } from "./print.js";
+import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
+         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js";
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const show = (id, on) => $(id).classList.toggle("hidden", !on);
+
+let store = null, bundle = null, me = null;
+const dataUrl = new URLSearchParams(location.search).get("data");
+
+function setStatus(text) { $("statusText").textContent = text; show("status", true); }
+
+function renderConnect(state) {
+  const box = $("connectBody");
+  if (state === "unsupported") {
+    box.innerHTML = '<div class="err"><b>هذا المتصفّح لا يدعم الحفظ المباشر في المجلد.</b><br>' +
+      'استخدم <b>Microsoft Edge</b> أو <b>Google Chrome</b> على حاسب ويندوز. ' +
+      'متصفّح سفاري وأجهزة iPad غير مدعومة في هذا الإصدار.</div>';
+    return;
+  }
+  box.innerHTML =
+    '<button class="btn-main" id="pickBtn">اختر مجلد مساحة الاعتماد</button>' +
+    '<div class="note" style="margin-top:16px">لم يشارك المدير المجلد معك بعد؟ اطلب منه ' +
+    'مشاركة مجلد «مساحة الاعتماد» من OneDrive، ثم مزامنته على جهازك.</div>' +
+    '<div id="connectErr" style="margin-top:14px"></div>';
+  $("pickBtn").onclick = async () => {
+    try { await start(await FolderStore.pick()); }
+    catch (e) {
+      if (e && e.name === "AbortError") return;
+      $("connectErr").innerHTML = '<div class="err">' + esc(e.message) + "</div>";
+    }
+  };
+}
+
+async function start(s) {
+  store = s;
+  try { bundle = await loadBundle(store); }
+  catch (e) {
+    $("connectErr") && ($("connectErr").innerHTML =
+      '<div class="err"><b>المجلد المختار ليس مساحة اعتماد.</b><br>' + esc(e.message) + "</div>");
+    store = null; return;
+  }
+  const { school } = bundle;
+  $("ctx").textContent = school.nameAr + " · " + STAGE_AR[school.stage] + " · العام " + school.academicYear.greg;
+  setStatus("متصل بالمجلد — " + (store.kind === "folder" ? "الحفظ مباشر إلى OneDrive" : "وضع القراءة (تطوير)"));
+  show("screenConnect", false);
+  renderPeople();
+}
+
+function renderPeople() {
+  show("screenWho", true); show("screenDash", false); show("switchUser", false);
+  const people = [...bundle.roster.people].sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
+  $("peopleList").innerHTML = people.map((p, i) =>
+    '<li><button data-i="' + i + '"><span class="who">' + esc(p.fullName || "—") +
+    '</span><span class="role">' + esc(roleAr(p.role)) + "</span></button></li>").join("");
+  $("peopleList").querySelectorAll("button").forEach((b) => {
+    b.onclick = () => pick(people[+b.dataset.i]);
+  });
+}
+
+async function pick(person) {
+  me = person;
+  try {
+    const stamp = await stampConnection(store, me);
+    setStatus("متصل — " + me.fullName + " · " + roleAr(me.role) +
+              " · مجلدك: \u2066" + personFolder(me) + "\u2069 · اتصال رقم " + stamp.connections);
+  } catch (e) { setStatus("⚠️ تعذّر الكتابة في المجلد: " + e.message); }
+  renderDash();
+}
+
+function renderDash() {
+  show("screenWho", false); show("screenDash", true); show("switchUser", true);
+  const { owned, shared } = recordsFor(bundle.records.records, me.role);
+  const plans = bundle.manifest.referencePlans || [];
+
+  $("tiles").innerHTML = [
+    ["سجلات أنا مسؤول عنها", owned.length, ""],
+    ["سجلات أشارك في إدخالها", shared.length, ""],
+    ["أدوات التقويم الذاتي", bundle.tools.total, "tools"],
+    ["مؤشرات دون المستوى", bundle.improvement.weakCount, "imp"],
+  ].map(([lbl, n, act]) =>
+    '<div class="tile"' + (act ? ' data-act="' + act + '" style="cursor:pointer"' : "") +
+    '><div class="n">' + n + '</div><div class="lbl">' + lbl +
+    (act ? " ←" : "") + "</div></div>").join("");
+  const toolTile = $("tiles").querySelector('[data-act="tools"]');
+  if (toolTile) toolTile.onclick = openTools;
+  const impTile = $("tiles").querySelector('[data-act="imp"]');
+  if (impTile) impTile.onclick = openImprovement;
+
+  const rows = owned.concat(shared.map((r) => ({ ...r, _shared: true })));
+  $("myRecords").innerHTML = rows.length === 0
+    ? '<div class="warn">لا سجلات مسنَدة لهذا الدور في هذه المرحلة.</div>'
+    : '<table><thead><tr><th>#</th><th>السجل</th><th>التعبئة</th><th>مؤشرات</th><th></th></tr></thead><tbody>' +
+      rows.map((r) =>
+        '<tr class="click" data-num="' + r.number + '"><td>' + r.number + "</td><td>" + esc(r.nameAr) +
+        '</td><td><span class="tag gray">' + esc(freqAr(r.fillFrequency)) + "</span></td>" +
+        "<td>" + ((r.etecIndicators || []).length || "—") + "</td>" +
+        '<td>' + (r._shared ? '<span class="tag">مشاركة</span>' : "") + "</td></tr>").join("") +
+      "</tbody></table>";
+  $("myRecords").querySelectorAll("tr.click").forEach((tr) => {
+    tr.onclick = () => openRecord(Number(tr.dataset.num));
+  });
+
+  const mine = planFileFor(plans, me.role), op = operationalPlanFile(plans);
+  const link = async (file, label) => {
+    const url = await store.fileUrl("الخطط المرجعية/" + file);
+    return '<div style="margin-bottom:8px">📄 <a href="' + url + '" target="_blank">' + esc(label) + "</a></div>";
+  };
+  Promise.all([
+    op ? link(op, op.replace(/\.pdf$/i, "")) : Promise.resolve('<div class="warn">لا توجد خطة تشغيلية في الحزمة.</div>'),
+    mine ? link(mine, mine.replace(/\.pdf$/i, "")) :
+      Promise.resolve('<div class="warn">لا توجد خطة تنفيذية مطابقة لدور «' + esc(roleAr(me.role)) + "».</div>"),
+  ]).then((h) => { $("myPlans").innerHTML = h.join(""); });
+
+  const ev = bundle.results.externalEvaluation, nf = bundle.results.nafis;
+  $("myResults").innerHTML =
+    "<table><tbody>" +
+    (ev ? "<tr><th>التقويم الخارجي — النتيجة الكلية</th><td>" + (ev.extOverallScore ?? "—") + "</td></tr>" +
+          "<tr><th>القيادة</th><td>" + (ev.extAdminScore ?? "—") + "</td></tr>" +
+          "<tr><th>التعليم والتعلّم</th><td>" + (ev.extTeachingScore ?? "—") + "</td></tr>" +
+          "<tr><th>نواتج التعلّم</th><td>" + (ev.extOutcomesScore ?? "—") + "</td></tr>" +
+          "<tr><th>البيئة المدرسية</th><td>" + (ev.extEnvironmentScore ?? "—") + "</td></tr>"
+        : "<tr><td>لا نتائج تقويم خارجي.</td></tr>") +
+    (nf ? "<tr><th>نافس " + (nf.testYear ?? "") + " — قراءة</th><td>" + (nf.readingScore ?? "—") + "</td></tr>" +
+          "<tr><th>نافس — رياضيات</th><td>" + (nf.mathScore ?? "—") + "</td></tr>" +
+          "<tr><th>نافس — علوم</th><td>" + (nf.scienceScore ?? "—") + "</td></tr>" : "") +
+    "</tbody></table>";
+}
+
+/* ── شاشة السجل ── */
+let recState = null, recTemplate = null, recEntryId = null;
+
+async function listSaved(number) {
+  try {
+    const items = await store.list(entryDir(me, number));
+    return items.filter((f) => f.kind !== "directory" && f.name.endsWith(".json"))
+                .map((f) => f.name.replace(/\.json$/, ""));
+  } catch { return []; }
+}
+
+async function openRecord(number, entryId) {
+  recTemplate = bundle.records.records.find((r) => r.number === number);
+  if (!recTemplate) return;
+  recEntryId = entryId || newEntryId();
+  recState = {};
+  if (entryId) {
+    try { recState = (await store.readJson(entryPath(me, number, entryId))).data || {}; } catch {}
+  }
+  show("screenDash", false); show("screenRecord", true);
+  $("recTitle").textContent = "سجل " + number + " · " + recTemplate.nameAr;
+  $("recMeta").textContent =
+    "التعبئة: " + freqAr(recTemplate.fillFrequency) +
+    (recTemplate.etecIndicators.length ? " · مؤشرات ETEC: " + recTemplate.etecIndicators.join("، ") : "") +
+    " · الإدخال: " + recEntryId;
+  $("recStatus").textContent = "";
+
+  const saved = await listSaved(number);
+  $("recSaved").innerHTML = saved.length
+    ? '<div class="note sm">إدخالات محفوظة: ' +
+      saved.map((id) => '<a href="#" data-id="' + esc(id) + '">' + esc(id) + "</a>").join(" · ") + "</div>"
+    : "";
+  $("recSaved").querySelectorAll("a").forEach((a) => {
+    a.onclick = (e) => { e.preventDefault(); openRecord(number, a.dataset.id); };
+  });
+
+  const ctx = {
+    store, support: bundle.support, school: bundle.school, person: me,
+    roleAr: roleAr(me.role), savedEntries: {},
+    evidenceDir: evidenceDir(me, number, recEntryId),
+  };
+  const before = UNSUPPORTED.length;
+  renderRecordForm($("recForm"), recTemplate, recState, ctx);
+  if (UNSUPPORTED.length > before) {
+    $("recStatus").textContent = "⚠️ " + (UNSUPPORTED.length - before) + " حقلًا بلا معالج";
+  }
+}
+
+$("recBack").onclick = () => { show("screenRecord", false); show("screenDash", true); };
+$("recPrint").onclick = async () => {
+  $("recStatus").textContent = "جارٍ تجهيز المطبوع…";
+  try {
+    await printRecord(recTemplate, recState, {
+      store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId,
+    });
+    $("recStatus").textContent = "";
+  } catch (e) { $("recStatus").textContent = "❌ تعذّرت الطباعة: " + e.message; }
+};
+$("recSave").onclick = async () => {
+  $("recStatus").textContent = "جارٍ الحفظ…";
+  try {
+    await store.writeJson(entryPath(me, recTemplate.number, recEntryId), {
+      recordNumber: recTemplate.number, recordName: recTemplate.nameAr,
+      entryId: recEntryId, savedAt: new Date().toISOString(),
+      person: me.fullName, role: me.role, roleAr: roleAr(me.role),
+      school: bundle.school.nameAr, academicYear: bundle.school.academicYear.greg,
+      etecIndicators: recTemplate.etecIndicators, data: recState,
+    });
+    $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA");
+  } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
+};
+
+/* ── الخطة التحسينية ── */
+async function openImprovement() {
+  show("screenDash", false); show("screenTools", false); show("screenImp", true);
+  $("impMeta").textContent = "جارٍ حساب التقويم الذاتي…";
+
+  const imp = bundle.improvement;
+  const ev = bundle.results.externalEvaluation, nf = bundle.results.nafis;
+
+  // تقويمنا الذاتي 2026 من الأدوات العشر — لكل مؤشر
+  const summaries = [];
+  for (const t of bundle.tools.tools) {
+    summaries.push(summarize(t, await loadToolResponses(store, t.key)));
+  }
+  const selfByCode = new Map(rollupByIndicator(summaries).map((r) => [r.code, r]));
+
+  $("impMeta").textContent =
+    imp.indicatorScores.length + " مؤشرًا · " + imp.weakCount + " دون المستوى · " +
+    imp.programs.length + " برنامجًا معتمَدًا · مصدر الدرجات: " + imp.source;
+
+  $("impKpi").innerHTML = [
+    ["النتيجة الكلية — التقويم الخارجي", ev?.extOverallScore],
+    ["القيادة", ev?.extAdminScore], ["التعليم والتعلّم", ev?.extTeachingScore],
+    ["نواتج التعلّم", ev?.extOutcomesScore], ["البيئة المدرسية", ev?.extEnvironmentScore],
+    ["نافِس " + (nf?.testYear ?? "") + " — الكلي", nf?.overallScore],
+    ["نافِس — قراءة", nf?.readingScore], ["نافِس — رياضيات", nf?.mathScore],
+    ["نافِس — علوم", nf?.scienceScore],
+  ].map(([l, v]) =>
+    '<div class="box"><div class="v">' + (v == null ? "—" : Number(v).toFixed(1)) +
+    '</div><div class="l">' + esc(l) + "</div></div>").join("");
+
+  // القدرات والتحصيلي — للمرحلة الثانوية فقط
+  let qiyas = null;
+  try { qiyas = nf?.qiyasDetailsJson ? JSON.parse(nf.qiyasDetailsJson) : null; } catch { qiyas = null; }
+  $("impQiyas").innerHTML = !qiyas ? ""
+    : "<h2 style='margin-top:22px'>القدرات والتحصيلي — " + esc(qiyas.year ?? "") + "</h2>" +
+      "<div class='saved' style='margin-bottom:10px'>" + esc(qiyas.source ?? "") + "</div>" +
+      '<div class="scroll"><table><thead><tr><th>المسار</th><th>الاختبار</th><th>متوسط المدرسة</th>' +
+      "<th>متوسط الإدارة</th><th>المئين على المملكة</th><th>الترتيب</th><th>الاتجاه</th></tr></thead><tbody>" +
+      Object.entries(qiyas.tracks ?? {}).flatMap(([track, tests]) =>
+        Object.entries(tests).map(([kind, v]) =>
+          "<tr><td>" + esc(track) + "</td><td>" +
+          (kind === "tahsili" ? "التحصيلي" : kind === "qudurat" ? "القدرات" : esc(kind)) + "</td>" +
+          "<td><b>" + (v.score ?? "—") + "</b></td><td>" + (v.adminAvg ?? "—") + "</td>" +
+          "<td>" + (v.kingdomPct == null ? "—" : v.kingdomPct + "%") + "</td>" +
+          "<td>" + (Array.isArray(v.kingdomRank) ? v.kingdomRank[0] + " من " + v.kingdomRank[1] : "—") + "</td>" +
+          "<td>" + (Array.isArray(v.trend)
+            ? v.trend.map((t) => esc(t.y) + ": " + t.v).join(" · ") : "—") + "</td></tr>")
+      ).join("") + "</tbody></table></div>";
+
+  $("impTable").innerHTML =
+    "<table><thead><tr><th>المؤشر</th><th>النص</th><th>المجال</th>" +
+    "<th>التقويم الخارجي</th><th>تقويمنا الذاتي</th><th>الفرق</th></tr></thead><tbody>" +
+    imp.indicatorScores.map((x) => {
+      const self = selfByCode.get(x.code);
+      const d = self && x.externalScore != null ? self.pct - x.externalScore : null;
+      return '<tr' + (x.isWeak ? ' class="weak"' : "") + "><td>" + esc(x.code ?? "—") + "</td>" +
+        "<td>" + esc((x.textAr ?? "").slice(0, 80)) + "</td>" +
+        "<td>" + esc(x.domainAr ?? "—") + "</td>" +
+        "<td><b>" + (x.externalScore == null ? "—" : x.externalScore.toFixed(2)) + "</b>" +
+        (x.isWeak ? ' <span class="tag gray">دون المستوى</span>' : "") + "</td>" +
+        "<td>" + (self ? self.pct.toFixed(0) + "% <span class=saved>(" + self.samples + " فقرة)</span>" : "—") + "</td>" +
+        "<td>" + (d == null ? "—" :
+          '<span class="' + (d >= 0 ? "delta-up" : "delta-dn") + '">' +
+          (d >= 0 ? "▲ +" : "▼ ") + d.toFixed(0) + "</span>") + "</td></tr>";
+    }).join("") + "</tbody></table>";
+
+  const byId = new Map(imp.indicatorScores.map((x) => [x.indicatorId, x]));
+  $("impPrograms").innerHTML = imp.programs.length === 0
+    ? '<div class="warn">لا برامج معتمَدة بعد.</div>'
+    : imp.programs.map((pr) => {
+        const ind = byId.get(pr.indicatorId);
+        const stage = (ttl, st) => !st?.text ? "" :
+          '<div class="stage"><b>' + ttl + ":</b> " + esc(st.text) +
+          (st.achievement ? "<br><span class=saved>مؤشر التحقق: " + esc(st.achievement) + "</span>" : "") +
+          (st.roles?.length ? "<br><span class=saved>المسؤولون: " +
+            esc(st.roles.map(roleAr).join("، ")) + "</span>" : "") + "</div>";
+        return '<div class="prog"><h4>' + esc(pr.name) + "</h4>" +
+          '<div class="saved">' + (ind ? "المؤشر " + esc(ind.code) + " · " + esc(ind.textAr ?? "") +
+            " · الدرجة " + (ind.externalScore ?? "—") : "بلا مؤشر") + "</div>" +
+          (pr.description ? '<div style="margin-top:8px;font-size:14px">' + esc(pr.description) + "</div>" : "") +
+          stage("🚀 بَدء التطبيق", pr.start) + stage("📋 التقييم", pr.review) + "</div>";
+      }).join("");
+}
+
+$("impBack").onclick = () => { show("screenImp", false); show("screenDash", true); };
+$("impPrint").onclick = async () => {
+  const doc = document.createElement("div");
+  doc.className = "p-doc";
+  const h = document.createElement("div"); h.className = "p-title";
+  h.innerHTML = "<h1>الخطة التحسينية</h1><div class='p-meta'>" +
+    esc(bundle.school.nameAr) + " · العام " + esc(bundle.school.academicYear.greg) + "</div>";
+  doc.append(h, $("impKpi").cloneNode(true), $("impQiyas").cloneNode(true), $("impTable").cloneNode(true),
+             $("impPrograms").cloneNode(true));
+  await printDocument(doc, { store, school: bundle.school, person: me, roleAr: roleAr(me.role) });
+};
+
+/* ── أدوات التقويم الذاتي ── */
+let curTool = null, toolState = null, recordCounts = null;
+
+$("tiles") && null;
+
+async function openTools() {
+  show("screenDash", false); show("screenRecord", false); show("screenTools", true);
+  $("toolsList").innerHTML = '<div class="saved">جارٍ قراءة النتائج المحفوظة…</div>';
+  recordCounts = await countSavedRecords(store);
+
+  const summaries = [];
+  const rows = [];
+  for (const t of bundle.tools.tools) {
+    const responses = await loadToolResponses(store, t.key);
+    const sm = summarize(t, responses);
+    summaries.push(sm);
+    const pct = sm.overallPct;
+    rows.push(
+      '<button class="tool-row" data-key="' + esc(t.key) + '">' +
+      '<span class="nm">' + esc(t.nameAr) + "</span>" +
+      '<span class="tag gray">' + sm.items + " فقرة</span>" +
+      '<span class="tag">' + sm.responses + " استجابة</span>" +
+      (pct == null ? '<span class="saved">—</span>'
+        : '<span class="bar"><i style="width:' + pct.toFixed(0) + '%"></i></span>' +
+          '<b style="min-width:44px">' + pct.toFixed(0) + "%</b>") +
+      "</button>");
+  }
+  $("toolsList").innerHTML = rows.join("");
+  $("toolsList").querySelectorAll("button").forEach((b) => {
+    b.onclick = () => openTool(b.dataset.key);
+  });
+
+  const roll = rollupByIndicator(summaries);
+  $("etecRollup").innerHTML = roll.length === 0
+    ? '<div class="warn">لا استجابات بعد — يظهر التجميع فور إدخال أول أداة.</div>'
+    : "<table><thead><tr><th>المؤشر</th><th>النسبة</th><th>فقرات</th><th>الأدوات</th></tr></thead><tbody>" +
+      roll.map((r) =>
+        "<tr><td>" + esc(r.code) + "</td>" +
+        '<td><span class="bar" style="display:inline-block;width:90px;vertical-align:middle"><i style="width:' +
+        r.pct.toFixed(0) + '%"></i></span> <b>' + r.pct.toFixed(0) + "%</b></td>" +
+        "<td>" + r.samples + "</td><td>" + esc(r.tools.join("، ")) + "</td></tr>").join("") +
+      "</tbody></table>";
+}
+
+function openTool(key) {
+  curTool = bundle.tools.tools.find((t) => t.key === key);
+  if (!curTool) return;
+  toolState = { respondent: "", answers: {}, evidence: {} };
+  show("screenTools", false); show("screenTool", true);
+  const items = flattenTool(curTool);
+  const max = scaleMax(curTool);
+  const evidenceMode = isEvidenceBased(curTool);
+  $("toolTitle").textContent = curTool.nameAr;
+  $("toolMeta").textContent =
+    items.length + " فقرة · مقياس من " + max +
+    (evidenceMode ? " · الدرجة تُشتقّ من عدد الشواهد لا تُختار" : "") +
+    (curTool.conductedBy ? " · يُجريها: " + curTool.conductedBy : "");
+
+  $("respondentBox").innerHTML =
+    '<div class="f-label">وصف المستجيب (بلا أسماء)</div>' +
+    '<input class="f-in" id="respondent" placeholder="' +
+    (curTool.type === "SURVEY" ? "الطالب الأول / المعلمة الثانية…" : "المُقيِّم أو الفصل المُلاحَظ") + '">';
+  $("respondent").oninput = (e) => { toolState.respondent = e.target.value; };
+
+  const html = [];
+  let lastGroup = null;
+  for (const it of items) {
+    if (it.group && it.group !== lastGroup) {
+      html.push('<div class="grp">' + esc(it.group) + "</div>");
+      lastGroup = it.group;
+    }
+    html.push('<div class="item-card" data-n="' + it.n + '">');
+    html.push('<div class="item-txt"><span class="item-n">' + it.n + ".</span>" + esc(it.text) + "</div>");
+    if (it.etec.length) html.push('<div class="saved" style="margin-bottom:8px">مؤشرات: ' + esc(it.etec.join("، ")) + "</div>");
+
+    if (evidenceMode && it.observations && it.observations.length) {
+      html.push('<div class="obs">' + it.observations.map((o, i) =>
+        '<label><input type="checkbox" data-obs="' + it.n + '" data-i="' + i + '"><span>' +
+        esc(o) + "</span></label>").join("") + "</div>");
+      html.push('<div class="derived" data-derived="' + it.n + '">الشواهد: 0 ← ' + esc(curTool.scaleLabels[0]) + "</div>");
+    } else if (evidenceMode) {
+      const auto = evidenceFromRecords(it, recordCounts);
+      html.push('<div class="scale"><span class="saved">عدد الشواهد المتوافرة:</span>' +
+        '<input class="f-in sm" style="width:90px" type="number" min="0" data-count="' + it.n + '" value="' +
+        (auto ?? 0) + '">' +
+        (it.records ? '<span class="saved">السجلات المرتبطة: ' + it.records.join("، ") +
+          (auto != null ? " · محسوبة تلقائيًا من إدخالاتكم: " + auto : "") + "</span>" : "") + "</div>");
+      html.push('<div class="derived" data-derived="' + it.n + '"></div>');
+    } else {
+      html.push('<div class="scale">' + curTool.scaleLabels.map((lab, i) =>
+        '<label><input type="radio" name="q' + it.n + '" data-q="' + it.n + '" value="' + (i + 1) +
+        '"><span>' + esc(lab) + "</span></label>").join("") + "</div>");
+    }
+    html.push("</div>");
+  }
+  $("toolItems").innerHTML = html.join("");
+
+  const thresholdsOf = (n) => (items.find((x) => x.n === n) || {}).thresholds;
+  const refresh = (n) => {
+    const boxes = $("toolItems").querySelectorAll('input[data-obs="' + n + '"]:checked');
+    const cnt = boxes.length;
+    const lvl = levelFromEvidence(cnt, thresholdsOf(n), curTool);
+    toolState.answers[n] = lvl;
+    toolState.evidence[n] = cnt;
+    const d = $("toolItems").querySelector('[data-derived="' + n + '"]');
+    if (d) d.textContent = "الشواهد: " + cnt + " ← " + curTool.scaleLabels[lvl - 1];
+  };
+  $("toolItems").querySelectorAll("input[data-obs]").forEach((cb) => {
+    cb.onchange = () => refresh(Number(cb.dataset.obs));
+  });
+  $("toolItems").querySelectorAll("input[data-count]").forEach((inp) => {
+    const apply = () => {
+      const n = Number(inp.dataset.count), cnt = Number(inp.value) || 0;
+      const lvl = levelFromEvidence(cnt, thresholdsOf(n), curTool);
+      toolState.answers[n] = lvl; toolState.evidence[n] = cnt;
+      const d = $("toolItems").querySelector('[data-derived="' + n + '"]');
+      if (d) d.textContent = "الشواهد: " + cnt + " ← " + curTool.scaleLabels[lvl - 1];
+    };
+    inp.oninput = apply; apply();
+  });
+  $("toolItems").querySelectorAll("input[data-q]").forEach((r) => {
+    r.onchange = () => { toolState.answers[Number(r.dataset.q)] = Number(r.value); };
+  });
+  $("toolStatus").textContent = "";
+}
+
+$("toolBack").onclick = () => { show("screenTool", false); openTools(); };
+$("toolsBack").onclick = () => { show("screenTools", false); show("screenDash", true); };
+$("toolSave").onclick = async () => {
+  const answered = Object.keys(toolState.answers).length;
+  const total = flattenTool(curTool).length;
+  $("toolStatus").textContent = "جارٍ الحفظ…";
+  try {
+    const id = newEntryId();
+    await store.writeJson(toolResponsePath(curTool.key, id), {
+      toolKey: curTool.key, toolName: curTool.nameAr, type: curTool.type,
+      scaleType: curTool.scaleType, scaleMax: scaleMax(curTool),
+      responseId: id, savedAt: new Date().toISOString(),
+      respondentLabel: toolState.respondent || null,
+      conductedBy: me.fullName, conductedByRole: me.role,
+      school: bundle.school.nameAr,
+      answers: toolState.answers, evidenceCounts: toolState.evidence,
+    });
+    $("toolStatus").textContent = "✅ حُفظت (" + answered + " من " + total + " فقرة)";
+  } catch (e) { $("toolStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
+};
+
+/* خطّاف للحارس الآلي: يجهّز المطبوع بلا فتح حوار الطباعة */
+window.__preparePrint = () => preparePrint(recTemplate, recState, {
+  store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId,
+});
+
+$("switchUser").onclick = () => { show("screenRecord", false); renderPeople(); };
+
+(async function boot() {
+  if (!dataUrl && !FolderStore.supported()) { renderConnect("unsupported"); return; }
+  const restored = await openSource({ dataUrl });
+  if (restored) { await start(restored); return; }
+  renderConnect("ready");
+})();
+</script>
+</body>
+</html>

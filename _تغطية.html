@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فحص تغطية محرّك السجلات</title></head>
+<body><div id="sink"></div><pre id="out">…</pre>
+<script type="module">
+import { HttpStore } from "./storage.js";
+import { renderRecordForm, UNSUPPORTED, HANDLERS } from "./record.js";
+const data = new URLSearchParams(location.search).get("data");
+const store = new HttpStore(data);
+const [records, support, school] = await Promise.all([
+  store.readJson("بيانات/records.json"),
+  store.readJson("بيانات/support.json"),
+  store.readJson("بيانات/school.json"),
+]);
+const ctx = { store, support, school, person: { fullName: "فاحص" }, roleAr: "فاحص",
+              evidenceDir: "مخرجات/_فحص/شواهد", savedEntries: {} };
+const sink = document.getElementById("sink");
+let rendered = 0, failed = [];
+for (const t of records.records) {
+  const box = document.createElement("div");
+  try { renderRecordForm(box, t, {}, ctx); rendered++; }
+  catch (e) { failed.push(t.number + ":" + t.nameAr + " → " + e.message); }
+  sink.append(box);
+}
+const byType = {};
+for (const u of UNSUPPORTED) byType[u.type] = (byType[u.type] || 0) + 1;
+window.__RESULT__ = {
+  templates: records.records.length, rendered, failed,
+  handlers: Object.keys(HANDLERS).length,
+  unsupportedTotal: UNSUPPORTED.length, unsupportedByType: byType,
+  inputs: sink.querySelectorAll("input,select,textarea,canvas").length,
+  tables: sink.querySelectorAll("table.rec-table").length,
+};
+document.getElementById("out").textContent = JSON.stringify(window.__RESULT__, null, 1);
+</script></body></html>
