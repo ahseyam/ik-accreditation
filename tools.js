@@ -17,7 +17,9 @@ export const TOOL_THRESHOLDS = {
 };
 
 export function scaleMax(tool) {
-  return tool.scaleType === "LIKERT_5" ? 5 : 4;
+  if (tool.scaleType === "LIKERT_5") return 5;
+  if (tool.scaleType === "VERIFY_3") return 3;   // متحقق · جزئيًا · غير متحقق
+  return 4;
 }
 
 /** عتبات الأداة حين لا تُعلِن الفقرة عتباتها الخاصة */
@@ -39,7 +41,11 @@ const asArray = (v) => (Array.isArray(v) ? v : v ? [v] : []);
 
 /** يسطّح أي أداة إلى فقرات موحّدة */
 export function flattenTool(tool) {
-  const mk = (it, group) => ({
+  /* ⚠️ أرقام الفقرات **تتكرّر عبر المجالات** (1..8 ثم 1..5 …). فاسم مجموعة
+     الاختيار «q1» يتصادم بين المؤشرات ويُلغي بعضها بعضًا، وتُكتب الإجابات
+     فوق بعضها. قِيس: 8 إجابات محفوظة من 53. الحلّ: معرّف فريد لكل فقرة. */
+  const mk = (it, group, gkey) => ({
+    uid: gkey ? gkey + "#" + it.n : String(it.n),
     n: it.n,
     text: it.rephrased ?? it.r ?? it.text ?? "",
     etec: asArray(it.etec),
@@ -51,18 +57,22 @@ export function flattenTool(tool) {
   if (Array.isArray(tool.items)) return tool.items.map((it) => mk(it));
   if (Array.isArray(tool.paragraphs)) return tool.paragraphs.map((it) => mk(it));
   if (Array.isArray(tool.sections)) {
-    return tool.sections.flatMap((s) =>
-      (s.paragraphs ?? s.items ?? []).map((it) => mk(it, s.name ?? s.nameAr)));
+    return tool.sections.flatMap((s, si) =>
+      (s.paragraphs ?? s.items ?? []).map((it) => mk(it, s.name ?? s.nameAr, "s" + si)));
   }
   if (Array.isArray(tool.domains)) {
     return tool.domains.flatMap((d) =>
-      (d.items ?? []).map((it) => mk(it, d.nameAr ?? d.key)));
+      (d.items ?? []).map((it) => ({ ...mk(it, d.nameAr ?? d.key, d.key),
+                                     indicatorAr: d.indicatorAr ?? null })));
   }
   return [];
 }
 
 export const isEvidenceBased = (tool) =>
   tool.type === "OBSERVATION" || tool.type === "DOC_ANALYSIS" || tool.type === "DOCUMENT_ANALYSIS";
+
+/** أداة التحقق: كل مجال مؤشر مستقل، ونصّ المؤشر يُعرض فوق دلالاته */
+export const isVerification = (tool) => tool.type === "VERIFICATION";
 
 /** مجلد نتائج الأداة — على مستوى المدرسة لا الشخص، ليراه المدير والمستشار */
 export const toolDir = (key) => "تقويم ذاتي/" + key;
@@ -73,9 +83,11 @@ export function summarize(tool, responses) {
   const max = scaleMax(tool);
   const items = flattenTool(tool);
   const perItem = items.map((it) => {
-    const vals = responses.map((r) => r.answers?.[it.n]).filter((v) => typeof v === "number");
+    // يُقرأ بالمعرّف الفريد، ويسقط للرقم للتوافق مع استجابات قديمة
+    const vals = responses.map((r) => r.answers?.[it.uid] ?? r.answers?.[it.n])
+                          .filter((v) => typeof v === "number");
     const mean = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-    return { n: it.n, text: it.text, etec: it.etec, count: vals.length, mean,
+    return { uid: it.uid, n: it.n, text: it.text, etec: it.etec, count: vals.length, mean,
              pct: mean == null ? null : ((mean - 1) / (max - 1)) * 100 };
   });
   const scored = perItem.filter((x) => x.pct != null);

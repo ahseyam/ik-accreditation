@@ -14,6 +14,8 @@ export const TOOL_OWNER = {
   COUNSELOR_INTERVIEW: ["PRINCIPAL"],
   PRINCIPAL_INTERVIEW: ["EDUCATIONAL_VP"],
   DOCUMENT_ANALYSIS: ["PRINCIPAL", "EDUCATIONAL_VP"],
+  // أداة التحقق من الشواهد: مسؤولية لجنة التميّز بقيادة المدير ووكيله
+  EVIDENCE_VERIFICATION: ["PRINCIPAL", "EDUCATIONAL_VP"],
 };
 
 /** الأدوار التي ترى كل شيء */

@@ -542,25 +542,25 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=5972a9ad";
+import { FolderStore } from "./storage.js?v=e84427ef";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=5972a9ad";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=5972a9ad";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=5972a9ad";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=5972a9ad";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=5972a9ad";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=e84427ef";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=e84427ef";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=e84427ef";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=e84427ef";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=e84427ef";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js?v=5972a9ad";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=5972a9ad";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=e84427ef";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=e84427ef";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=5972a9ad";
-import { surveyLink, extractCodes } from "./survey.js?v=5972a9ad";
+         fullBackup } from "./vault.js?v=e84427ef";
+import { surveyLink, extractCodes } from "./survey.js?v=e84427ef";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=5972a9ad";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=e84427ef";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
@@ -1026,12 +1026,14 @@ function openTool(key) {
   toolIndex = myTools.findIndex((x) => x.tool.key === key);
   curTool = myTools[toolIndex]?.tool;
   if (!curTool) return;
-  toolState = { respondent: "", answers: {}, evidence: {} };
+  toolState = { respondent: "", answers: {}, evidence: {}, notes: {} };
   only("screenTool"); markNav("tools");
   const items = flattenTool(curTool), max = scaleMax(curTool), ev = isEvidenceBased(curTool);
   $("toolTitle").textContent = curTool.nameAr;
-  $("toolMeta").textContent = items.length + " فقرة · مقياس من " + max +
-    (ev ? " · الدرجة تُشتقّ من عدد الشواهد لا تُختار" : "");
+  $("toolMeta").textContent = items.length + (isVerification(curTool) ? " دلالة تحقّق" : " فقرة") +
+    " · مقياس من " + max +
+    (ev ? " · الدرجة تُشتقّ من عدد الشواهد لا تُختار" : "") +
+    (curTool.credit ? " · " + curTool.credit : "");
   $("toolPos").textContent = (toolIndex + 1) + " من " + myTools.length;
   $("toolPrev").disabled = toolIndex <= 0;
   $("toolNext").disabled = toolIndex >= myTools.length - 1;
@@ -1045,47 +1047,58 @@ function openTool(key) {
 
   const html = []; let lastGroup = null;
   for (const it of items) {
-    if (it.group && it.group !== lastGroup) { html.push('<div class="grp">' + esc(it.group) + "</div>"); lastGroup = it.group; }
-    html.push('<div class="item-card" data-n="' + it.n + '">');
+    if (it.group && it.group !== lastGroup) {
+      html.push('<div class="grp">' + esc(it.group) +
+        (it.indicatorAr ? '<div class="muted" style="font-weight:400;margin-top:5px">' +
+          esc(it.indicatorAr) + "</div>" : "") + "</div>");
+      lastGroup = it.group;
+    }
+    html.push('<div class="item-card" data-n="' + esc(it.uid) + '">');
     html.push('<div class="item-txt"><span class="item-n">' + it.n + ".</span>" + esc(it.text) + "</div>");
     if (it.etec.length) html.push('<div class="muted" style="margin-bottom:9px">مؤشرات: ' + esc(it.etec.join("، ")) + "</div>");
     if (ev && it.observations && it.observations.length) {
       html.push('<div class="obs">' + it.observations.map((o, i) =>
-        '<label><input type="checkbox" data-obs="' + it.n + '" data-i="' + i + '"><span>' + esc(o) + "</span></label>").join("") + "</div>");
-      html.push('<div class="derived" data-derived="' + it.n + '">الشواهد: 0 ← ' + esc(curTool.scaleLabels[0]) + "</div>");
+        '<label><input type="checkbox" data-obs="' + esc(it.uid) + '" data-i="' + i + '"><span>' + esc(o) + "</span></label>").join("") + "</div>");
+      html.push('<div class="derived" data-derived="' + esc(it.uid) + '">الشواهد: 0 ← ' + esc(curTool.scaleLabels[0]) + "</div>");
     } else if (ev) {
       const auto = evidenceFromRecords(it, recordCounts);
       html.push('<div class="scale"><span class="muted">عدد الشواهد المتوافرة:</span>' +
-        '<input class="f-in sm" style="width:92px" type="number" min="0" data-count="' + it.n + '" value="' + (auto ?? 0) + '">' +
+        '<input class="f-in sm" style="width:92px" type="number" min="0" data-count="' + esc(it.uid) + '" value="' + (auto ?? 0) + '">' +
         (it.records ? '<span class="muted">السجلات المرتبطة: ' + it.records.join("، ") +
           (auto != null ? " · محسوبة تلقائيًا من إدخالاتكم: " + auto : "") + "</span>" : "") + "</div>");
-      html.push('<div class="derived" data-derived="' + it.n + '"></div>');
+      html.push('<div class="derived" data-derived="' + esc(it.uid) + '"></div>');
     } else {
       html.push('<div class="scale">' + curTool.scaleLabels.map((lab, i) =>
-        '<label><input type="radio" name="q' + it.n + '" data-q="' + it.n + '" value="' + (i + 1) +
+        '<label><input type="radio" name="q' + esc(it.uid) + '" data-q="' + esc(it.uid) + '" value="' + (i + 1) +
         '"><span>' + esc(lab) + "</span></label>").join("") + "</div>");
     }
+    if (curTool.hasNote)
+      html.push('<div style="margin-top:9px"><input class="f-in sm" data-note="' + esc(it.uid) +
+        '" placeholder="' + esc(curTool.noteLabel || "ملاحظة") + '"></div>');
     html.push("</div>");
   }
   $("toolItems").innerHTML = html.join("");
+  $("toolItems").querySelectorAll("input[data-note]").forEach((i) => {
+    i.oninput = () => { (toolState.notes ||= {})[i.dataset.note] = i.value; };
+  });
 
-  const thr = (n) => (items.find((x) => x.n === n) || {}).thresholds;
-  const setLvl = (n, cnt) => {
-    const lvl = levelFromEvidence(cnt, thr(n), curTool);
-    toolState.answers[n] = lvl; toolState.evidence[n] = cnt;
-    const d = $("toolItems").querySelector('[data-derived="' + n + '"]');
+  const thr = (uid) => (items.find((x) => x.uid === uid) || {}).thresholds;
+  const setLvl = (uid, cnt) => {
+    const lvl = levelFromEvidence(cnt, thr(uid), curTool);
+    toolState.answers[uid] = lvl; toolState.evidence[uid] = cnt;
+    const d = $("toolItems").querySelector('[data-derived="' + CSS.escape(uid) + '"]');
     if (d) d.textContent = "الشواهد: " + cnt + " ← " + curTool.scaleLabels[lvl - 1];
   };
   $("toolItems").querySelectorAll("input[data-obs]").forEach((cb) => {
-    cb.onchange = () => setLvl(Number(cb.dataset.obs),
-      $("toolItems").querySelectorAll('input[data-obs="' + cb.dataset.obs + '"]:checked').length);
+    cb.onchange = () => setLvl(cb.dataset.obs,
+      $("toolItems").querySelectorAll('input[data-obs="' + CSS.escape(cb.dataset.obs) + '"]:checked').length);
   });
   $("toolItems").querySelectorAll("input[data-count]").forEach((inp) => {
-    const apply = () => setLvl(Number(inp.dataset.count), Number(inp.value) || 0);
+    const apply = () => setLvl(inp.dataset.count, Number(inp.value) || 0);
     inp.oninput = apply; apply();
   });
   $("toolItems").querySelectorAll("input[data-q]").forEach((r) => {
-    r.onchange = () => { toolState.answers[Number(r.dataset.q)] = Number(r.value); };
+    r.onchange = () => { toolState.answers[r.dataset.q] = Number(r.value); };
   });
   $("toolStatus").textContent = "";
   window.scrollTo(0, 0);
@@ -1174,7 +1187,7 @@ $("toolSave").onclick = async () => {
       responseId: id, savedAt: new Date().toISOString(),
       respondentLabel: toolState.respondent || null,
       conductedBy: me.fullName, conductedByRole: me.role, school: bundle.school.nameAr,
-      answers: toolState.answers, evidenceCounts: toolState.evidence,
+      answers: toolState.answers, evidenceCounts: toolState.evidence, notes: toolState.notes || {},
     });
     const bk = await backupEntry(store, { kind: "تقويم", sourcePath: toolResponsePath(curTool.key, id),
       data: { toolKey: curTool.key, responseId: id, answers: toolState.answers },
