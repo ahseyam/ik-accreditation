@@ -35,10 +35,44 @@ export function recordsFor(records, role) {
   return { owned, shared };
 }
 
+/* ⚠️ أسماء ملفات الخطط تحمل **لام الجرّ ملتصقة**: «للموجه الطلابي» لا «الموجه
+   الطلابي» · «للوكيل التعليمي» لا «وكيل الشؤون التعليمية». فالمطابقة باسم الدور
+   المعروض تسقط صامتةً. الصواب: **جذر خالٍ من السوابق** لكل دور، ويحرسه
+   scripts/check-plan-role-match.mjs على كل حزمة.                                */
+export const PLAN_MATCH = {
+  PRINCIPAL: ["مدير المدرسة"],
+  EDUCATIONAL_VP: ["وكيل التعليمي", "الوكيل التعليمي", "وكيل الشؤون التعليمية"],
+  SCHOOL_AFFAIRS_VP: ["وكيل الشؤون المدرسية"],
+  STUDENT_AFFAIRS_VP: ["وكيل شؤون الطلاب"],
+  STUDENT_COUNSELOR: ["موجه الطلابي", "الموجه الطلابي"],
+  HEALTH_COUNSELOR: ["موجه الصحي", "الموجه الصحي"],
+  ACTIVITIES_LEADER: ["رائد النشاط"],
+  SAFETY_COORDINATOR: ["منسق الأمن والسلامة"],
+  GIFTED_COORDINATOR: ["منسق الموهوبين"],
+};
+
+/** أدوار لا خطة تنفيذية لها بالتصميم — لا تُعدّ نقصًا */
+export const ROLES_WITHOUT_PLAN = new Set([
+  "MONITOR", "ADMIN_ASSISTANT", "DATA_ENTRY", "RECEPTIONIST",
+  "RESOURCES_LIBRARIAN", "LAB_TECHNICIAN", "SUBJECT_SUPERVISOR",
+]);
+
+/** يزيل التشكيل والتطويل ويوحّد الألف والياء — قبل أي مقارنة نصّية عربية */
+export function normalizeAr(text) {
+  return String(text ?? "")
+    .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه")
+    .replace(/\s+/g, " ").trim();
+}
+
 /** ملف الخطة التنفيذية المطابق لدور الشخص من أسماء ملفات الحزمة المرجعية */
 export function planFileFor(referencePlans, role) {
-  const needle = roleAr(role);
-  return referencePlans.find((f) => f.includes(needle)) || null;
+  const tokens = (PLAN_MATCH[role] ?? [roleAr(role)]).map(normalizeAr);
+  for (const f of referencePlans) {
+    const n = normalizeAr(f);
+    if (tokens.some((t) => n.includes(t))) return f;
+  }
+  return null;
 }
 
 export function operationalPlanFile(referencePlans) {
