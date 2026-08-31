@@ -15,6 +15,33 @@ export const PROC_COLUMNS = [
   { k: "notes", l: "الملاحظات" },
 ];
 
+/* ⚠️ رمز المؤشر وحده لا يُفهِم القارئ شيئًا. تُشتقّ **تسمية قصيرة** من نصّ
+   المؤشر نفسه بنزع صدر الجملة («تشجع المدرسة» · «يحقق المتعلمون») وذيلها،
+   فتبقى الفكرة: «4-1-4-1 · الرخصة المهنية». مشتقّة لا مؤلَّفة. */
+const LEAD = /^(?:تشجع|تنمي|تفعل|توفر|تلبي|تقوّم|تقوم|تعزز|تدعم|تحلل|تبني|تضع|تتيح|تنظم|تحقق|تراعي|تستخدم|تشرك|تعد|تتابع|يحقق|يظهر|يلتزم|يشارك|تمتلك|تعمل|تتوافر|تتوفر)\s+(?:المدرسة|المتعلمون|المتعلمين|في المدرسة)?\s*/;
+const TAIL = /\s*(?:لدى المتعلمين|للمتعلمين|بمن فيهم ذوو الإعاقة(?: والموهوبون)?|وفقًا للاختبارات الوطنية|في المدرسة|ودعم تعلمهم|وتحقيق أهدافها)?\s*\.?$/;
+
+export function shortLabel(textAr, max = 44) {
+  let t = String(textAr ?? "").trim();
+  if (!t) return "";
+  t = t.replace(LEAD, "").replace(TAIL, "").trim();
+  // مفعول به مضاف («منسوبيها») ثم شبه الجملة («للحصول على» · «في مجال»)
+  t = t.replace(/^\S+(?:ها|هم|هن|يها|يهم)\s+/, "");
+  t = t.replace(/^(?:للحصول على|في مجال|من خلال|على|في|من|إلى|ل)\s+/, "");
+  t = t.replace(/^(?:أنشطة|نتائج متقدمة في)\s+/, "$&").replace(/[.،]$/, "").trim();
+  if (t.length > max) {
+    const cut = t.slice(0, max);
+    t = cut.slice(0, Math.max(cut.lastIndexOf(" "), max - 12)).trim() + "…";
+  }
+  return t || String(textAr).slice(0, max);
+}
+
+/** «4-1-4-1 · الرخصة المهنية» */
+export const indicatorTag = (ind) => {
+  const l = shortLabel(ind?.textAr);
+  return (ind?.code ?? "—") + (l ? " · " + l : "");
+};
+
 export const WEEKS_PER_SEMESTER = 19;
 export const TOTAL_WEEKS = 38;
 
@@ -146,10 +173,63 @@ export function buildProcedures(ind, ctx) {
   return rows;
 }
 
-/** كل إجراءات المدرسة: للمؤشرات دون المستوى، مرتّبة من الأدنى درجةً */
+/* ⚠️ برامج نافس المعتمدة (RemedialProgramBank) كانت في جدول منفصل، فبدت
+   الخطة التحسينية جدولين لا جدولًا. تُحوَّل هنا إلى **إجراءات بالأعمدة نفسها**
+   وتُدمَج تحت مؤشراتها، فيرى الزائر جدولًا واحدًا يغطّي كل المؤشرات ومنها
+   التحصيل الدراسي. */
+function proceduresFromApprovedProgram(pr, ind, ctx) {
+  const { roleAr } = ctx;
+  const prof = profileOf(ind?.domainAr);
+  const recs = recordsForIndicator(ctx.records, ind?.code);
+  const recRef = recs.length
+    ? recs.slice(0, 3).map((r) => "سجل " + r.number + " «" + r.nameAr + "»").join(" · ")
+    : "ملف شواهد البرنامج العلاجي";
+  const owner = (pr.start?.roles || [])[0] || "EDUCATIONAL_VP";
+  const support = [...new Set([...(pr.start?.roles || []).slice(1), ...(pr.review?.roles || [])])]
+    .filter((r) => r !== owner).slice(0, 3);
+  const mk = (name, week, span, method, evidence, notes) => ({
+    name, week, semester: week <= WEEKS_PER_SEMESTER ? "الأول" : "الثاني",
+    weeks: weeksLabel(week, span), weekFrom: week, weekSpan: span, method,
+    target: prof.target, count: "الجميع",
+    requirements: (pr.start?.requirements || pr.description || "") + " · " + recRef,
+    owner: roleAr(owner), support: support.map(roleAr).join("، ") || "—",
+    external: prof.external, evidence, notes,
+    indicatorCode: ind?.code, domain: ind?.domainAr, source: "برنامج معتمَد",
+  });
+  const out = [];
+  if (pr.start?.text)
+    out.push(mk("🚀 بَدء تطبيق " + pr.name, 3, 8, pr.start.text,
+      pr.start.achievement || "شواهد بدء التطبيق موثَّقة في " + recRef,
+      "برنامج علاجي معتمَد" + (pr.priorityScore ? " · أولوية " + pr.priorityScore : "")));
+  if (pr.review?.text)
+    out.push(mk("📋 تقييم " + pr.name, 14, 3, pr.review.text,
+      pr.review.achievement || "تقرير أثر البرنامج معتمَدًا بتوقيع مدير المدرسة",
+      "المرحلة الختامية للبرنامج"));
+  if (!out.length)
+    out.push(mk(pr.name, 3, 10, pr.description || "برنامج علاجي معتمَد.",
+      "شواهد التنفيذ في " + recRef, "بلا مراحل معلنة"));
+  return out;
+}
+
+/** كل إجراءات المدرسة: المؤشرات دون المستوى + برامج نافس المعتمدة، جدول واحد */
 export function buildImprovementPlan(ctx) {
-  const weak = (ctx.indicatorScores || []).filter((x) => x.isWeak);
-  const groups = weak.map((ind) => ({ indicator: ind, procedures: buildProcedures(ind, ctx) }));
+  const scores = ctx.indicatorScores || [];
+  const byId = new Map(scores.map((x) => [x.indicatorId, x]));
+  const groups = [];
+
+  for (const ind of scores.filter((x) => x.isWeak)) {
+    groups.push({ indicator: ind, tag: indicatorTag(ind), procedures: buildProcedures(ind, ctx) });
+  }
+  // البرامج المعتمدة تُلحَق بمؤشراتها، أو تُفتح مجموعة جديدة إن كان مؤشرها غير ضعيف
+  for (const pr of ctx.approved || []) {
+    const ind = byId.get(pr.indicatorId) || null;
+    const rows = proceduresFromApprovedProgram(pr, ind, ctx);
+    const g = groups.find((x) => x.indicator?.indicatorId === pr.indicatorId);
+    if (g) g.procedures.push(...rows);
+    else groups.push({ indicator: ind, tag: ind ? indicatorTag(ind) : "برنامج علاجي",
+                       approvedOnly: true, procedures: rows });
+  }
+  groups.sort((a, b) => (a.indicator?.externalScore ?? 999) - (b.indicator?.externalScore ?? 999));
   return { groups, totalProcedures: groups.reduce((a, g) => a + g.procedures.length, 0) };
 }
 
@@ -163,7 +243,8 @@ export function buildImprovementMirror(groups) {
         const w = p.weekFrom + i;
         if (w >= 1 && w <= TOTAL_WEEKS) weeks.add(w);
       }
-      rows.push({ code: g.indicator.code, name: p.name, owner: p.owner, weeks });
+      rows.push({ code: g.indicator?.code ?? "—", tag: g.tag, name: p.name,
+                  owner: p.owner, source: p.source || "", weeks });
     }
   }
   return rows;

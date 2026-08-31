@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ⚠️ الصفحة نفسها تُراجَع في كل فتح، والوحدات مختومة ببصمة محتواها.
+     بدون هذا يبقى المستخدم على نسخة قديمة ويظنّ أن الإصلاح لم يحدث. -->
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
 <style>
@@ -312,6 +315,7 @@
   table.proc td{vertical-align:top;line-height:1.6;padding:8px 9px}
   table.proc td:first-child{min-width:200px;font-weight:700}
   table.mirror{font-size:12px;min-width:1100px}
+  table.mirror td.mtag{min-width:150px;font-size:11.5px;line-height:1.5}
   table.mirror th.wk,table.mirror td.wk{width:22px;min-width:22px;text-align:center;padding:4px 0}
   table.mirror th.wk{font-size:10.5px;color:var(--ink-2)}
   table.mirror td.wk{border-inline-start:1px solid var(--line)}
@@ -519,25 +523,25 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js";
+import { FolderStore } from "./storage.js?v=5d4cd3e4";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature } from "./app.js";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js";
+         loadSignature, saveSignature } from "./app.js?v=5d4cd3e4";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=5d4cd3e4";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=5d4cd3e4";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=5d4cd3e4";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=5d4cd3e4";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js";
-import { scopeTools, canSeeImprovement } from "./scope.js";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js?v=5d4cd3e4";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=5d4cd3e4";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js";
-import { surveyLink, extractCodes } from "./survey.js";
+         fullBackup } from "./vault.js?v=5d4cd3e4";
+import { surveyLink, extractCodes } from "./survey.js?v=5d4cd3e4";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER } from "./improve.js";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=5d4cd3e4";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
@@ -1201,7 +1205,8 @@ async function openImprovement() {
     imp.indicatorScores.map((x) => {
       const self = selfByCode.get(x.code);
       const d = self && x.externalScore != null ? self.pct - x.externalScore : null;
-      return '<tr' + (x.isWeak ? ' class="weak"' : "") + "><td>" + esc(x.code ?? "—") + "</td>" +
+      return '<tr' + (x.isWeak ? ' class="weak"' : "") + '><td><b>' + esc(x.code ?? "—") +
+        '</b><div class="muted">' + esc(shortLabel(x.textAr)) + "</div></td>" +
         "<td>" + esc((x.textAr ?? "").slice(0, 82)) + "</td><td>" + esc(x.domainAr ?? "—") + "</td>" +
         "<td><b>" + (x.externalScore == null ? "—" : x.externalScore.toFixed(2)) + "</b>" +
         (x.isWeak ? ' <span class="tag gold">دون المستوى</span>' : "") + "</td>" +
@@ -1213,14 +1218,18 @@ async function openImprovement() {
   /* إجراءات التحسين بالأعمدة الاثني عشر */
   const plan = buildImprovementPlan({
     indicatorScores: imp.indicatorScores, records: bundle.records.records,
-    tools: bundle.tools.tools, central: imp.central || [], roleAr,
+    tools: bundle.tools.tools, central: imp.central || [],
+    approved: imp.programs || [], roleAr,
   });
-  $("procMeta").textContent = plan.groups.length + " مؤشرًا دون المستوى · " +
-    plan.totalProcedures + " إجراءً · الأعمدة " + PROC_COLUMNS.length;
+  $("procMeta").textContent = plan.groups.length + " مؤشرًا · " +
+    plan.totalProcedures + " إجراءً · " + PROC_COLUMNS.length + " عمودًا · " +
+    "يشمل البرامج العلاجية المعتمدة لنافس والتحصيل";
   $("impProcedures").innerHTML = plan.groups.map((g) =>
-    '<div class="proc-group"><h4>' + esc(g.indicator.code) + " · " +
-    esc(g.indicator.textAr || "") + '<span class="tag gold" style="margin-inline-start:9px">' +
-    (g.indicator.externalScore == null ? "—" : g.indicator.externalScore.toFixed(1)) + "</span></h4>" +
+    '<div class="proc-group"><h4>' + esc(g.tag || "—") +
+    (g.indicator?.externalScore != null
+      ? '<span class="tag gold" style="margin-inline-start:9px">' + g.indicator.externalScore.toFixed(1) + "</span>"
+      : '<span class="tag gray" style="margin-inline-start:9px">برنامج معتمَد</span>') +
+    '</h4><div class="muted" style="margin:-4px 0 9px">' + esc(g.indicator?.textAr || "") + "</div>" +
     '<div class="scroll"><table class="proc"><thead><tr>' +
     PROC_COLUMNS.map((c) => "<th>" + esc(c.l) + "</th>").join("") + "</tr></thead><tbody>" +
     g.procedures.map((p) => "<tr>" + PROC_COLUMNS.map((c) =>
@@ -1229,7 +1238,7 @@ async function openImprovement() {
 
   /* مرآة التحسين */
   const mirror = buildImprovementMirror(plan.groups);
-  const head = ["<th>المؤشر</th><th>الإجراء</th><th>المسؤول</th>"];
+  const head = ["<th>المؤشر</th><th>الإجراء</th><th>المسؤول</th><th>المصدر</th>"];
   for (let w = 1; w <= TOTAL_WEEKS; w++)
     head.push('<th class="wk' + (w === WEEKS_PER_SEMESTER + 1 ? " sem2" : "") + '">' + w + "</th>");
   $("impMirror").innerHTML = "<table class=\"mirror\"><thead><tr>" + head.join("") +
