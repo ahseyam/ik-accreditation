@@ -21,9 +21,28 @@ export const STAGE_AR = { KG: "رياض الأطفال", PRIMARY: "الابتد�
 export const roleAr = (r) => ROLE_AR[r] || r || "—";
 export const freqAr = (f) => FREQ_AR[f] || "—";
 
-/** مجلد التنفيذي داخل الحزمة — ثابت عبر الجلسات */
+/** الترتيب الهرمي للأدوار — من أعلى المدرسة إلى أدناها */
+export const ROLE_RANK = {
+  PRINCIPAL: 1, EDUCATIONAL_VP: 2, SCHOOL_AFFAIRS_VP: 3, STUDENT_AFFAIRS_VP: 4,
+  STUDENT_COUNSELOR: 5, ACTIVITIES_LEADER: 6, HEALTH_COUNSELOR: 7,
+  GIFTED_COORDINATOR: 8, SAFETY_COORDINATOR: 9, SUBJECT_SUPERVISOR: 10,
+  MONITOR: 11, ADMIN_ASSISTANT: 12, DATA_ENTRY: 13,
+  RESOURCES_LIBRARIAN: 14, LAB_TECHNICIAN: 15, RECEPTIONIST: 16,
+};
+export const roleRank = (r) => ROLE_RANK[r] ?? 90;
+
+/** يرتّب المنسوبين هرميًا، وعند تساوي الرتبة بالترتيب الأصلي */
+export function sortHierarchy(people) {
+  return [...people].sort((a, b) =>
+    roleRank(a.role) - roleRank(b.role) || (a.orderNum ?? 0) - (b.orderNum ?? 0));
+}
+
+/* ⚠️ **مجلد المنسوب يُسمّى بالوظيفة لا بالاسم**. كان بالاسم، فلو استقال موظف
+   أو نُقل وتغيّر الاسم لتغيّر المسار و**يُتِمَت ملفاته**. وبتسميته بالوظيفة
+   ينتقل الملف كاملًا للموظف الجديد في نفس الوظيفة تلقائيًا — وهو عين ما يطلبه
+   المستشار في حالات الاستقالة والنقل. والاسم يبقى داخل كل ملف لا في المسار. */
 export function personFolder(person) {
-  return "مخرجات/" + safeName((person.orderNum ?? 0) + " - " + (person.fullName || roleAr(person.role)));
+  return "مخرجات/" + safeName((person.orderNum ?? 0) + " - " + roleAr(person.role));
 }
 
 /** السجلات التي يملكها الشخص: مسؤول أول، أو مشارك بالإدخال */
@@ -163,4 +182,40 @@ export async function loadToolResponses(store, key) {
     try { out.push(await store.readJson("تقويم ذاتي/" + key + "/" + f.name)); } catch { /* تالف */ }
   }
   return out;
+}
+
+/* ── طبقة تعديل المنسوبين: تُكتب في المجلد ولا تمسّ ما ولّدته جدارة ── */
+export const ROSTER_OVERRIDE = "إدارة/الروستر.json";
+
+export async function loadRosterOverride(store) {
+  try {
+    if (await store.exists(ROSTER_OVERRIDE)) return await store.readJson(ROSTER_OVERRIDE);
+  } catch { /* أول مرة */ }
+  return { people: {}, history: [] };
+}
+
+/** يدمج التعديلات على الروستر المولَّد — المصدر يبقى كما هو */
+export function applyRosterOverride(people, ov) {
+  return people.map((p) => {
+    const o = ov?.people?.[p.id];
+    return o ? { ...p, fullName: o.fullName ?? p.fullName, email: o.email ?? p.email,
+                 employeeNo: o.employeeNo ?? p.employeeNo ?? null } : p;
+  });
+}
+
+/** يسجّل تغيير شاغل الوظيفة ويحفظه — الملفات تبقى مكانها لأن المجلد بالوظيفة */
+export async function saveRosterEdit(store, person, next, ov) {
+  const now = new Date().toISOString();
+  const prev = { fullName: person.fullName, email: person.email, employeeNo: person.employeeNo ?? null };
+  const changed = prev.fullName !== next.fullName;
+  ov.people = ov.people || {};
+  ov.history = ov.history || [];
+  ov.people[person.id] = { ...next, updatedAt: now };
+  if (changed) {
+    ov.history.push({ at: now, role: person.role, folder: personFolder(person),
+                      from: prev.fullName, to: next.fullName,
+                      note: "انتقلت ملفات الوظيفة إلى الشاغل الجديد — المجلد لم يتغيّر" });
+  }
+  await store.writeJson(ROSTER_OVERRIDE, ov);
+  return ov;
 }

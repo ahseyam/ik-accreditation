@@ -286,6 +286,13 @@
           color:#cfe6df;font-size:12.5px;padding:7px 20px;display:flex;gap:13px;align-items:center;
           z-index:9;pointer-events:none}
   .status .dot{width:8px;height:8px;border-radius:50%;background:#5ed3a0}
+  ul.people .edit{margin-inline-start:12px;color:var(--ink-2);font-size:15px;
+                  padding:2px 7px;border-radius:6px}
+  ul.people .edit:hover{background:var(--gold-soft);color:var(--gold)}
+  .modal{position:fixed;inset:0;background:rgba(10,24,21,.55);display:grid;place-items:center;z-index:40;padding:20px}
+  .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+              padding:26px;max-width:520px;width:100%;box-shadow:var(--sh-lift);position:relative;overflow:hidden}
+  .modal-card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--edge)}
   .hidden{display:none!important}
   @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
 </style>
@@ -435,7 +442,8 @@ import { FolderStore } from "./storage.js";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
-         countSavedRecords, loadToolResponses } from "./app.js";
+         countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
+         loadRosterOverride, applyRosterOverride, saveRosterEdit } from "./app.js";
 import { renderRecordForm, UNSUPPORTED } from "./record.js";
 import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
@@ -513,18 +521,69 @@ async function start(s) {
                        esc(STAGE_AR[school.stage]) + " · العام " + esc(school.academicYear.greg) +
                        " · " + esc(school.educationType) + "</span>";
   setStatus("متصل — " + (store.kind === "folder" ? "الحفظ مباشر إلى مجلد OneDrive" : "وضع القراءة (تطوير)"));
-  renderPeople();
+  await renderPeople();
 }
 
-function renderPeople() {
-  only("screenWho"); show("nav", false);
-  const people = [...bundle.roster.people].sort((a, b) => (a.orderNum ?? 0) - (b.orderNum ?? 0));
-  $("peopleList").innerHTML = people.map((p, i) =>
-    '<li><button data-i="' + i + '"><span class="who">' + esc(p.fullName || "—") +
-    '</span><span class="role">' + esc(roleAr(p.role)) + "</span></button></li>").join("");
+let rosterOv = null, roster = [];
+
+async function renderPeople() {
+  only("screenWho"); show("nav", false); show("searchBox", false); show("prefsBtn", false);
+  rosterOv = await loadRosterOverride(store);
+  // ⚠️ الترتيب هرميّ من المدير فالوكلاء فمن دونهم — والشبكة RTL فيبدأ من اليمين
+  roster = sortHierarchy(applyRosterOverride(bundle.roster.people, rosterOv));
+  $("peopleList").innerHTML = roster.map((p, i) =>
+    '<li><button data-i="' + i + '">' +
+    '<span class="who">' + esc(p.fullName || "—") +
+    (p.employeeNo ? '<span class="muted"> · ' + esc(p.employeeNo) + "</span>" : "") + "</span>" +
+    '<span class="role">' + esc(roleAr(p.role)) + "</span>" +
+    '<span class="edit" data-edit="' + i + '" title="تعديل شاغل الوظيفة">✎</span>' +
+    "</button></li>").join("");
   $("peopleList").querySelectorAll("button").forEach((b) => {
-    b.onclick = () => pick(people[+b.dataset.i]);
+    b.onclick = (e) => {
+      if (e.target.dataset.edit != null) { editPerson(roster[+e.target.dataset.edit]); return; }
+      pick(roster[+b.dataset.i]);
+    };
   });
+}
+
+/* تغيير شاغل الوظيفة — استقالة أو إقالة أو نقل بين المدارس */
+function editPerson(person) {
+  const box = document.createElement("div");
+  box.className = "modal";
+  box.innerHTML =
+    '<div class="modal-card"><h2>تغيير شاغل وظيفة «' + esc(roleAr(person.role)) + '»</h2>' +
+    '<div class="note sm">الملفات والسجلات مرتبطة <b>بالوظيفة</b> لا بالاسم، ' +
+    'فتنتقل كاملةً إلى الشاغل الجديد فور الحفظ. ولا يُخلى طرف السابق قبل ذلك.</div>' +
+    '<div class="field"><div class="f-label">الاسم الحالي</div>' +
+    '<input class="f-in" id="edName" value="' + esc(person.fullName || "") + '"></div>' +
+    '<div class="field"><div class="f-label">بريد العمل بالشركة</div>' +
+    '<input class="f-in" id="edMail" type="email" placeholder="name@ibnkhaldun.sa" value="' +
+    esc(person.email || "") + '"></div>' +
+    '<div class="field"><div class="f-label">الرقم الوظيفي</div>' +
+    '<input class="f-in" id="edNo" value="' + esc(person.employeeNo || "") + '"></div>' +
+    '<div id="edHist"></div>' +
+    '<div style="display:flex;gap:10px;margin-top:16px">' +
+    '<button class="b-main" id="edSave">حفظ ونقل الملفات</button>' +
+    '<button class="b-ghost" id="edCancel">إلغاء</button>' +
+    '<span class="muted" id="edStat"></span></div></div>';
+  document.body.append(box);
+  const hist = (rosterOv.history || []).filter((h) => h.role === person.role);
+  if (hist.length) box.querySelector("#edHist").innerHTML =
+    '<div class="muted" style="margin-top:10px">سجل التغيير: ' +
+    hist.map((h) => esc(h.from || "—") + " ← " + esc(h.to)).join(" · ") + "</div>";
+  box.querySelector("#edCancel").onclick = () => box.remove();
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  box.querySelector("#edSave").onclick = async () => {
+    const next = { fullName: box.querySelector("#edName").value.trim(),
+                   email: box.querySelector("#edMail").value.trim(),
+                   employeeNo: box.querySelector("#edNo").value.trim() };
+    if (!next.fullName) { box.querySelector("#edStat").textContent = "الاسم مطلوب"; return; }
+    box.querySelector("#edStat").textContent = "جارٍ الحفظ…";
+    try {
+      rosterOv = await saveRosterEdit(store, person, next, rosterOv);
+      box.remove(); await renderPeople();
+    } catch (e) { box.querySelector("#edStat").textContent = "❌ " + e.message; }
+  };
 }
 
 async function pick(person) {
@@ -980,7 +1039,7 @@ $("prefsBtn").onclick = () => {
       if (a === "theme") PREF.theme = { auto: "light", light: "dark", dark: "auto" }[PREF.theme];
       if (a === "scale-up") PREF.scale = Math.min(140, PREF.scale + 10);
       if (a === "scale-dn") PREF.scale = Math.max(80, PREF.scale - 10);
-      if (a === "user") { pop.classList.add("hidden"); renderPeople(); return; }
+      if (a === "user") { pop.classList.add("hidden"); await renderPeople(); return; }
       if (a === "folder") { await FolderStore.forget(); location.reload(); return; }
       savePrefs(); pop.classList.add("hidden"); $("prefsBtn").click();
     };
@@ -1026,7 +1085,7 @@ $("gsearch").oninput = () => {
 };
 
 $("printPage").onclick = printCurrent;
-$("switchUser").onclick = renderPeople;
+$("switchUser").onclick = () => renderPeople();
 
 loadPrefs();
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyPrefs);
