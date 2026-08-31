@@ -542,25 +542,25 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=960143df";
+import { FolderStore } from "./storage.js?v=5972a9ad";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=960143df";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=960143df";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=960143df";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=960143df";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=960143df";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=5972a9ad";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=5972a9ad";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=5972a9ad";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=5972a9ad";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=5972a9ad";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js?v=960143df";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=960143df";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js?v=5972a9ad";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=5972a9ad";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=960143df";
-import { surveyLink, extractCodes } from "./survey.js?v=960143df";
+         fullBackup } from "./vault.js?v=5972a9ad";
+import { surveyLink, extractCodes } from "./survey.js?v=5972a9ad";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=960143df";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=5972a9ad";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));

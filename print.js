@@ -1,3 +1,4 @@
+import { interpolate, interpScope, arabizeText, stripDecor, headingLevel } from "./record.js?v=5972a9ad";
 /* طبقة الطباعة — كليشة ابن خلدون تتكرّر على كل ورقة.
    التقنية مقيسة سلفًا في محرّر الخطط القائم بذاته، ولا تُعاد من الصفر:
      ① @page margin:0  ⇒ الورقة 297mm بالضبط
@@ -41,7 +42,7 @@ function printTable(field, rows) {
   const t = el("table", "p-table");
   const htr = el("tr");
   htr.append(el("th", "p-num", "م"));
-  for (const c of cols) htr.append(el("th", null, c.label ?? c.key));
+  for (const c of cols) htr.append(el("th", null, arabizeText(interpolate(c.label ?? c.key, interpScope(0)))));
   const thead = el("thead"); thead.append(htr);
   const tbody = el("tbody");
   filled.forEach((r, i) => {
@@ -62,7 +63,14 @@ function printTable(field, rows) {
 
 function walkFields(fields, state, out) {
   for (const f of fields ?? []) {
-    if (f.type === "SECTION_HEADER") { out.append(el("h3", "p-sec", f.label ?? "")); continue; }
+    if (f.type === "SECTION_HEADER") {
+      /* ⚠️ المطبوع كان يأخذ العنوان خامًا فتظهر زخرفة «═══» والمتغيّرات
+         غير المستبدَلة على الورق. يمرّ الآن بنفس معالجة الشاشة. */
+      const t = arabizeText(stripDecor(interpolate(f.label ?? "", interpScope(0))));
+      out.append(el(headingLevel(f.label) === 1 ? "h3" : "h4",
+                    "p-sec p-lvl" + headingLevel(f.label), t));
+      continue;
+    }
     if (f.type === "INFO_BOX" || f.type === "INFO_BLOCK" || f.type === "JOB_DESCRIPTION_DISPLAY") continue;
     const k = f.key ?? f.id;
     const v = state[k];
@@ -76,14 +84,14 @@ function walkFields(fields, state, out) {
       items.forEach((item, i) => {
         const any = (f.fields ?? []).some((sf) => !isBlank(item[sf.key ?? sf.id]));
         if (!any) return;
-        out.append(el("h4", "p-sub", (f.itemLabel ?? "عنصر") + " " + (i + 1)));
+        out.append(el("h4", "p-sub", interpolate(f.itemLabel ?? "", interpScope(i, item)) || "عنصر " + (i + 1)));
         walkFields(f.fields, item, out);
       });
       continue;
     }
     if (isBlank(v)) continue;
     const row = el("div", "p-row");
-    row.append(el("span", "p-k", (f.label ?? k) + ":"));
+    row.append(el("span", "p-k", arabizeText(interpolate(f.label ?? k, interpScope(0))) + ":"));
     row.append(valueNode(f, v));
     out.append(row);
   }
@@ -222,6 +230,12 @@ function printCss(o) {
     "  .p-primary{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:10pt;",
     "       border:1px solid #cfe3dd;border-radius:6px;padding:8px 12px;margin-bottom:12px}",
     "  .p-k{color:#5b7185;margin-inline-end:5px}",
+    "  .p-doc .sec .sec-mark{display:none}",
+    "  .p-doc .sec.lvl1,h3.p-sec,.p-doc h3.p-sec{font-size:12pt;color:#155e4e;font-weight:700;",
+    "       margin:12pt 0 6pt;border-bottom:1pt solid #cfe3dd;padding-bottom:3pt;border-inline-start:0}",
+    "  .p-doc .sec.lvl2,.p-doc h4.p-lvl2{font-size:11pt;color:#1d7a63;font-weight:700;margin:9pt 0 5pt;",
+    "       border-inline-start:2pt solid #cfe3dd;padding-inline-start:6pt;border-bottom:0}",
+    "  .p-doc .sec.lvl3{font-size:10pt;color:#a97c1f;font-weight:700;margin:7pt 0 4pt}",
     "  h3.p-sec{font-size:12pt;color:#1e5b4f;margin:14px 0 7px;",
     "       border-bottom:1.5pt solid #cfe3dd;padding-bottom:3px;break-after:avoid}",
     "  h4.p-sub{font-size:11pt;margin:10px 0 5px}",

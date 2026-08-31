@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=960143df";
-import { derive, seedRows } from "./autofill.js?v=960143df";
+import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=5972a9ad";
+import { derive, seedRows } from "./autofill.js?v=5972a9ad";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -614,13 +614,13 @@ function richText(t) {
    524 عنوانًا مزخرفًا بـ«═══» (رئيسي) · 151 عاديًا (فرعي) · 12 داخل أقسام
    متكرّرة (ثانوي). كانت كلها تُرسم بنمط واحد فتضيع الهرمية، وتظهر الزخرفة
    «═══» نصًّا خامًا. الآن: تُنزع الزخرفة وتُترجَم إلى **مرتبة ولون**. */
-function headingLevel(label) {
+export function headingLevel(label) {
   const l = String(label ?? "").trim();
   if (/^═+/.test(l)) return 1;
   if (/^[▪▫◾•▸]/.test(l) || /^\d️⃣/.test(l)) return 2;
   return 2;
 }
-const stripDecor = (l) => String(l ?? "").replace(/^[═\s]+|[═\s]+$/g, "").trim();
+export const stripDecor = (l) => String(l ?? "").replace(/^[═\s]+|[═\s]+$/g, "").trim();
 
 function sectionHeader(field, ctx) {
   const raw = interpolate(field.label ?? "", interpScope(0));
