@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<title>لوحة المستشار — الاعتماد الخارجي</title>
+<link rel="icon" href="jadara.svg">
+<style>
+  @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;
+             src:url("AlJazeera-Regular.v2.woff2") format("woff2")}
+  @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;
+             src:url("AlJazeera-Bold.v2.woff2") format("woff2")}
+  :root{--ink:#122a25;--ink-2:#43616a;--line:#e2eae9;--line-2:#cddedb;--bg:#f2f6f5;--panel:#fff;
+        --brand:#155e4e;--brand-2:#1d7a63;--brand-soft:#e9f3f0;--brand-ink:#0d443a;
+        --gold:#a97c1f;--gold-b:#eac83c;--gold-soft:#fbf4e4;--danger:#a32b22;--ok:#1d7a52;
+        --sh:0 1px 2px rgba(18,42,37,.04),0 18px 40px -28px rgba(18,42,37,.3)}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8;
+       font-family:"Al Jazeera Arabic","Segoe UI",Tahoma,Arial,sans-serif}
+  .bar{background:var(--brand-ink);color:#eaf5f1;padding:13px 24px;display:flex;
+       align-items:center;gap:16px;flex-wrap:wrap;
+       border-bottom:3px solid transparent;
+       border-image:linear-gradient(90deg,var(--brand),var(--brand-2) 46%,var(--gold)) 1}
+  .bar img{height:34px;background:#fff;border-radius:9px;padding:4px}
+  .bar b{color:var(--gold-b);font-size:16px;display:block}
+  .bar span{font-size:12.5px;color:#a9c8c0}
+  .sp{flex:1}
+  .btn{font:inherit;font-weight:700;border:0;border-radius:9px;padding:10px 18px;cursor:pointer;
+       background:var(--brand);color:#fff}
+  .btn.ghost{background:rgba(255,255,255,.12);color:#eaf5f1;border:1px solid rgba(255,255,255,.2)}
+  .wrap{max-width:1500px;margin:0 auto;padding:24px 20px 60px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;
+        margin-bottom:18px;box-shadow:var(--sh);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
+    background:linear-gradient(90deg,var(--brand),var(--brand-2) 46%,var(--gold))}
+  h1{font-size:23px;margin:0 0 6px}
+  h2{font-size:18px;margin:0 0 14px}
+  .sub{color:var(--ink-2);font-size:14.5px;margin:0 0 20px}
+  .kpi{display:grid;gap:13px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px}
+  .kpi .b{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel);
+          box-shadow:var(--sh);position:relative;overflow:hidden}
+  .kpi .b::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
+    background:linear-gradient(90deg,var(--brand),var(--gold))}
+  .kpi .v{font-size:28px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+  .kpi .l{font-size:12.5px;color:var(--ink-2);margin-top:6px;padding-top:7px;border-top:2px solid var(--gold-soft);display:inline-block}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:right;padding:10px 11px;border-bottom:1px solid var(--line)}
+  th{background:#f8fbfa;color:var(--ink-2);font-size:12.5px;font-weight:700;
+     position:sticky;top:0;cursor:pointer;white-space:nowrap}
+  th:hover{color:var(--brand)}
+  tbody tr:hover{background:var(--brand-soft)}
+  .bar-m{height:7px;background:#eef2f2;border-radius:4px;overflow:hidden;width:78px;display:inline-block;vertical-align:middle}
+  .bar-m>i{display:block;height:100%}
+  .scroll{overflow:auto;max-height:74vh;border:1px solid var(--line);border-radius:10px}
+  .tag{display:inline-block;font-size:11.5px;border-radius:99px;padding:2px 10px;white-space:nowrap}
+  .t-ok{background:#e6f4ec;color:var(--ok)} .t-mid{background:var(--gold-soft);color:var(--gold)}
+  .t-low{background:#fbeceb;color:var(--danger)} .t-gray{background:#eef2f2;color:var(--ink-2)}
+  .note{background:var(--brand-soft);border:1px solid var(--line-2);border-radius:10px;padding:14px 17px;font-size:14.5px}
+  .err{background:#fbeceb;border:1px solid #eec9c6;border-radius:10px;padding:14px 17px;font-size:14.5px;color:var(--danger)}
+  .prog{height:6px;background:#eef2f2;border-radius:4px;overflow:hidden;margin-top:10px}
+  .prog>i{display:block;height:100%;background:var(--brand-2);transition:width .2s}
+  @media print{.bar .btn,.no-print{display:none!important}.scroll{max-height:none;overflow:visible}
+               body{background:#fff}.card{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <img src="jadara.svg" alt="جدارة">
+  <div><b>لوحة المستشار</b><span>الاعتماد الخارجي — مدارس ابن خلدون</span></div>
+  <div class="sp"></div>
+  <button class="btn" id="pick">اختر مجلد «الحزم»</button>
+  <button class="btn ghost hidden" id="rescan">↻ إعادة المسح</button>
+  <button class="btn ghost hidden" id="print">🖨️ طباعة</button>
+</div>
+<div class="wrap">
+  <div class="card" id="intro">
+    <h1>حال المدارس في مكان واحد</h1>
+    <p class="sub">اختر المجلد الذي يضمّ حزم المدارس، فيُقرأ كل مجلد ويُحسب حاله.
+      كل شيء يجري على جهازك ولا يُرسل شيء إلى أي جهة.</p>
+    <div class="note">إن كانت الحزم على OneDrive فاختر مجلدها المزامَن.
+      وما لم يبدأ العمل فيه من المدارس يظهر صفرًا — وهذا صحيح لا عطل.</div>
+    <div class="prog hidden" id="prog"><i style="width:0"></i></div>
+    <div id="status" style="margin-top:12px;color:var(--ink-2);font-size:14px"></div>
+  </div>
+  <div id="out"></div>
+</div>
+
+<script type="module">
+import { FolderStore } from "./storage.js?v=38f32fb4";
+import { computeReadiness, readinessLabel, countEvidence, countExecPlans, DIMENSIONS } from "./readiness.js?v=38f32fb4";
+import { countSavedRecords, loadToolResponses } from "./app.js?v=38f32fb4";
+import { summarize } from "./tools.js?v=38f32fb4";
+
+const $ = (i) => document.getElementById(i);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+let rows = [], sortKey = "score", sortDir = 1;
+
+if (!FolderStore.supported()) {
+  $("intro").innerHTML = '<div class="err"><b>هذا المتصفّح لا يدعم قراءة المجلدات.</b><br>' +
+    "استخدم Microsoft Edge أو Google Chrome على حاسب ويندوز.</div>";
+}
+
+$("pick").onclick = async () => {
+  try {
+    const root = await window.showDirectoryPicker({ id: "ik-consultant", mode: "read" });
+    await scan(root);
+  } catch (e) { if (e?.name !== "AbortError") $("status").textContent = "❌ " + e.message; }
+};
+$("rescan").onclick = () => $("pick").click();
+$("print").onclick = () => window.print();
+
+async function scan(root) {
+  const dirs = [];
+  for await (const [name, h] of root.entries()) if (h.kind === "directory") dirs.push({ name, h });
+  dirs.sort((a, b) => a.name.localeCompare(b.name, "ar"));
+  $("prog").classList.remove("hidden");
+  rows = [];
+  let i = 0;
+  for (const d of dirs) {
+    i++;
+    $("status").textContent = "يقرأ " + i + " من " + dirs.length + " — " + d.name;
+    $("prog").firstElementChild.style.width = ((i / dirs.length) * 100).toFixed(0) + "%";
+    try { rows.push(await readSchool(new FolderStore(d.h), d.name)); }
+    catch { rows.push({ school: d.name, error: true }); }
+  }
+  $("status").textContent = "اكتمل: " + rows.filter((r) => !r.error).length + " حزمة من " + dirs.length;
+  $("rescan").classList.remove("hidden"); $("print").classList.remove("hidden");
+  render();
+}
+
+async function readSchool(store, folderName) {
+  const [manifest, school, roster, records, tools, improvement] = await Promise.all([
+    store.readJson("manifest.json"), store.readJson("بيانات/school.json"),
+    store.readJson("بيانات/roster.json"), store.readJson("بيانات/records.json"),
+    store.readJson("بيانات/tools.json"), store.readJson("بيانات/تحسين.json"),
+  ]);
+  const counts = await countSavedRecords(store);
+  const evidence = await countEvidence(store);
+  const execPlans = await countExecPlans(store);
+  const sums = [];
+  for (const t of tools.tools) sums.push(summarize(t, await loadToolResponses(store, t.key)));
+  const R = computeReadiness({ records: records.records, recordCounts: counts, toolSummaries: sums,
+                               improvement, evidence, execPlans, rosterSize: roster.people.length });
+  const placeholders = roster.people.filter((p) => /^\[.*\]$/.test(p.fullName || "")).length;
+  return {
+    school: school.nameAr, folder: folderName, stage: school.stage, track: school.educationType,
+    score: R.score, dims: R.dims, roster: roster.people.length, placeholders,
+    weak: improvement.weakCount, ext: improvement.indicatorScores?.length ?? 0,
+    entries: Object.values(counts).reduce((a, b) => a + b, 0),
+    evidence: evidence.files, tools: sums.filter((s) => s.responses > 0).length, toolsAll: sums.length,
+    execSaved: execPlans.saved,
+  };
+}
+
+const COLS = [
+  { k: "school", l: "المدرسة", w: "26%" },
+  { k: "score", l: "الجاهزية" },
+  { k: "entries", l: "إدخالات" },
+  { k: "evidence", l: "شواهد" },
+  { k: "tools", l: "أدوات" },
+  { k: "execSaved", l: "خطط تنفيذية" },
+  { k: "weak", l: "دون المستوى" },
+  { k: "placeholders", l: "أسماء ناقصة" },
+];
+
+function render() {
+  const ok = rows.filter((r) => !r.error);
+  const avg = ok.length ? ok.reduce((a, b) => a + b.score, 0) / ok.length : 0;
+  const started = ok.filter((r) => r.entries > 0).length;
+  const totalPh = ok.reduce((a, b) => a + b.placeholders, 0);
+  const totalEv = ok.reduce((a, b) => a + b.evidence, 0);
+  const totalEn = ok.reduce((a, b) => a + b.entries, 0);
+
+  ok.sort((a, b) => (typeof a[sortKey] === "string"
+    ? String(a[sortKey]).localeCompare(String(b[sortKey]), "ar")
+    : (a[sortKey] - b[sortKey])) * sortDir);
+
+  const band = (v) => v >= 85 ? "t-ok" : v >= 50 ? "t-mid" : v > 0 ? "t-low" : "t-gray";
+  const col = (v) => v >= 85 ? "#1d7a52" : v >= 50 ? "#a97c1f" : v > 0 ? "#a32b22" : "#cddedb";
+
+  $("out").innerHTML =
+    '<div class="kpi">' + [
+      ["متوسط الجاهزية", avg.toFixed(0) + "%"], ["مدارس بدأت العمل", started + " من " + ok.length],
+      ["إجمالي الإدخالات", totalEn], ["إجمالي الشواهد", totalEv],
+      ["أسماء ناقصة", totalPh],
+    ].map(([l, v]) => '<div class="b"><div class="v">' + v + '</div><div class="l">' + esc(l) + "</div></div>").join("") +
+    "</div>" +
+    '<div class="card"><h2>المدارس</h2>' +
+    '<div class="sub no-print">اضغط رأس العمود للترتيب. المدارس التي لم تبدأ تظهر رمادية.</div>' +
+    '<div class="scroll"><table><thead><tr>' +
+    COLS.map((c) => '<th data-k="' + c.k + '"' + (c.w ? ' style="width:' + c.w + '"' : "") + ">" +
+      esc(c.l) + (sortKey === c.k ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>").join("") +
+    "</tr></thead><tbody>" +
+    ok.map((r) => "<tr><td><b>" + esc(r.school) + "</b></td>" +
+      '<td><span class="bar-m"><i style="width:' + r.score.toFixed(0) + "%;background:" + col(r.score) + '"></i></span> ' +
+      '<span class="tag ' + band(r.score) + '">' + r.score.toFixed(0) + "%</span></td>" +
+      "<td>" + r.entries + "</td><td>" + r.evidence + "</td>" +
+      "<td>" + r.tools + " / " + r.toolsAll + "</td>" +
+      "<td>" + r.execSaved + " / " + r.roster + "</td>" +
+      "<td>" + r.weak + " / " + r.ext + "</td>" +
+      "<td>" + (r.placeholders ? '<span class="tag t-low">' + r.placeholders + "</span>" : "—") + "</td></tr>").join("") +
+    "</tbody></table></div></div>" +
+    (rows.some((r) => r.error)
+      ? '<div class="card"><h2>مجلدات تعذّرت قراءتها</h2><div class="err">' +
+        rows.filter((r) => r.error).map((r) => esc(r.school)).join(" · ") +
+        "<br>تأكّد أنها حزم مدارس مكتملة." + "</div></div>" : "");
+
+  $("out").querySelectorAll("th[data-k]").forEach((th) => {
+    th.onclick = () => {
+      if (sortKey === th.dataset.k) sortDir *= -1; else { sortKey = th.dataset.k; sortDir = -1; }
+      render();
+    };
+  });
+}
+</script>
+</body>
+</html>

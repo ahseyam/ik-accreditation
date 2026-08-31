@@ -14,11 +14,10 @@ export async function loadSettings(store) {
   try { if (await store.exists(SETTINGS)) return await store.readJson(SETTINGS); } catch {}
   return {};
 }
+/** يدمج على الأحدث لحظة الكتابة — لا يمحو ما غيّره غيرك */
 export async function saveSettings(store, next) {
-  const cur = await loadSettings(store);
-  const merged = { ...cur, ...next, updatedAt: new Date().toISOString() };
-  await store.writeJson(SETTINGS, merged);
-  return merged;
+  return store.mutateJson(SETTINGS,
+    (cur) => ({ ...cur, ...next, updatedAt: new Date().toISOString() }));
 }
 
 /** أمين المستودع: المحدَّد في الإعدادات، وإلا مدير المدرسة */
@@ -41,17 +40,17 @@ export async function backupEntry(store, { kind, sourcePath, data, person, roleA
   } catch (e) { return { ok: false, error: e.message }; }
 }
 
+/* الفهرس يكتبه كل مستخدم بعد كل حفظ — أكثر الملفات عرضةً للتعارض */
 async function bumpIndex(store, kind, dest) {
-  const path = VAULT + "/_الفهرس.json";
-  let idx = { counts: {}, lastBackupAt: null, items: [] };
-  try { if (await store.exists(path)) idx = await store.readJson(path); } catch {}
-  idx.counts = idx.counts || {};
-  idx.counts[kind] = (idx.counts[kind] || 0) + 1;
-  idx.lastBackupAt = stamp();
-  idx.items = (idx.items || []).filter((x) => x.dest !== dest);
-  idx.items.push({ kind, dest, at: idx.lastBackupAt });
-  if (idx.items.length > 4000) idx.items = idx.items.slice(-4000);
-  await store.writeJson(path, idx);
+  await store.mutateJson(VAULT + "/_الفهرس.json", (idx) => {
+    idx.counts = idx.counts || {};
+    idx.counts[kind] = (idx.counts[kind] || 0) + 1;
+    idx.lastBackupAt = stamp();
+    idx.items = (idx.items || []).filter((x) => x.dest !== dest);
+    idx.items.push({ kind, dest, at: idx.lastBackupAt });
+    if (idx.items.length > 4000) idx.items = idx.items.slice(-4000);
+    return idx;
+  }, { counts: {}, lastBackupAt: null, items: [] });
 }
 
 export async function vaultIndex(store) {

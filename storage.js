@@ -101,6 +101,20 @@ export class FolderStore {
     await this.writeText(relPath, JSON.stringify(data, null, 1));
   }
 
+  /* ⚠️ **الملفات المشتركة يكتبها عدة مستخدمين** (الإعدادات · الروستر · فهرس
+     المستودع). والكتابة من نسخة محمَّلة في الذاكرة منذ بداية الجلسة **تمحو عمل
+     من كتب بعدك** بلا إنذار. تُعاد القراءة **لحظة الكتابة** ويُطبَّق التغيير على
+     الأحدث، فيضيق التعارض إلى أجزاء الثانية بدل ساعات. */
+  async mutateJson(relPath, mutate, fallback = {}) {
+    let current = fallback;
+    try { if (await this.exists(relPath)) current = await this.readJson(relPath); } catch { /* تالف */ }
+    const next = await mutate(structuredClone(current));
+    next._rev = (current._rev ?? 0) + 1;
+    next._revAt = new Date().toISOString();
+    await this.writeJson(relPath, next);
+    return next;
+  }
+
   /** كتابة ملف ثنائي (شاهد: صورة أو PDF) */
   async writeBinary(relPath, arrayBuffer) {
     const handle = await this._file(relPath, true);
@@ -151,6 +165,15 @@ export class HttpStore {
   async readJson(relPath) { return JSON.parse(await this.readText(relPath)); }
   async writeText(relPath, text) { this.written.set(relPath, text); }
   async writeJson(relPath, data) { await this.writeText(relPath, JSON.stringify(data, null, 1)); }
+  async mutateJson(relPath, mutate, fallback = {}) {
+    let current = fallback;
+    try { if (await this.exists(relPath)) current = await this.readJson(relPath); } catch { /* تالف */ }
+    const next = await mutate(structuredClone(current));
+    next._rev = (current._rev ?? 0) + 1;
+    next._revAt = new Date().toISOString();
+    await this.writeJson(relPath, next);
+    return next;
+  }
   async writeBinary(relPath, buf) { this.written.set(relPath, "[ثنائي " + buf.byteLength + " بايت]"); }
   async readBinary(relPath) {
     const r = await fetch(this._url(relPath));
@@ -177,4 +200,80 @@ export class HttpStore {
     }
     return [...out.values()].sort((a, b) => a.name.localeCompare(b.name, "ar"));
   }
+}
+
+
+/* ── محوّل القراءة فقط ──
+   ⚠️ سفاري وأجهزة iPad لا تدعم File System Access API، فكان المستخدم يصطدم
+   برسالة اعتذار وطريق مسدود. لكنها تدعم `<input webkitdirectory>` الذي يقرأ
+   مجلدًا كاملًا **بلا كتابة**. فبدل المنع: يُعرَض كل شيء ويُمنَع الحفظ صراحةً. */
+export class ReadOnlyStore {
+  constructor(files) {
+    this.kind = "readonly";
+    this.readOnly = true;
+    this.map = new Map();
+    for (const f of files) {
+      // webkitRelativePath يبدأ باسم المجلد المختار — يُنزع
+      const rel = String(f.webkitRelativePath || f.name).split("/").slice(1).join("/");
+      if (rel) this.map.set(rel, f);
+    }
+  }
+
+  static supported() {
+    const i = document.createElement("input");
+    return "webkitdirectory" in i;
+  }
+
+  /** يفتح منتقي المجلدات عبر input ويعيد محوّلًا للقراءة */
+  static pick() {
+    return new Promise((resolve, reject) => {
+      const inp = document.createElement("input");
+      inp.type = "file";
+      inp.webkitdirectory = true;
+      inp.multiple = true;
+      inp.style.display = "none";
+      inp.onchange = () => {
+        const files = Array.from(inp.files || []);
+        inp.remove();
+        files.length ? resolve(new ReadOnlyStore(files)) : reject(new Error("لم يُختر مجلد"));
+      };
+      document.body.append(inp);
+      inp.click();
+    });
+  }
+
+  async exists(rel) { return this.map.has(segments(rel).join("/")); }
+  async readText(rel) {
+    const f = this.map.get(segments(rel).join("/"));
+    if (!f) throw new Error("غير موجود: " + rel);
+    return f.text();
+  }
+  async readJson(rel) { return JSON.parse(await this.readText(rel)); }
+  async readBinary(rel) {
+    const f = this.map.get(segments(rel).join("/"));
+    if (!f) throw new Error("غير موجود: " + rel);
+    return f.arrayBuffer();
+  }
+  async fileUrl(rel) {
+    const f = this.map.get(segments(rel).join("/"));
+    if (!f) throw new Error("غير موجود: " + rel);
+    return URL.createObjectURL(f);
+  }
+  async list(rel = "") {
+    const base = segments(rel).join("/");
+    const out = new Map();
+    for (const key of this.map.keys()) {
+      if (base && !key.startsWith(base + "/")) continue;
+      const rest = base ? key.slice(base.length + 1) : key;
+      const head = rest.split("/")[0];
+      if (!head) continue;
+      out.set(head, { name: head, kind: rest.includes("/") ? "directory" : "file" });
+    }
+    return [...out.values()].sort((a, b) => a.name.localeCompare(b.name, "ar"));
+  }
+  /** الكتابة ممنوعة صراحةً — لا صمت ولا تظاهر بالنجاح */
+  async writeText() { throw new Error("وضع القراءة: الحفظ غير متاح على هذا الجهاز."); }
+  async writeJson() { throw new Error("وضع القراءة: الحفظ غير متاح على هذا الجهاز."); }
+  async writeBinary() { throw new Error("وضع القراءة: الحفظ غير متاح على هذا الجهاز."); }
+  async mutateJson() { throw new Error("وضع القراءة: الحفظ غير متاح على هذا الجهاز."); }
 }

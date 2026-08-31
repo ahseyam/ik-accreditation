@@ -381,6 +381,10 @@
   .hero-t .kicker{color:#9fc4bb;font-size:12.5px;margin-top:10px;display:block}
   @media(max-width:700px){.hero{min-height:0;flex-direction:column;text-align:center;padding:20px}
                           .hero img{height:120px}.hero-t b{font-size:20px}}
+  body.ro #recSave,body.ro #toolSave,body.ro #execSave,body.ro #vaultFull,
+  body.ro #saveChan,body.ro #waImport,body.ro .edit{display:none!important}
+  body.ro .sticky-save::before{content:"وضع القراءة — الحفظ غير متاح على هذا الجهاز";
+    color:var(--gold);font-size:13.5px;font-weight:700}
   .hidden{display:none!important}
   @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
 </style>
@@ -592,27 +596,27 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=eadf9218";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=38f32fb4";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=eadf9218";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=eadf9218";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=eadf9218";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=eadf9218";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=eadf9218";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=38f32fb4";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=38f32fb4";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=38f32fb4";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=38f32fb4";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=38f32fb4";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=eadf9218";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=eadf9218";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=38f32fb4";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=38f32fb4";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=eadf9218";
-import { surveyLink, extractCodes } from "./survey.js?v=eadf9218";
+         fullBackup } from "./vault.js?v=38f32fb4";
+import { surveyLink, extractCodes } from "./survey.js?v=38f32fb4";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=eadf9218";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=38f32fb4";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=eadf9218";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=38f32fb4";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
@@ -655,9 +659,21 @@ const setStatus = (t) => { $("statusText").textContent = t; show("status", true)
 function renderConnect(state) {
   const box = $("connectBody");
   if (state === "unsupported") {
-    box.innerHTML = '<div class="err"><b>هذا المتصفّح لا يدعم الحفظ المباشر في المجلد.</b><br>' +
-      'استخدم <b>Microsoft Edge</b> أو <b>Google Chrome</b> على حاسب ويندوز. ' +
-      'متصفّح سفاري وأجهزة iPad غير مدعومة في هذا الإصدار.</div>';
+    /* بدل الطريق المسدود: وضع قراءة يعمل على سفاري والآيباد */
+    box.innerHTML =
+      '<div class="warn"><b>هذا الجهاز لا يدعم الحفظ المباشر في المجلد.</b><br>' +
+      'للتعبئة والحفظ استخدم <b>Microsoft Edge</b> أو <b>Google Chrome</b> على حاسب ويندوز.</div>' +
+      (ReadOnlyStore.supported()
+        ? '<div style="margin-top:16px"><button class="b-main" id="roBtn">📖 فتح وضع القراءة</button>' +
+          '<div class="f-help" style="margin-top:8px">تستعرض السجلات والخطط والنتائج ' +
+          "كاملةً، ولا يمكنك الحفظ من هذا الجهاز.</div></div>"
+        : '<div class="note" style="margin-top:16px">هذا المتصفّح لا يدعم حتى فتح المجلد للقراءة.</div>') +
+      '<div id="connectErr" style="margin-top:14px"></div>';
+    const ro = $("roBtn");
+    if (ro) ro.onclick = async () => {
+      try { await start(await ReadOnlyStore.pick()); }
+      catch (e) { $("connectErr").innerHTML = '<div class="err">' + esc(e.message) + "</div>"; }
+    };
     return;
   }
   box.innerHTML =
@@ -688,7 +704,10 @@ async function start(s) {
   $("ctx").innerHTML = "<b>" + esc(school.nameAr) + "</b><span>" +
                        esc(STAGE_AR[school.stage]) + " · العام " + esc(school.academicYear.greg) +
                        " · " + esc(school.educationType) + "</span>";
-  setStatus("متصل — " + (store.kind === "folder" ? "الحفظ مباشر إلى مجلد OneDrive" : "وضع القراءة (تطوير)"));
+  setStatus(store.readOnly
+    ? "📖 وضع القراءة — الاستعراض متاح والحفظ غير متاح على هذا الجهاز"
+    : "متصل — " + (store.kind === "folder" ? "الحفظ مباشر إلى مجلد OneDrive" : "وضع القراءة (تطوير)"));
+  document.body.classList.toggle("ro", !!store.readOnly);
   await renderPeople();
 }
 
@@ -748,7 +767,7 @@ function editPerson(person) {
     if (!next.fullName) { box.querySelector("#edStat").textContent = "الاسم مطلوب"; return; }
     box.querySelector("#edStat").textContent = "جارٍ الحفظ…";
     try {
-      rosterOv = await saveRosterEdit(store, person, next, rosterOv);
+      rosterOv = await saveRosterEdit(store, person, next);
       box.remove(); await renderPeople();
     } catch (e) { box.querySelector("#edStat").textContent = "❌ " + e.message; }
   };
@@ -757,10 +776,13 @@ function editPerson(person) {
 async function pick(person) {
   me = person;
   try {
+    if (store.readOnly) throw new Error("readonly");
     const st = await stampConnection(store, me);
     setStatus("متصل — " + me.fullName + " · " + roleAr(me.role) +
               " · مجلدك: ⁦" + personFolder(me) + "⁩ · اتصال رقم " + st.connections);
-  } catch (e) { setStatus("⚠️ تعذّر الكتابة في المجلد: " + e.message); }
+  } catch (e) {
+    if (!store.readOnly) setStatus("⚠️ تعذّر الكتابة في المجلد: " + e.message);
+  }
 
   // ⚠️ الترقيم المعروض تسلسليّ بترتيب صفحة المستخدم — ورقم جدارة يبقى داخليًا
   const { owned, shared } = recordsFor(bundle.records.records, me.role);
@@ -1173,7 +1195,8 @@ function renderPublish() {
   box.innerHTML =
     "<h2>نشر الاستبانة للجمهور</h2>" +
     '<div class="muted" style="margin-bottom:14px">أرسل الرابط لأولياء الأمور أو الطلاب أو المعلمين. ' +
-    "الاستجابة <b>مجهولة</b> ولا يُطلب فيها اسم.</div>" +
+    "الاستجابة <b>لا تحمل اسمًا</b>. ⚠️ وإن اعتمدت مسار الواتساب فسيظهر لك " +
+    "<b>رقم جوّال المرسِل</b> — أعلِمهم بذلك، والمسار السحابي وحده مجهول تمامًا.</div>" +
     '<div class="grid c2">' +
       '<div class="field"><div class="f-label">رقم واتساب المدرسة (يستقبل الردود)</div>' +
       '<input class="f-in" id="waNum" placeholder="9665XXXXXXXX" value="' + esc(wa) + '">' +

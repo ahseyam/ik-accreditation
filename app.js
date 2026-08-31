@@ -1,4 +1,4 @@
-import { FolderStore, HttpStore, safeName } from "./storage.js?v=eadf9218";
+import { FolderStore, HttpStore, safeName } from "./storage.js?v=38f32fb4";
 
 export const ROLE_AR = {
   PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",
@@ -205,20 +205,22 @@ export function applyRosterOverride(people, ov) {
 }
 
 /** يسجّل تغيير شاغل الوظيفة ويحفظه — الملفات تبقى مكانها لأن المجلد بالوظيفة */
-export async function saveRosterEdit(store, person, next, ov) {
+/* الروستر يعدّله المدير وقد يعدّله غيره — يُدمج على الأحدث لا على ما في الذاكرة */
+export async function saveRosterEdit(store, person, next) {
   const now = new Date().toISOString();
   const prev = { fullName: person.fullName, email: person.email, employeeNo: person.employeeNo ?? null };
   const changed = prev.fullName !== next.fullName;
-  ov.people = ov.people || {};
-  ov.history = ov.history || [];
-  ov.people[person.id] = { ...next, updatedAt: now };
-  if (changed) {
-    ov.history.push({ at: now, role: person.role, folder: personFolder(person),
-                      from: prev.fullName, to: next.fullName,
-                      note: "انتقلت ملفات الوظيفة إلى الشاغل الجديد — المجلد لم يتغيّر" });
-  }
-  await store.writeJson(ROSTER_OVERRIDE, ov);
-  return ov;
+  return store.mutateJson(ROSTER_OVERRIDE, (ov) => {
+    ov.people = ov.people || {};
+    ov.history = ov.history || [];
+    ov.people[person.id] = { ...next, updatedAt: now };
+    if (changed) {
+      ov.history.push({ at: now, role: person.role, folder: personFolder(person),
+                        from: prev.fullName, to: next.fullName,
+                        note: "انتقلت ملفات الوظيفة إلى الشاغل الجديد — المجلد لم يتغيّر" });
+    }
+    return ov;
+  }, { people: {}, history: [] });
 }
 
 /* ── التوقيع المحفوظ: يُرسم مرّة ويُستدعى في كل موضع توقيع ──

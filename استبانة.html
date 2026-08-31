@@ -67,7 +67,7 @@
 </div>
 
 <script type="module">
-import { encodeAnswers } from "./survey.js?v=eadf9218";
+import { encodeAnswers } from "./survey.js?v=38f32fb4";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const q = new URLSearchParams(location.search);
@@ -76,7 +76,7 @@ const school = q.get("s") || "";
 const wa = (q.get("wa") || "").replace(/\D/g, "");
 const api = q.get("api") || "";
 
-const data = await (await fetch("استبانات.json?v=eadf9218")).json();
+const data = await (await fetch("استبانات.json?v=38f32fb4")).json();
 const tool = data.tools.find((t) => t.key === toolKey) || data.tools[0];
 const answers = {};
 
@@ -85,8 +85,19 @@ $("tSchool").textContent = school || "مدارس ابن خلدون";
 $("intro").innerHTML =
   "<h1>" + esc(tool.nameAr) + "</h1>" +
   '<p class="sub">' + (school ? esc(school) + " · " : "") + tool.items.length + " سؤالًا · دقيقتان</p>" +
-  '<div class="note">رأيك <b>مجهول تمامًا</b> ولا يُطلب اسمك ولا أي بيان يدلّ عليك. ' +
-  "يُستخدم في تحسين المدرسة ضمن دورة التقويم الذاتي.</div>";
+  privacyNote();
+
+/* ⚠️ **الوعد يتبع المسار لا العكس**: مسار الواتساب يُظهر رقم المرسِل للمدرسة،
+   فقول «مجهول تمامًا» فيه غير صادق. كل مسار يُعلن حقيقته. */
+function privacyNote() {
+  if (api) return '<div class="note">رأيك <b>مجهول تمامًا</b>: تُرسَل إجابتك مباشرةً ' +
+    "بلا اسم ولا رقم ولا أي بيان يدلّ عليك، وتُستخدم في تحسين المدرسة ضمن دورة التقويم الذاتي.</div>";
+  if (wa) return '<div class="warn">إجاباتك <b>لا تحمل اسمك</b>، ولكن إرسالها يتم عبر ' +
+    "<b>واتساب</b> فيظهر <b>رقم جوّالك</b> للمدرسة كأي رسالة ترسلها. " +
+    "فإن أردت ألّا يظهر رقمك فانسخ الرمز وأرسله بأي وسيلة أخرى.</div>";
+  return '<div class="note">إجاباتك لا تحمل اسمك. ستحصل في النهاية على رمز قصير ' +
+    "تسلّمه للمدرسة بالوسيلة التي تختارها.</div>";
+}
 
 $("items").innerHTML = tool.items.map((it) =>
   '<div class="card"><div class="q"><span class="n">' + it.n + ".</span>" + esc(it.t) + "</div>" +
@@ -132,7 +143,8 @@ $("send").onclick = async () => {
   if (wa) {
     const text = "استجابة " + tool.nameAr + (school ? " — " + school : "") + "\n" + code;
     finish("بقيت خطوة واحدة",
-      '<p class="sub">اضغط الزرّ ليفتح واتساب برسالة جاهزة، ثم أرسلها كما هي.</p>' +
+      '<p class="sub">اضغط الزرّ ليفتح واتساب برسالة جاهزة، ثم أرسلها كما هي. ' +
+      "<b>سيظهر رقم جوّالك للمدرسة</b> — وإن شئت فانسخ الرمز أدناه وأرسله بوسيلة أخرى.</p>" +
       '<a href="https://wa.me/' + wa + "?text=" + encodeURIComponent(text) +
       '" target="_blank"><button class="wa">إرسال عبر واتساب</button></a>' +
       '<p class="sub" style="margin-top:18px">أو انسخ هذا الرمز وأرسله بأي وسيلة:</p><code>' +
