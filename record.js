@@ -71,13 +71,24 @@ function textInput(type, field, state, key) {
   return bindValue(i, field, state, key);
 }
 
+/* ⚠️ الخيارات تأتي بشكلين في المصدر: نصوص، و**كائنات بمفتاحَي `v` و`l`**
+   (261 من 367 قائمة أي 71%). كنت أقرأ `value`/`label` فقط فخرجت القوائم
+   **فارغة** في أغلب السجلات. يُقرأ الشكلان معًا الآن، ويحرسه
+   scripts/check-select-options.mjs. */
+export function optionOf(o) {
+  if (o == null) return null;
+  if (typeof o === "string" || typeof o === "number") return { v: String(o), l: String(o) };
+  const v = o.v ?? o.value ?? o.key ?? o.code ?? o.l ?? o.label;
+  const l = o.l ?? o.label ?? o.text ?? o.nameAr ?? o.name ?? v;
+  return v == null && l == null ? null : { v: String(v ?? l), l: String(l ?? v) };
+}
+
 function selectInput(field, state, key, options) {
   const s = el("select", "f-in");
   s.append(new Option("— اختر —", ""));
-  for (const o of options ?? field.options ?? []) {
-    const v = typeof o === "string" ? o : (o.value ?? o.label);
-    const l = typeof o === "string" ? o : (o.label ?? o.value);
-    s.append(new Option(l, v));
+  for (const raw of options ?? field.options ?? []) {
+    const o = optionOf(raw);
+    if (o) s.append(new Option(o.l, o.v));
   }
   return bindValue(s, field, state, key);
 }
@@ -364,12 +375,13 @@ export const HANDLERS = {
     const w = el("div", "multi");
     const k = f.key ?? f.id;
     if (!s[k]) s[k] = [];
-    for (const o of f.options ?? []) {
-      const v = typeof o === "string" ? o : (o.value ?? o.label);
+    for (const raw of f.options ?? []) {
+      const o = optionOf(raw);
+      if (!o) continue;
       const lab = el("label", "chk");
-      const cb = el("input"); cb.type = "checkbox"; cb.checked = s[k].includes(v);
-      cb.onchange = () => { s[k] = cb.checked ? s[k].concat([v]) : s[k].filter((x) => x !== v); };
-      lab.append(cb, el("span", null, typeof o === "string" ? o : (o.label ?? v)));
+      const cb = el("input"); cb.type = "checkbox"; cb.checked = s[k].includes(o.v);
+      cb.onchange = () => { s[k] = cb.checked ? s[k].concat([o.v]) : s[k].filter((x) => x !== o.v); };
+      lab.append(cb, el("span", null, o.l));
       w.append(lab);
     }
     return box(f, w);
