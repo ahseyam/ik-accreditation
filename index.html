@@ -8,386 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<style>
-  @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;
-             src:url("AlJazeera-Regular.v2.woff2") format("woff2")}
-  @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;
-             src:url("AlJazeera-Bold.v2.woff2") format("woff2")}
-  :root{
-    --ink:#122a25; --ink-2:#43616a; --line:#e2eae9; --line-2:#cddedb;
-    --bg:#f2f6f5; --panel:#fff;
-    --brand:#155e4e; --brand-2:#1d7a63; --brand-soft:#e9f3f0; --brand-ink:#0d443a;
-    --gold:#a97c1f; --gold-soft:#fbf4e4;
-    /* ذهبي الهلال — مستخرَج بِكسليًا من رمز 🌙 في الهيدر (#EAC83C).
-       تباينه على خلفية الهيدر #0D443A = 6.7:1 (المعيار 4.5). */
-    --gold-bright:#eac83c;
-    --danger:#a32b22; --danger-soft:#fbeceb;
-    --ok:#1d7a52;
-    --r:16px; --r-sm:10px;
-    /* ظلّ مركّب من ثلاث طبقات — الحدّة قريبة والانتشار بعيد، فيبدو الكرت مرفوعًا لا مرسومًا */
-    --sh:0 1px 2px rgba(18,42,37,.04), 0 4px 10px -4px rgba(18,42,37,.08),
-         0 20px 44px -28px rgba(18,42,37,.30);
-    --sh-lift:0 2px 4px rgba(18,42,37,.05), 0 10px 20px -8px rgba(18,42,37,.14),
-              0 28px 56px -30px rgba(18,42,37,.34);
-    /* شريط الهوية: أخضر ابن خلدون ← ذهبي */
-    --edge:linear-gradient(90deg,var(--brand) 0%,var(--brand-2) 46%,var(--gold) 100%);
-    --statusH:34px;   /* ارتفاع شريط الحالة المثبَّت */
-  }
-  /* الوضع الليلي — تُبدَّل الرموز وحدها فتبقى القواعد كما هي */
-  html[data-theme="dark"]{
-    --ink:#e6f0ee; --ink-2:#9fb8b3; --line:#22403a; --line-2:#2e544c;
-    --bg:#0d1f1c; --panel:#132a26;
-    --brand:#4fbf9c; --brand-2:#63d2ae; --brand-soft:#17332d; --brand-ink:#0a1815;
-    --gold:#d9ad55; --gold-soft:#2a2418;
-    --danger:#f08a80; --danger-soft:#33201e; --ok:#5fd3a0;
-    --sh:0 1px 2px rgba(0,0,0,.30), 0 4px 10px -4px rgba(0,0,0,.34),
-         0 20px 44px -28px rgba(0,0,0,.7);
-    --sh-lift:0 2px 4px rgba(0,0,0,.32), 0 10px 20px -8px rgba(0,0,0,.4),
-              0 28px 56px -30px rgba(0,0,0,.75);
-  }
-  html[data-theme="dark"] .sig-pad,html[data-theme="dark"] .f-in{background:var(--panel)}
-  html[data-theme="dark"] table.rec-table th,html[data-theme="dark"] th{background:#17332d}
-  /* بصمة الخلفية: «رُبع الحِزب» — مربّعان متقاطعان بزاوية 45°، بكثافة 5% */
-  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='none' stroke='%23155e4e' stroke-opacity='.032' stroke-width='.9'%3E%3Crect x='11' y='11' width='18' height='18'/%3E%3Crect x='11' y='11' width='18' height='18' transform='rotate(45 20 20)'/%3E%3C/g%3E%3C/svg%3E");
-    background-size:40px 40px}
-  .app{position:relative;z-index:1}
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8;
-       font-family:"Al Jazeera Arabic","Segoe UI",Tahoma,system-ui,Arial,sans-serif;
-       -webkit-font-smoothing:antialiased}
-  button,input,select,textarea{font-family:inherit}
-  a{color:var(--brand-2)}
-
-  /* ── الهيكل ── */
-  .app{display:flex;min-height:100vh}
-  .nav{width:236px;flex:none;background:var(--brand-ink);color:#cfe6df;
-       display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-  .nav.hidden{display:none}
-  .nav .brand{display:flex;align-items:center;gap:11px;padding:20px 18px 16px;
-              border-bottom:1px solid rgba(255,255,255,.1)}
-  .nav .brand .jd{width:40px;height:40px;flex:none;border-radius:11px;display:block;
-    box-shadow:0 3px 10px -4px rgba(0,0,0,.5)}
-  .nav .brand b{color:var(--gold-bright);font-size:15.5px;line-height:1.35;display:block}
-  .nav .brand span{font-size:11.5px;opacity:.72}
-  .nav menu{list-style:none;margin:0;padding:12px 10px;display:grid;gap:3px}
-  .nav a{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:var(--r-sm);
-         color:#cfe6df;text-decoration:none;font-size:14.5px;cursor:pointer}
-  .nav a:hover{background:rgba(255,255,255,.08);color:#fff}
-  .nav a.on{background:var(--brand-2);color:#fff;font-weight:700}
-  .nav a .ic{width:18px;text-align:center;opacity:.9}
-  .nav a .ct{margin-inline-start:auto;font-size:12px;background:rgba(255,255,255,.14);
-             border-radius:99px;padding:0 8px;min-width:24px;text-align:center}
-  /* ⚠️ شريط الحالة مثبَّت في أسفل النافذة ويغطّي ذيل القائمة الجانبية،
-     فيُقتطع زرّ «تبديل المستخدم». يُحجَز له ارتفاعه هنا. */
-  .nav .foot{margin-top:auto;padding:14px 18px calc(14px + var(--statusH));
-             border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;opacity:.75}
-  .nav .foot b{color:#fff;display:block;font-size:13.5px;opacity:1}
-
-  main{flex:1;min-width:0;display:flex;flex-direction:column}
-  .bar{position:sticky;top:0;z-index:6;background:var(--brand-ink);
-       border-bottom:3px solid transparent;border-image:var(--edge) 1;
-       padding:10px 22px;display:flex;align-items:center;gap:14px;color:#eaf5f1;
-       flex-wrap:wrap;box-shadow:0 2px 14px -6px rgba(0,0,0,.4)}
-  .bar .h-btn{background:rgba(255,255,255,.10);color:#eaf5f1;border:1px solid rgba(255,255,255,.16);
-              border-radius:9px;padding:7px 12px;font-size:13.5px;font-weight:400;line-height:1}
-  .bar .h-btn:hover{background:rgba(255,255,255,.2)}
-  .bar .h-search{position:relative;flex:1;min-width:120px;max-width:340px}
-  .bar .h-search input{width:100%;background:rgba(255,255,255,.10);color:#fff;
-    border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:8px 34px 8px 12px;font-size:14px}
-  .bar .h-search input::placeholder{color:#a9c8c0}
-  .bar .h-search input:focus{outline:2px solid var(--brand-2);background:rgba(255,255,255,.16)}
-  .bar .h-search .ico{position:absolute;inset-inline-start:11px;inset-block-start:8px;
-                      color:#a9c8c0;font-size:13px;pointer-events:none}
-  .results{position:absolute;inset-block-start:44px;inset-inline:0;background:var(--panel);
-    border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--sh-lift);
-    max-height:380px;overflow:auto;z-index:20}
-  .results a{display:block;padding:10px 14px;font-size:14px;color:var(--ink);
-             text-decoration:none;border-bottom:1px solid var(--line);cursor:pointer}
-  .results a:hover{background:var(--brand-soft)}
-  .results .k{font-size:11.5px;color:var(--ink-2);margin-inline-start:8px}
-  .menu-pop{position:absolute;inset-block-start:52px;inset-inline-end:22px;background:var(--panel);
-    border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--sh-lift);
-    min-width:230px;z-index:20;padding:7px}
-  .menu-pop button{display:flex;width:100%;justify-content:space-between;align-items:center;
-    background:none;border:0;color:var(--ink);padding:9px 12px;font-size:14px;font-weight:400;
-    border-radius:7px;text-align:right}
-  .menu-pop button:hover{background:var(--brand-soft)}
-  .menu-pop .sepline{height:1px;background:var(--line);margin:5px 8px}
-  /* لوحة هوية واحدة: ابن خلدون ثم معارف، بينهما فاصل رفيع — على أرضية بيضاء
-     كي يُقرأ الشعاران على الخلفية الداكنة. */
-  .bar .logos{display:flex;align-items:center;gap:12px;flex:none;background:#fff;
-              border-radius:11px;padding:7px 13px;box-shadow:0 2px 10px -4px rgba(0,0,0,.45)}
-  .bar .logos img{width:auto;object-fit:contain;display:block}
-  .bar .logos img[alt="مدارس ابن خلدون"]{height:30px}
-  .bar .logos img.mf{height:19px}
-  .bar .divider{width:1px;height:24px;background:#dbe6e3}
-  /* ⚠️ اسم المدرسة لا يُقصّ: يأخذ سطرين ولا يُضغط. البحث هو الذي يتقلّص. */
-  .bar .crumb{padding-inline-start:12px;border-inline-start:1px solid rgba(255,255,255,.18);
-              line-height:1.35;flex:none}
-  .bar .crumb b{color:var(--gold-bright);font-size:15.5px;font-weight:700;display:block;
-                letter-spacing:.1px}
-  .bar .crumb span{color:#a9c8c0;font-size:12.5px}
-  .bar .divider{background:rgba(255,255,255,.22)}
-  .bar .sp{flex:1}
-  .wrap{padding:26px 26px calc(30px + var(--statusH));max-width:1180px;width:100%}
-  h1{font-size:24px;font-weight:700;letter-spacing:-.2px;margin:0 0 7px}
-  h2{font-size:18px;font-weight:700;margin:0 0 15px}
-  h3{font-size:15.5px;font-weight:700;margin:0 0 10px}
-  .sub{color:var(--ink-2);font-size:14.5px;margin:0 0 24px;line-height:1.7}
-
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
-        padding:26px;box-shadow:var(--sh);margin-bottom:20px;position:relative;overflow:hidden}
-  /* الحافّة العلوية هي بصمة كل بطاقة — 3px من الأخضر إلى الذهبي */
-  .card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--edge)}
-  .card.tight{padding:19px 22px}
-  .card h2{display:flex;align-items:center;gap:9px}
-  .card h2::before{content:"";width:7px;height:7px;flex:none;transform:rotate(45deg);
-                   background:var(--gold);border-radius:1px}
-  .grid{display:grid;gap:18px}
-  @media(min-width:900px){.grid.c2{grid-template-columns:1fr 1fr}}
-
-  button{cursor:pointer;border-radius:var(--r-sm);border:1px solid transparent;
-         padding:10px 18px;font-size:14.5px;font-weight:700}
-  .b-main{background:var(--brand);color:#fff}
-  .b-main:hover{background:var(--brand-2)}
-  .b-ghost{background:var(--panel);color:var(--brand);border-color:var(--line-2)}
-  .b-ghost:hover{background:var(--brand-soft)}
-  .b-sm{padding:5px 12px;font-size:13px;font-weight:400}
-
-  .tiles{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-bottom:22px}
-  .tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
-        padding:22px 22px 20px;box-shadow:var(--sh);position:relative;overflow:hidden;
-        transition:box-shadow .16s,transform .16s,border-color .16s}
-  /* توهّج ركني خفيف يعطي البطاقة عمقًا بلا زخرفة */
-  .tile::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--edge)}
-  .tile::after{content:"";position:absolute;inset-block-start:-46px;inset-inline-start:-46px;
-    width:118px;height:118px;border-radius:50%;
-    background:radial-gradient(circle,rgba(21,94,78,.09),transparent 68%)}
-  .tile[data-act]{cursor:pointer}
-  .tile[data-act]:hover{border-color:var(--brand-2);transform:translateY(-2px);box-shadow:var(--sh-lift)}
-  .tile .n{font-size:34px;font-weight:700;color:var(--brand);line-height:1.1;
-           font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-  .tile .lbl{font-size:13.5px;color:var(--ink-2);margin-top:8px;padding-top:9px;
-             border-top:2px solid var(--gold-soft);display:inline-block}
-
-  table{width:100%;border-collapse:collapse;font-size:14.5px}
-  th,td{text-align:right;padding:11px 13px;border-bottom:1px solid var(--line);line-height:1.65}
-  th{color:var(--ink-2);font-weight:700;font-size:13px;letter-spacing:.1px;
-     background:#f8fbfa;position:sticky;top:0}
-  tbody tr.click{cursor:pointer}
-  tbody tr.click:hover{background:var(--brand-soft)}
-  tr.weak td{background:var(--gold-soft)}
-  .scroll{overflow:auto;max-height:none;border:1px solid var(--line);border-radius:var(--r-sm)}
-
-  .tag{display:inline-block;font-size:12px;background:var(--brand-soft);color:var(--brand);
-       border-radius:99px;padding:2px 11px;white-space:nowrap}
-  .tag.gray{background:#eef2f2;color:var(--ink-2)}
-  .tag.gold{background:var(--gold-soft);color:var(--gold)}
-  .muted{color:var(--ink-2);font-size:13px}
-  .note{background:var(--brand-soft);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:13px 16px;font-size:14px}
-  .warn{background:var(--gold-soft);border:1px solid #ecdcb4;border-radius:var(--r-sm);padding:13px 16px;font-size:14px}
-  .err{background:var(--danger-soft);border:1px solid #eec9c6;border-radius:var(--r-sm);padding:13px 16px;font-size:14px;color:var(--danger)}
-  .note.sm,.warn.sm,.err.sm{font-size:12.5px;padding:8px 11px;margin-bottom:10px}
-  .bar-m{height:7px;background:#eef2f2;border-radius:4px;overflow:hidden;min-width:96px;display:inline-block;vertical-align:middle}
-  .bar-m>i{display:block;height:100%;background:var(--brand-2)}
-
-  ul.people{list-style:none;margin:0;padding:0;display:grid;gap:9px}
-  @media(min-width:760px){ul.people{grid-template-columns:1fr 1fr}}
-  ul.people button{width:100%;text-align:right;background:var(--panel);border:1px solid var(--line);
-                   display:flex;align-items:center;gap:12px;padding:16px 19px;font-weight:400;
-                   border-radius:var(--r);box-shadow:var(--sh);position:relative;overflow:hidden;
-                   transition:box-shadow .16s,transform .16s,border-color .16s}
-  ul.people button::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:3px;background:var(--edge)}
-  ul.people button:hover{border-color:var(--brand-2);transform:translateY(-2px);box-shadow:var(--sh-lift)}
-  ul.people .who{font-weight:700;font-size:14.5px}
-  ul.people .role{font-size:13px;color:var(--ink-2);margin-inline-start:auto}
-
-  .rowhead{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}
-  .rowhead .sp{flex:1}
-  .pager{display:flex;align-items:center;gap:8px}
-  .pager .pos{font-size:13px;color:var(--ink-2);min-width:74px;text-align:center}
-  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-  .search{flex:1;min-width:200px;padding:9px 13px;border:1px solid var(--line-2);
-          border-radius:var(--r-sm);font-size:14px;background:var(--panel)}
-
-  /* ── نموذج السجل ── */
-  .field{margin:0 0 18px}
-  .f-label{font-size:14.5px;font-weight:700;margin-bottom:7px}
-  /* ⚠️ حزام أمان مزدوج: خطّ الجزيرة يرسم مكان «*» شعارَ القناة. حُذف المحرف من
-     الخطّ، ويُفرَض هنا خطّ النظام على العلامة كي لا تعود لو رجع الخطّ الأصلي. */
-  .f-label .req{color:var(--danger);font-family:Tahoma,Arial,sans-serif;font-weight:700}
-  .f-help{font-size:12.5px;color:var(--ink-2);margin-top:5px}
-  .f-in{width:100%;padding:10px 13px;border:1px solid var(--line-2);border-radius:var(--r-sm);
-        font:inherit;background:var(--panel);color:var(--ink)}
-  .f-in:focus{outline:2px solid var(--brand-2);outline-offset:-1px;border-color:transparent}
-  .f-in.sm{padding:6px 9px;font-size:13.5px}
-  input.f-in[type=checkbox]{width:20px;height:20px;accent-color:var(--brand)}
-  /* ── تدرّج العناوين داخل السجلات ── */
-  .sec{display:flex;align-items:center;gap:9px;font-weight:700}
-  .sec .sec-mark{flex:none;border-radius:2px}
-  .sec.lvl1{font-size:16.5px;color:var(--brand);margin:30px 0 14px;padding-bottom:9px;
-            border-bottom:2px solid var(--brand-soft)}
-  .sec.lvl1 .sec-mark{width:9px;height:9px;transform:rotate(45deg);background:var(--gold)}
-  .sec.lvl2{font-size:14.8px;color:var(--brand-2);margin:22px 0 11px;padding-inline-start:11px;
-            border-inline-start:3px solid var(--brand-soft)}
-  .sec.lvl2 .sec-mark{display:none}
-  .sec.lvl3{font-size:13.8px;color:var(--gold);margin:16px 0 9px;letter-spacing:.2px}
-  .sec.lvl3 .sec-mark{width:5px;height:5px;border-radius:50%;background:var(--gold)}
-  html[data-theme="dark"] .sec.lvl3{color:var(--gold-bright)}
-  /* الحقول: العنوان أغمق من الشرح، والقيمة أوضح من الاثنين */
-  .f-label{color:var(--ink)}
-  .f-help{color:var(--ink-2)}
-  .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm);padding:9px;background:#fbfdfc}
-  table.rec-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
-  table.rec-table th{background:#f4f8f7;font-size:12.5px;padding:8px;white-space:nowrap;position:static}
-  table.rec-table td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
-  table.rec-table td.num,table.rec-table th.num{width:34px;text-align:center;color:var(--ink-2)}
-  .sig-pad{border:1px dashed var(--line-2);border-radius:var(--r-sm);background:#fff;display:block;touch-action:none;max-width:100%}
-  .primary{display:flex;flex-wrap:wrap;gap:9px 26px;background:var(--brand-soft);
-           border:1px solid var(--line-2);border-radius:var(--r-sm);padding:14px 17px;margin-bottom:22px;font-size:14px}
-  .primary-cell .k{color:var(--ink-2);margin-inline-end:6px}
-  .repeat-item{border:1px solid var(--line);border-radius:var(--r-sm);padding:15px;margin-bottom:13px}
-  .repeat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
-  .legend,.multi{display:flex;flex-wrap:wrap;gap:8px}
-  .chip{font-size:12.5px;border-radius:99px;padding:3px 12px;background:#eef2f2}
-  .chk{display:flex;align-items:center;gap:7px;font-size:14px;border:1px solid var(--line-2);
-       border-radius:var(--r-sm);padding:6px 11px}
-  .file-row{display:flex;align-items:center;gap:10px;font-size:13.5px;margin-top:7px}
-  .sticky-save{position:sticky;bottom:var(--statusH);background:linear-gradient(transparent,var(--bg) 26%);
-               padding:18px 0 8px;display:flex;gap:11px;align-items:center;margin-top:20px;z-index:4}
-
-  /* ── الأدوات ── */
-  .tools-list{display:grid;gap:10px}
-  .tool-row{display:flex;align-items:center;gap:14px;border:1px solid var(--line);
-            border-radius:var(--r);padding:16px 19px;background:var(--panel);cursor:pointer;
-            text-align:right;width:100%;font:inherit;font-weight:400;box-shadow:var(--sh);
-            position:relative;overflow:hidden;transition:box-shadow .16s,transform .16s,border-color .16s}
-  .tool-row::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:3px;
-                    background:var(--edge)}
-  .tool-row:hover{border-color:var(--brand-2);transform:translateY(-2px);box-shadow:var(--sh-lift)}
-  .tool-row .nm{flex:1;font-weight:700;font-size:14.5px}
-  .item-card{border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;
-             background:var(--panel);box-shadow:var(--sh)}
-  .item-txt{font-size:14.5px;margin-bottom:11px}
-  .item-n{color:var(--ink-2);font-size:12.5px;margin-inline-end:7px}
-  .scale{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .scale label{display:flex;align-items:center;gap:7px;font-size:13.5px;border:1px solid var(--line-2);
-               border-radius:var(--r-sm);padding:6px 13px;cursor:pointer}
-  .scale label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
-  .obs{display:grid;gap:6px;margin-bottom:11px}
-  .obs label{display:flex;gap:9px;font-size:13.5px;align-items:flex-start}
-  .derived{font-size:13px;font-weight:700;color:var(--brand)}
-  .grp{font-size:14.5px;font-weight:700;color:var(--brand);margin:24px 0 12px;
-       border-bottom:2px solid var(--brand-soft);padding-bottom:7px}
-
-  /* ── التحسينية ── */
-  .kpi{display:grid;gap:13px;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));margin-bottom:22px}
-  .kpi .box{border:1px solid var(--line);border-radius:var(--r);padding:17px 19px;background:var(--panel);
-            box-shadow:var(--sh);position:relative;overflow:hidden}
-  .kpi .box::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--edge)}
-  .kpi .box .v{font-size:27px;font-weight:700;color:var(--brand);line-height:1.15;
-               font-variant-numeric:tabular-nums;letter-spacing:-.5px}
-  .kpi .box .l{font-size:12.5px;color:var(--ink-2);margin-top:6px;padding-top:7px;
-               border-top:2px solid var(--gold-soft);display:inline-block}
-  .delta-up{color:var(--ok);font-weight:700}
-  .delta-dn{color:var(--danger);font-weight:700}
-  .prog{border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;
-        background:var(--panel);box-shadow:var(--sh);position:relative;overflow:hidden}
-  .prog::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:3px;background:var(--edge)}
-  .prog h4{margin:0 0 5px;font-size:15px}
-  .prog .stage{border-inline-start:3px solid var(--brand-soft);padding-inline-start:12px;margin-top:10px;font-size:13.5px}
-
-  /* ⚠️ pointer-events:none إلزامي — الشريط مثبَّت في الأسفل فيبتلع نقرات آخر
-     صفّ في الجدول وزرّ الحفظ. ومعه حشوة سفلية في .wrap بارتفاعه. */
-  .status{position:fixed;inset-inline-start:0;inset-block-end:0;width:100%;background:var(--brand-ink);
-          color:#cfe6df;font-size:12.5px;padding:7px 20px;display:flex;gap:13px;align-items:center;
-          z-index:9;pointer-events:none}
-  .status .dot{width:8px;height:8px;border-radius:50%;background:#5ed3a0}
-  ul.people .edit{margin-inline-start:12px;color:var(--ink-2);font-size:15px;
-                  padding:2px 7px;border-radius:6px}
-  ul.people .edit:hover{background:var(--gold-soft);color:var(--gold)}
-  .modal{position:fixed;inset:0;background:rgba(10,24,21,.55);display:grid;place-items:center;z-index:40;padding:20px}
-  .modal-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
-              padding:26px;max-width:520px;width:100%;box-shadow:var(--sh-lift);position:relative;overflow:hidden}
-  .modal-card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;background:var(--edge)}
-  .proc-group{margin-bottom:22px}
-  .proc-group h4{font-size:14.5px;margin:0 0 9px;color:var(--brand);font-weight:700}
-  table.proc{font-size:12.5px;min-width:1180px}
-  table.proc th{font-size:11.5px;white-space:nowrap;background:var(--brand-soft);color:var(--brand)}
-  table.proc td{vertical-align:top;line-height:1.6;padding:8px 9px}
-  table.proc td:first-child{min-width:200px;font-weight:700}
-  table.mirror{font-size:12px;min-width:1100px}
-  table.mirror td.mtag{min-width:150px;font-size:11.5px;line-height:1.5}
-  table.mirror th.wk,table.mirror td.wk{width:22px;min-width:22px;text-align:center;padding:4px 0}
-  table.mirror th.wk{font-size:10.5px;color:var(--ink-2)}
-  table.mirror td.wk{border-inline-start:1px solid var(--line)}
-  table.mirror td.wk.on{background:var(--brand-2)!important}
-  table.mirror .sem2{border-inline-start:2px solid var(--gold)!important}
-  .f-in.auto{background:var(--gold-soft);border-color:#e3d3ab}
-  html[data-theme="dark"] .f-in.auto{background:#2a2418;border-color:#4a3f24}
-  .guide-panel{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--brand-soft);
-               margin-bottom:18px;overflow:hidden}
-  .guide-panel>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;color:var(--brand)}
-  .guide-body{padding:0 16px 15px}
-  .guide-desc{margin:0 0 11px;font-size:14px;line-height:1.75}
-  .guide-facts{display:grid;gap:6px}
-  .gf{display:flex;gap:10px;font-size:13.5px;align-items:baseline}
-  .gk{color:var(--ink-2);min-width:112px;flex:none}
-  .gv{font-weight:700}
-  .guide .guide-t{display:block;margin-bottom:6px}
-  ul.guide-list{margin:4px 0 0;padding-inline-start:18px}
-  ul.guide-list li{margin-bottom:3px}
-  details.tree{border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:10px;
-               background:var(--panel);overflow:hidden}
-  details.tree>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;
-                       background:var(--brand-soft);color:var(--brand)}
-  details.tree table{border-top:1px solid var(--line)}
-  .sig-bar{display:flex;gap:9px;align-items:center;margin-top:9px;flex-wrap:wrap}
-  /* شريط التنسيق العائم */
-  .rich-bar{position:absolute;z-index:30;display:flex;gap:4px;background:var(--brand-ink);
-            border-radius:9px;padding:5px 7px;box-shadow:0 8px 24px -10px rgba(0,0,0,.6)}
-  .rich-bar .rb{background:rgba(255,255,255,.10);color:#eaf5f1;border:0;border-radius:6px;
-                padding:5px 10px;font-size:12.5px;font-weight:700;line-height:1;cursor:pointer}
-  .rich-bar .rb:hover{background:rgba(255,255,255,.24)}
-  .f-in.rich{min-height:38px;line-height:1.7;overflow-wrap:anywhere}
-  .f-in.rich:empty::before{content:"اكتب هنا…";color:var(--ink-2)}
-  /* إخراج المحضر */
-  .meeting-scope{border-inline-start:3px solid var(--gold);margin-top:10px}
-  h3.sec.meeting{text-align:center;color:var(--brand);font-size:16.5px;border-bottom:0;
-                 border-top:2px solid var(--brand-soft);padding-top:12px}
-  details.exec-w>summary{background:var(--panel);color:var(--ink)}
-  details.exec-w[open]>summary{background:var(--brand-soft);color:var(--brand)}
-  .guide-vt{margin-top:13px;font-weight:700;font-size:13.5px;color:var(--gold);
-           border-top:1px solid var(--line-2);padding-top:11px}
-  .vcode{display:inline-block;background:var(--gold-soft);color:var(--gold);
-         border-radius:5px;padding:1px 7px;font-size:11.5px;margin-inline-end:6px}
-  html[data-theme="dark"] .vcode{background:#2a2418;color:var(--gold-bright)}
-  /* ⚠️ رسمة المبنى **طولية بخلفية شفافة** — رسمة غلاف لا صورة عريضة.
-     فـobject-fit:cover في شريط عريض يقصّها قصًّا مشوّهًا (قِيس بالعين).
-     الصواب: تُحتوى بكامل ارتفاعها في جانب اللافتة والنصّ إلى جوارها. */
-  .hero{position:relative;border-radius:var(--r);overflow:hidden;margin:-6px 0 24px;
-        min-height:210px;display:flex;align-items:center;gap:22px;padding:18px 26px;
-        background:linear-gradient(135deg,var(--brand-ink) 0%,#123f36 58%,#165347 100%)}
-  .hero::before{content:"";position:absolute;inset:0;opacity:.5;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='none' stroke='%23eac83c' stroke-opacity='.10' stroke-width='.9'%3E%3Crect x='11' y='11' width='18' height='18'/%3E%3Crect x='11' y='11' width='18' height='18' transform='rotate(45 20 20)'/%3E%3C/g%3E%3C/svg%3E");
-    background-size:40px 40px}
-  .hero img{position:relative;z-index:1;height:178px;width:auto;flex:none;
-            object-fit:contain;filter:drop-shadow(0 10px 22px rgba(0,0,0,.45))}
-  .hero-t{position:relative;z-index:1;flex:1;min-width:0}
-  .hero-t b{display:block;color:var(--gold-bright);font-size:26px;line-height:1.3;letter-spacing:-.2px}
-  .hero-t span{color:#dceae6;font-size:14.5px;display:block;margin-top:5px}
-  .hero-t .kicker{color:#9fc4bb;font-size:12.5px;margin-top:10px;display:block}
-  @media(max-width:700px){.hero{min-height:0;flex-direction:column;text-align:center;padding:20px}
-                          .hero img{height:120px}.hero-t b{font-size:20px}}
-  body.ro #recSave,body.ro #toolSave,body.ro #execSave,body.ro #vaultFull,
-  body.ro #saveChan,body.ro #waImport,body.ro .edit{display:none!important}
-  body.ro .sticky-save::before{content:"وضع القراءة — الحفظ غير متاح على هذا الجهاز";
-    color:var(--gold);font-size:13.5px;font-weight:700}
-  .hidden{display:none!important}
-  @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
-</style>
+<link rel="stylesheet" href="style.css?v=b68cab3a">
 </head>
 <body>
 <div class="app">
@@ -596,54 +217,37 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=38f32fb4";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=692f6011";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=38f32fb4";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=38f32fb4";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=38f32fb4";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=38f32fb4";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=38f32fb4";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=692f6011";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=692f6011";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=692f6011";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=692f6011";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=692f6011";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=38f32fb4";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=38f32fb4";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=692f6011";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=692f6011";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=38f32fb4";
-import { surveyLink, extractCodes } from "./survey.js?v=38f32fb4";
+         fullBackup } from "./vault.js?v=692f6011";
+import { surveyLink, extractCodes } from "./survey.js?v=692f6011";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=38f32fb4";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=692f6011";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=38f32fb4";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=692f6011";
 
-const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
-const show = (id, on) => $(id).classList.toggle("hidden", !on);
-const SCREENS = ["screenConnect","screenWho","screenDash","screenRecords","screenRecord",
-                 "screenTools","screenTool","screenImp","screenPlans","screenVault","screenExec","screenReady"];
-const SCREEN_TITLE = {
-  screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
-  screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
-  screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية", screenWho: "منسوبو المدرسة",
-  screenVault: "مستودع المدرسة", screenExec: "خطتي التنفيذية", screenReady: "جاهزية الزيارة",
-};
-let activeScreen = "screenConnect";
-function only(id){
-  for (const s of SCREENS) show(s, s === id);
-  activeScreen = id;
-  show("printPage", !!(store && bundle && me && SCREEN_TITLE[id]));
-  show("homeBtn", !!(store && bundle && me) && id !== "screenDash");
-}
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=692f6011";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
-  const sec = document.getElementById(activeScreen);
+  const sec = document.getElementById(S.activeScreen);
   if (!sec || !bundle) return;
-  const title = activeScreen === "screenRecord" ? $("recTitle").textContent
-              : activeScreen === "screenTool" ? $("toolTitle").textContent
-              : SCREEN_TITLE[activeScreen] || "مستند";
+  const title = S.activeScreen === "screenRecord" ? $("recTitle").textContent
+              : S.activeScreen === "screenTool" ? $("toolTitle").textContent
+              : SCREEN_TITLE[S.activeScreen] || "مستند";
   const sub = bundle.school.nameAr + " · العام " + bundle.school.academicYear.greg +
               " · " + (me?.fullName || "") + " (" + roleAr(me?.role) + ")";
   await printDocument(snapshotForPrint(sec, title, sub),
@@ -653,7 +257,6 @@ async function printCurrent() {
 let store = null, bundle = null, me = null;
 let myRecords = [], myTools = [], recIndex = -1, toolIndex = -1;
 const dataUrl = new URLSearchParams(location.search).get("data");
-const setStatus = (t) => { $("statusText").textContent = t; show("status", true); };
 
 /* ── الاتصال ── */
 function renderConnect(state) {
@@ -691,12 +294,12 @@ function renderConnect(state) {
 }
 
 async function start(s) {
-  store = s;
-  try { bundle = await loadBundle(store); }
+  store = s; S.store = s;
+  try { bundle = await loadBundle(store); S.bundle = bundle; }
   catch (e) {
     $("connectErr") && ($("connectErr").innerHTML =
       '<div class="err"><b>المجلد المختار ليس مساحة اعتماد.</b><br>' + esc(e.message) + "</div>");
-    store = null; return;
+    store = null; S.store = null; return;
   }
   const { school } = bundle;
   $("heroSchool").textContent = school.nameAr + " · " + STAGE_AR[school.stage] +
@@ -718,6 +321,7 @@ async function renderPeople() {
   rosterOv = await loadRosterOverride(store);
   // ⚠️ الترتيب هرميّ من المدير فالوكلاء فمن دونهم — والشبكة RTL فيبدأ من اليمين
   roster = sortHierarchy(applyRosterOverride(bundle.roster.people, rosterOv));
+  S.roster = roster;
   $("peopleList").innerHTML = roster.map((p, i) =>
     '<li><button data-i="' + i + '">' +
     '<span class="who">' + esc(p.fullName || "—") +
@@ -774,7 +378,7 @@ function editPerson(person) {
 }
 
 async function pick(person) {
-  me = person;
+  me = person; S.me = person;
   try {
     if (store.readOnly) throw new Error("readonly");
     const st = await stampConnection(store, me);
@@ -826,9 +430,6 @@ function buildNav() {
   $("navMenu").querySelectorAll("a").forEach((a) => {
     a.onclick = () => items.find((n) => n.id === a.dataset.nav).go();
   });
-}
-function markNav(id) {
-  $("navMenu").querySelectorAll("a").forEach((a) => a.classList.toggle("on", a.dataset.nav === id));
 }
 
 /* ── لوحتي ── */

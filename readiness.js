@@ -68,7 +68,8 @@ export function computeReadiness({ records, recordCounts, toolSummaries, improve
   const expectedEvidence = Math.max(filledCore, 1);
   const toolsWith = (toolSummaries || []).filter((t) => t.responses > 0).length;
 
-  const weak = (improvement?.indicatorScores || []).filter((x) => x.isWeak);
+  const allInd = improvement?.indicatorScores || [];
+  const weak = allInd.filter((x) => x.isWeak);
   const weakCovered = weak.filter((ind) =>
     (records || []).some((r) => (r.etecIndicators || []).includes(ind.code) &&
       (recordCounts?.[r.number] ?? 0) > 0)).length;
@@ -82,9 +83,18 @@ export function computeReadiness({ records, recordCounts, toolSummaries, improve
     tools: { done: toolsWith, total: (toolSummaries || []).length,
              pct: pct(toolsWith, (toolSummaries || []).length),
              note: toolsWith + " أداة من " + (toolSummaries || []).length + " فيها استجابة" },
-    improve: { done: weakCovered, total: weak.length, pct: pct(weakCovered, Math.max(weak.length, 1)),
-               note: weak.length === 0 ? "لا مؤشرات دون المستوى"
-                     : weakCovered + " من " + weak.length + " مؤشرًا دون المستوى له سجل مُفعَّل" },
+    /* ⚠️ مدرسة بلا مؤشرات دون المستوى كانت تُعطى **صفرًا** في هذا البُعد —
+       فتُعاقَب لأنها جيّدة. لا مطلوبَ يعني مستوفًى بالكامل. (كشفه اختبار وحدة.) */
+    /* ⚠️ صفر مؤشرات ضعيفة له معنيان يجب التمييز بينهما:
+       ① المدرسة ممتازة (قائمة المؤشرات موجودة وليس فيها ضعيف) ⇒ 100% استحقاقًا.
+       ② بيانات التحسين مفقودة أصلًا ⇒ 0% مع إعلان السبب، لا منحة مجانية.
+       كشف الفرقَ اختبارُ وحدة بعد أن كان يُعطي 0% للحالتين ثم 100% لهما. */
+    improve: allInd.length === 0
+      ? { done: 0, total: 0, pct: 0, note: "لا بيانات مؤشرات في هذه الحزمة — البُعد غير مقيس" }
+      : weak.length === 0
+        ? { done: 0, total: 0, pct: 100, note: "لا مؤشرات دون المستوى — لا مطلوب في هذا البُعد" }
+        : { done: weakCovered, total: weak.length, pct: pct(weakCovered, weak.length),
+            note: weakCovered + " من " + weak.length + " مؤشرًا دون المستوى له سجل مُفعَّل" },
     /* ⚠️ المقام **عدد التنفيذيين في الروستر** لا عدد المجلدات الموجودة:
        المجلد لا يُنشأ إلا لمن اتصل، فالقسمة على الموجود تعطي 100% كذبًا
        حين يتصل واحد فقط. قِيس: 1/1 = 100% والصواب 1/11 = 9%. */
