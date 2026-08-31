@@ -31,6 +31,7 @@
               0 28px 56px -30px rgba(18,42,37,.34);
     /* شريط الهوية: أخضر ابن خلدون ← ذهبي */
     --edge:linear-gradient(90deg,var(--brand) 0%,var(--brand-2) 46%,var(--gold) 100%);
+    --statusH:34px;   /* ارتفاع شريط الحالة المثبَّت */
   }
   /* الوضع الليلي — تُبدَّل الرموز وحدها فتبقى القواعد كما هي */
   html[data-theme="dark"]{
@@ -78,7 +79,10 @@
   .nav a .ic{width:18px;text-align:center;opacity:.9}
   .nav a .ct{margin-inline-start:auto;font-size:12px;background:rgba(255,255,255,.14);
              border-radius:99px;padding:0 8px;min-width:24px;text-align:center}
-  .nav .foot{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;opacity:.75}
+  /* ⚠️ شريط الحالة مثبَّت في أسفل النافذة ويغطّي ذيل القائمة الجانبية،
+     فيُقتطع زرّ «تبديل المستخدم». يُحجَز له ارتفاعه هنا. */
+  .nav .foot{margin-top:auto;padding:14px 18px calc(14px + var(--statusH));
+             border-top:1px solid rgba(255,255,255,.1);font-size:12.5px;opacity:.75}
   .nav .foot b{color:#fff;display:block;font-size:13.5px;opacity:1}
 
   main{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -127,7 +131,7 @@
   .bar .crumb span{color:#a9c8c0;font-size:12.5px}
   .bar .divider{background:rgba(255,255,255,.22)}
   .bar .sp{flex:1}
-  .wrap{padding:26px 26px 64px;max-width:1180px;width:100%}
+  .wrap{padding:26px 26px calc(30px + var(--statusH));max-width:1180px;width:100%}
   h1{font-size:24px;font-weight:700;letter-spacing:-.2px;margin:0 0 7px}
   h2{font-size:18px;font-weight:700;margin:0 0 15px}
   h3{font-size:15.5px;font-weight:700;margin:0 0 10px}
@@ -251,7 +255,7 @@
   .chk{display:flex;align-items:center;gap:7px;font-size:14px;border:1px solid var(--line-2);
        border-radius:var(--r-sm);padding:6px 11px}
   .file-row{display:flex;align-items:center;gap:10px;font-size:13.5px;margin-top:7px}
-  .sticky-save{position:sticky;bottom:34px;background:linear-gradient(transparent,var(--bg) 26%);
+  .sticky-save{position:sticky;bottom:var(--statusH);background:linear-gradient(transparent,var(--bg) 26%);
                padding:18px 0 8px;display:flex;gap:11px;align-items:center;margin-top:20px;z-index:4}
 
   /* ── الأدوات ── */
@@ -588,27 +592,27 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=e77937ec";
+import { FolderStore } from "./storage.js?v=eadf9218";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=e77937ec";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=e77937ec";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=e77937ec";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=e77937ec";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=e77937ec";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=eadf9218";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=eadf9218";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=eadf9218";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=eadf9218";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=eadf9218";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=e77937ec";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=e77937ec";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=eadf9218";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=eadf9218";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=e77937ec";
-import { surveyLink, extractCodes } from "./survey.js?v=e77937ec";
+         fullBackup } from "./vault.js?v=eadf9218";
+import { surveyLink, extractCodes } from "./survey.js?v=eadf9218";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=e77937ec";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=eadf9218";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=e77937ec";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=eadf9218";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
