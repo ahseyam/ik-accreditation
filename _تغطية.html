@@ -11,7 +11,12 @@ const [records, support, school] = await Promise.all([
   store.readJson("بيانات/support.json"),
   store.readJson("بيانات/school.json"),
 ]);
+const ROLE_AR = { PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",
+  SCHOOL_AFFAIRS_VP: "وكيل الشؤون المدرسية", STUDENT_AFFAIRS_VP: "وكيل شؤون الطلاب",
+  STUDENT_COUNSELOR: "الموجه الطلابي", ACTIVITIES_LEADER: "رائد النشاط",
+  HEALTH_COUNSELOR: "الموجه الصحي", MONITOR: "المراقب" };
 const ctx = { store, support, school, person: { fullName: "فاحص" }, roleAr: "فاحص",
+              roleArFn: (r) => ROLE_AR[r] || r || "—",
               evidenceDir: "مخرجات/_فحص/شواهد", savedEntries: {} };
 const sink = document.getElementById("sink");
 let rendered = 0, failed = [];

@@ -54,7 +54,7 @@ export default {
       return json({ count: out.length, responses: out });
     }
 
-    return json({ ok: true, service: "استقبال استبانات مساحة الاعتماد" });
+    return json({ ok: true, service: "استقبال استبانات الاعتماد الخارجي" });
   },
 };
 

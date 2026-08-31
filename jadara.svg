@@ -1,0 +1,33 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="جدارة">
+  <defs>
+    <linearGradient id="jdBg" x1="40" y1="32" x2="472" y2="488" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0a93ff"/>
+      <stop offset="0.55" stop-color="#006fdc"/>
+      <stop offset="1" stop-color="#0058b1"/>
+    </linearGradient>
+    <linearGradient id="jdSheen" x1="256" y1="0" x2="256" y2="320" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="jdStar" x1="348" y1="76" x2="436" y2="164" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4ade80"/>
+      <stop offset="1" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- squircle خلفية -->
+  <rect width="512" height="512" rx="116" fill="url(#jdBg)"/>
+  <rect width="512" height="512" rx="116" fill="url(#jdSheen)"/>
+
+  <!-- الخط الصاعد + علامة الصح (بناء الخطة → التقدّم → التحقّق) -->
+  <path d="M126 292 L210 374 L394 176" fill="none"
+        stroke="#ffffff" stroke-width="48" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- نقاط أساس صاعدة خفيفة (مراحل الخطة) -->
+  <circle cx="126" cy="292" r="13" fill="#ffffff" fill-opacity="0.55"/>
+  <circle cx="210" cy="374" r="13" fill="#ffffff" fill-opacity="0.55"/>
+
+  <!-- نجمة التميّز/الاعتماد عند القمة -->
+  <path d="M394 78 L409 107 L438 122 L409 137 L394 166 L379 137 L350 122 L379 107 Z"
+        fill="url(#jdStar)"/>
+</svg>

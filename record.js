@@ -1,3 +1,4 @@
+import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js";
 import { derive, seedRows } from "./autofill.js";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
@@ -341,11 +342,75 @@ function recurringTable(field, state, ctx) {
   return wrap;
 }
 
+/* ── شريط تنسيق عربي عائم: غامق · تحته خطّ · توسيط · لون ──
+   يظهر فوق الخلية المحرَّرة، ويعمل من اليمين لليسار كبقية الواجهة. */
+let RICH_BAR = null, RICH_TARGET = null;
+function richBar() {
+  if (RICH_BAR) return RICH_BAR;
+  const bar = el("div", "rich-bar hidden");
+  const mk = (label, title, fn) => {
+    const b = el("button", "rb", label);
+    b.type = "button"; b.title = title;
+    b.onmousedown = (e) => { e.preventDefault(); fn(); };
+    return b;
+  };
+  const cmd = (c, v) => { RICH_TARGET?.focus(); document.execCommand(c, false, v); syncRich(); };
+  bar.append(
+    mk("غ", "غامق", () => cmd("bold")),
+    mk("تحته خطّ", "تحته خطّ", () => cmd("underline")),
+    mk("توسيط", "توسيط النصّ", () => cmd("justifyCenter")),
+    mk("يمين", "محاذاة لليمين", () => cmd("justifyRight")),
+  );
+  for (const [name, color] of [["أخضر", "#155e4e"], ["ذهبي", "#a97c1f"], ["أحمر", "#a32b22"], ["أسود", "#122a25"]]) {
+    bar.append(mk("●", name, () => cmd("foreColor", color)));
+    bar.lastChild.style.color = color;
+  }
+  bar.append(mk("مسح", "إزالة التنسيق", () => cmd("removeFormat")));
+  document.body.append(bar);
+  RICH_BAR = bar;
+  return bar;
+}
+function syncRich() {
+  if (!RICH_TARGET) return;
+  const { state, key } = RICH_TARGET._bind || {};
+  if (state) state[key] = RICH_TARGET.innerHTML;
+}
+function placeBar(elm) {
+  const bar = richBar();
+  const r = elm.getBoundingClientRect();
+  bar.classList.remove("hidden");
+  bar.style.top = (window.scrollY + r.top - 44) + "px";
+  bar.style.insetInlineEnd = (document.documentElement.clientWidth - r.right) + "px";
+}
+
+/** خلية نصّية غنيّة — تحلّ محلّ TEXTAREA حيث يلزم التنسيق */
+function richCell(field, state, key) {
+  const k = key ?? field.key ?? field.id;
+  const d = el("div", "f-in rich");
+  d.contentEditable = "true";
+  d.dir = "rtl";
+  d.innerHTML = state[k] ?? "";
+  d._bind = { state, key: k };
+  d.addEventListener("focus", () => { RICH_TARGET = d; placeBar(d); });
+  d.addEventListener("input", syncRich);
+  d.addEventListener("blur", () => {
+    syncRich();
+    setTimeout(() => { if (RICH_TARGET === d) { RICH_BAR?.classList.add("hidden"); RICH_TARGET = null; } }, 150);
+  });
+  return d;
+}
+
+/** أي حقول تستحقّ التنسيق: بنود الأعمال والتوصيات والمناقشات */
+const RICH_HINT = /بند|المناقشة|مناقشة|التوصي|توصي|القرار|قرار|ما لم يُنَفَّذ|لم ينفذ|أسباب|الموضوع/;
+const isRich = (c) => (c.type === "TEXTAREA" || c.type === "TEXT") &&
+  RICH_HINT.test(String(c.label ?? "") + " " + String(c.key ?? ""));
+
 /** عناصر التحكم داخل خلايا الجدول — نفس الأنواع لكن بلا عنوان */
 function columnControl(col, row, ctx, parent) {
   const f = { ...col, key: col.key };
   switch (col.type) {
     case "TEXTAREA": {
+      if (isRich(col)) return richCell(f, row, col.key);
       const t = el("textarea", "f-in sm");
       t.rows = 2;
       return bindValue(t, f, row, col.key);
@@ -366,7 +431,7 @@ function columnControl(col, row, ctx, parent) {
       return signaturePad(f, row, col.key);
     case "FILE": return filesInput(f, row, ctx, col.key, false);
     case "FILES": return filesInput(f, row, ctx, col.key, true);
-    default: return textInput("text", f, row, col.key);
+    default: return isRich(col) ? richCell(f, row, col.key) : textInput("text", f, row, col.key);
   }
 }
 
@@ -381,37 +446,99 @@ function lookupOptions(field, ctx) {
   return pool.map((e) => e.data?.[from]).filter(Boolean);
 }
 
-/** جدول مربوط تلقائيًا — عرض فقط، من البرامج أو الإدخالات المحفوظة */
-function autoLinkedTable(field, ctx) {
+/* ⚠️ **الجداول «المرتبطة تلقائيًا» أُعيد تصميمها**. كانت تعرض «لا بيانات مرتبطة
+   بعد — تظهر تلقائيًا حين تُعبَّأ في مصدرها»، وهذا إخفاء لارتباط مكسور: المشروع
+   منفصل عن جدارة فلا ضامن لأي جلب حيّ. صارت **تُبذَر من بيانات الحزمة نفسها ثم
+   تُحرَّر** — فتؤدّي غرضها ولا تظهر فارغة أبدًا. */
+function pickCol(cols, ...res) {
+  for (const re of res) {
+    const c = cols.find((x) => re.test(String(x.key ?? "")) || re.test(String(x.label ?? "")));
+    if (c) return c;
+  }
+  return null;
+}
+
+function seedLinkedRows(field, ctx) {
+  // ⚠️ لا يُفترض وجود roleArFn في السياق: الحارس يمرّر سياقًا مختصرًا فانهار
+  //    البذر في سجلَّي لجنتين. تُشتقّ محليًا مع بديل آمن.
+  const roleArFn = ctx.roleArFn || ctx.roleAr && typeof ctx.roleAr === "function"
+    ? (ctx.roleArFn || ctx.roleAr) : (r) => String(r ?? "");
+  ctx = { ...ctx, roleArFn };
   const cfg = field.autoLoad ?? {};
+  const src = String(cfg.source ?? "");
   const cols = field.columns ?? [];
-  let rows = [];
-  if (String(cfg.source ?? "").startsWith("PlanAction")) {
-    rows = (ctx.support?.actions ?? [])
+  const key = cfg.whereKey || ctx.committeeKey;
+  const committee = (ctx.support?.committees ?? []).find((c) => c.key === key)
+                 ?? (ctx.support?.committees ?? [])[0];
+  const members = committee?.members ?? [];
+  const nameC = pickCol(cols, /name|الاسم|العضو/i);
+  const roleC = pickCol(cols, /role|الصفة|المنصب|الوظيفة/i);
+
+  if (src === "SchoolCommittee.members") {
+    return members.map((m) => ({
+      [nameC?.key ?? "name"]: m.fullName || "",
+      ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
+    }));
+  }
+  if (src === "CommitteeMeeting.attendances") {
+    const statusC = pickCol(cols, /status|الحضور|حالة/i);
+    return members.map((m) => ({
+      [nameC?.key ?? "name"]: m.fullName || "",
+      ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
+      ...(statusC ? { [statusC.key]: "حاضر" } : {}),
+    }));
+  }
+  if (src === "MeetingSignature") {
+    return members.map((m) => ({
+      [nameC?.key ?? "name"]: m.fullName || "",
+      ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
+    }));
+  }
+  if (src === "CommitteeMeeting.agendaItems") {
+    const textC = pickCol(cols, /text|البند|الموضوع|المناقشة/i) ?? cols[1] ?? cols[0];
+    const numC = pickCol(cols, /^n$|num|م$|رقم/i);
+    const items = agendaForMeeting(committee, ctx.meeting, ctx.meetings?.length ?? 1);
+    return items.map((it) => ({
+      ...(numC ? { [numC.key]: it.n } : {}),
+      [textC?.key ?? "text"]: it.text,
+    }));
+  }
+  if (src.startsWith("PlanAction")) {
+    const acts = (ctx.support?.actions ?? [])
       .filter((a) => !cfg.templateNumber || a.recordTemplateNumber === cfg.templateNumber)
-      .slice(0, 200);
-  } else if (String(cfg.source ?? "").startsWith("RecordEntry@")) {
-    const n = Number(String(cfg.source).split("@")[1]);
-    rows = (ctx.savedEntries?.[n] ?? []).flatMap((e) => e.data?.[cfg.field] ?? []);
+      .slice(0, 60);
+    return acts.map((a) => {
+      const row = {};
+      for (const c of cols) {
+        const k = String(c.key ?? "");
+        row[k] = a[k] ?? (Array.isArray(a[k]) ? a[k].join("، ") : "") ?? "";
+        if (k === "name") row[k] = a.name;
+        if (/responsible|مسؤول/i.test(k)) row[k] = (a.mainResponsibleRoles || []).map(ctx.roleArFn).join("، ");
+      }
+      return row;
+    });
   }
-  const wrap = el("div", "table-wrap");
-  if (rows.length === 0) {
-    wrap.append(el("div", "warn sm", "لا بيانات مرتبطة بعد — تظهر تلقائيًا حين تُعبَّأ في مصدرها."));
-    return wrap;
+  if (src.startsWith("RecordEntry@")) {
+    const n = Number(src.split("@")[1]);
+    const rows = (ctx.savedEntries?.[n] ?? []).flatMap((e) => e.data?.[cfg.field] ?? []);
+    return rows.length ? rows : null;
   }
-  const table = el("table", "rec-table ro");
-  const htr = el("tr");
-  for (const c of cols) htr.append(el("th", null, c.label ?? c.key));
-  const thead = el("thead"); thead.append(htr);
-  const tbody = el("tbody");
-  for (const r of rows) {
-    const tr = el("tr");
-    for (const c of cols) tr.append(el("td", null, String(r[c.key] ?? "—")));
-    tbody.append(tr);
+  return null;
+}
+
+/** جدول كان «مرتبطًا» — يُبذَر بما نعرفه ثم يُحرَّر كأي جدول */
+function linkedTable(field, state, ctx) {
+  const k = field.key ?? field.id;
+  if (!state[k]) {
+    const seeded = seedLinkedRows(field, ctx);
+    state[k] = seeded && seeded.length ? seeded
+             : Array.from({ length: field.initialRows ?? 3 }, () => ({}));
   }
-  table.append(thead, tbody);
-  wrap.append(table);
-  return wrap;
+  const box = el("div");
+  const seededNote = el("div", "note sm",
+    "عُبِّئ مبدئيًا من بيانات مدرستك — راجعه وعدّله كما تريد، وأضف صفوفًا عند الحاجة.");
+  box.append(seededNote, recurringTable({ ...field, allowAddRows: true }, state, ctx));
+  return box;
 }
 
 /** قسم مكرر — مجموعة حقول تتكرر كعناصر */
@@ -434,7 +561,7 @@ function repeatingSection(field, state, ctx) {
       rm.onclick = () => { state[k].splice(i, 1); draw(); };
       head.append(rm);
       card.append(head);
-      for (const sub of field.fields ?? []) card.append(renderField(sub, item, ctx));
+      for (const sub of field.fields ?? []) card.append(renderField(sub, item, { ...ctx, insideRepeat: true }));
       wrap.append(card);
     });
     const add = el("button", "btn-ghost sm", "+ إضافة عنصر");
@@ -483,6 +610,26 @@ function richText(t) {
   return frag;
 }
 
+/* ⚠️ تدرّج بصري بثلاث مراتب — العناوين في القوالب ليست سواءً:
+   524 عنوانًا مزخرفًا بـ«═══» (رئيسي) · 151 عاديًا (فرعي) · 12 داخل أقسام
+   متكرّرة (ثانوي). كانت كلها تُرسم بنمط واحد فتضيع الهرمية، وتظهر الزخرفة
+   «═══» نصًّا خامًا. الآن: تُنزع الزخرفة وتُترجَم إلى **مرتبة ولون**. */
+function headingLevel(label) {
+  const l = String(label ?? "").trim();
+  if (/^═+/.test(l)) return 1;
+  if (/^[▪▫◾•▸]/.test(l) || /^\d️⃣/.test(l)) return 2;
+  return 2;
+}
+const stripDecor = (l) => String(l ?? "").replace(/^[═\s]+|[═\s]+$/g, "").trim();
+
+function sectionHeader(field, ctx) {
+  const raw = interpolate(field.label ?? "", interpScope(0));
+  const lvl = ctx?.insideRepeat ? 3 : headingLevel(raw);
+  const h = el(lvl === 1 ? "h3" : "h4", "sec lvl" + lvl);
+  h.append(el("span", "sec-mark"), el("span", "sec-t", arabizeText(stripDecor(raw))));
+  return h;
+}
+
 function infoBox(field) {
   const c = field.content;
   const has = Array.isArray(c) ? c.length > 0 : typeof c === "string" ? c.trim() !== "" : false;
@@ -503,7 +650,7 @@ function infoBox(field) {
 
 /* ── سجلّ المعالجات: مفتاح النوع ⇐ دالة ── */
 export const HANDLERS = {
-  SECTION_HEADER: (f) => el("h3", "sec", interpolate(f.label ?? "", interpScope(0))),
+  SECTION_HEADER: (f, s, ctx) => sectionHeader(f, ctx),
   INFO_BOX: (f) => infoBox(f),
   INFO_BLOCK: (f) => infoBox(f),
   COLOR_LEGEND: (f) => {
@@ -530,6 +677,7 @@ export const HANDLERS = {
   BOOLEAN: (f, s) => box(f, textInput("checkbox", f, s)),
   STUDENT_NAME: (f, s) => box(f, textInput("text", f, s)),
   TEXTAREA: (f, s) => {
+    if (isRich(f)) return box(f, richCell(f, s));
     const t = el("textarea", "f-in");
     t.rows = f.rows ?? 3;
     return box(f, bindValue(t, f, s));
@@ -565,7 +713,7 @@ export const HANDLERS = {
   FILES: (f, s, ctx) => box(f, filesInput(f, s, ctx, null, true)),
   RECURRING_LOG: (f, s, ctx) => box(f, recurringTable(f, s, ctx)),
   REPEATING_SECTION: (f, s, ctx) => box(f, repeatingSection(f, s, ctx)),
-  AUTO_LINKED_TABLE: (f, s, ctx) => box(f, autoLinkedTable(f, ctx)),
+  AUTO_LINKED_TABLE: (f, s, ctx) => box(f, linkedTable(f, s, ctx)),
   DUTY_ROSTER_LIST: (f, s, ctx) => box(f, dutyRoster(f, s, ctx)),
 };
 

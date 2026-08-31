@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>مساحة الاعتماد المدرسي</title>
+<title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
 <style>
   @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;
@@ -63,8 +63,7 @@
   .nav.hidden{display:none}
   .nav .brand{display:flex;align-items:center;gap:11px;padding:20px 18px 16px;
               border-bottom:1px solid rgba(255,255,255,.1)}
-  .nav .brand .mono{width:38px;height:38px;flex:none;border-radius:10px;display:grid;place-items:center;
-    font-size:15px;font-weight:700;color:var(--brand-ink);background:var(--gold-bright);
+  .nav .brand .jd{width:40px;height:40px;flex:none;border-radius:11px;display:block;
     box-shadow:0 3px 10px -4px rgba(0,0,0,.5)}
   .nav .brand b{color:var(--gold-bright);font-size:15.5px;line-height:1.35;display:block}
   .nav .brand span{font-size:11.5px;opacity:.72}
@@ -218,8 +217,21 @@
   .f-in:focus{outline:2px solid var(--brand-2);outline-offset:-1px;border-color:transparent}
   .f-in.sm{padding:6px 9px;font-size:13.5px}
   input.f-in[type=checkbox]{width:20px;height:20px;accent-color:var(--brand)}
-  h3.sec{font-size:15px;margin:28px 0 13px;padding-bottom:8px;color:var(--brand);
-         border-bottom:2px solid var(--brand-soft)}
+  /* ── تدرّج العناوين داخل السجلات ── */
+  .sec{display:flex;align-items:center;gap:9px;font-weight:700}
+  .sec .sec-mark{flex:none;border-radius:2px}
+  .sec.lvl1{font-size:16.5px;color:var(--brand);margin:30px 0 14px;padding-bottom:9px;
+            border-bottom:2px solid var(--brand-soft)}
+  .sec.lvl1 .sec-mark{width:9px;height:9px;transform:rotate(45deg);background:var(--gold)}
+  .sec.lvl2{font-size:14.8px;color:var(--brand-2);margin:22px 0 11px;padding-inline-start:11px;
+            border-inline-start:3px solid var(--brand-soft)}
+  .sec.lvl2 .sec-mark{display:none}
+  .sec.lvl3{font-size:13.8px;color:var(--gold);margin:16px 0 9px;letter-spacing:.2px}
+  .sec.lvl3 .sec-mark{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+  html[data-theme="dark"] .sec.lvl3{color:var(--gold-bright)}
+  /* الحقول: العنوان أغمق من الشرح، والقيمة أوضح من الاثنين */
+  .f-label{color:var(--ink)}
+  .f-help{color:var(--ink-2)}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm);padding:9px;background:#fbfdfc}
   table.rec-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
   table.rec-table th{background:#f4f8f7;font-size:12.5px;padding:8px;white-space:nowrap;position:static}
@@ -325,6 +337,18 @@
                        background:var(--brand-soft);color:var(--brand)}
   details.tree table{border-top:1px solid var(--line)}
   .sig-bar{display:flex;gap:9px;align-items:center;margin-top:9px;flex-wrap:wrap}
+  /* شريط التنسيق العائم */
+  .rich-bar{position:absolute;z-index:30;display:flex;gap:4px;background:var(--brand-ink);
+            border-radius:9px;padding:5px 7px;box-shadow:0 8px 24px -10px rgba(0,0,0,.6)}
+  .rich-bar .rb{background:rgba(255,255,255,.10);color:#eaf5f1;border:0;border-radius:6px;
+                padding:5px 10px;font-size:12.5px;font-weight:700;line-height:1;cursor:pointer}
+  .rich-bar .rb:hover{background:rgba(255,255,255,.24)}
+  .f-in.rich{min-height:38px;line-height:1.7;overflow-wrap:anywhere}
+  .f-in.rich:empty::before{content:"اكتب هنا…";color:var(--ink-2)}
+  /* إخراج المحضر */
+  .meeting-scope{border-inline-start:3px solid var(--gold);margin-top:10px}
+  h3.sec.meeting{text-align:center;color:var(--brand);font-size:16.5px;border-bottom:0;
+                 border-top:2px solid var(--brand-soft);padding-top:12px}
   .hidden{display:none!important}
   @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
 </style>
@@ -333,8 +357,8 @@
 <div class="app">
   <aside class="nav hidden" id="nav">
     <div class="brand">
-      <div class="mono">اع</div>
-      <div><b>مساحة الاعتماد</b><span>السجلات والشواهد</span></div>
+      <img class="jd" src="jadara.svg" alt="جدارة">
+      <div><b>الاعتماد الخارجي</b><span>السجلات والشواهد</span></div>
     </div>
     <menu id="navMenu"></menu>
     <div class="foot"><b id="navWho">—</b><span id="navRole">—</span>
@@ -365,7 +389,7 @@
 
       <section id="screenConnect" class="card">
         <h1>الاتصال بمساحة مدرستك</h1>
-        <p class="sub">اختر مجلد «مساحة الاعتماد» الذي شاركه معك مدير المدرسة على OneDrive.
+        <p class="sub">اختر مجلد «الاعتماد الخارجي» الذي شاركه معك مدير المدرسة على OneDrive.
            تختاره مرّة واحدة فقط، ثم يتذكّره المتصفّح.</p>
         <div id="connectBody"></div>
       </section>
@@ -504,6 +528,7 @@ import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          loadSignature, saveSignature } from "./app.js";
 import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js";
 import { fillContext, currentWeek, semesterLabel } from "./autofill.js";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js";
 import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
          rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js";
@@ -560,9 +585,9 @@ function renderConnect(state) {
     return;
   }
   box.innerHTML =
-    '<button class="b-main" id="pickBtn">اختر مجلد مساحة الاعتماد</button>' +
+    '<button class="b-main" id="pickBtn">اختر مجلد الاعتماد الخارجي</button>' +
     '<div class="note" style="margin-top:18px">لم يشارك المدير المجلد معك بعد؟ اطلب منه ' +
-    'مشاركة مجلد «مساحة الاعتماد» من OneDrive، ثم أضِفه باختصار إلى ملفاتك ليُزامَن على جهازك.</div>' +
+    'مشاركة مجلد «الاعتماد الخارجي» من OneDrive، ثم أضِفه باختصار إلى ملفاتك ليُزامَن على جهازك.</div>' +
     '<div id="connectErr" style="margin-top:14px"></div>';
   $("pickBtn").onclick = async () => {
     try { await start(await FolderStore.pick()); }
@@ -855,9 +880,21 @@ async function openRecord(number, entryId) {
   $("recGuide").append(buildGuide(recTemplate, { roleArFn: roleAr }));
 
   const before = UNSUPPORTED.length;
+  // سياق اللجان: مفتاح اللجنة من القالب، وجدول اجتماعاتها بالثلاثاءات
+  const cKey = recTemplate.formFields?.committeeKey ||
+    (recTemplate.formFields?.fields || []).map((f) => f.autoLoad?.whereKey).find(Boolean) || null;
+  const committee = (bundle.support?.committees || []).find((c) => c.key === cKey);
+  const meetings = committee ? committeeMeetings(bundle.support.weeks, committee.meetingFrequency) : [];
+  const meeting = meetings.length ? nextMeeting(meetings) : null;
+  if (committee && meeting) {
+    $("recMeta").textContent += " · " + meetingTitle(meeting, committee.nameAr);
+    $("recGuide").insertAdjacentHTML("beforeend",
+      '<div class="note sm meeting-scope"><b>نطاق هذا الاجتماع:</b> ' + esc(meetingScope(meeting)) + "</div>");
+  }
   renderRecordForm($("recForm"), recTemplate, recState, {
     store, support: bundle.support, school: bundle.school, person: me,
-    roleAr: roleAr(me.role), savedEntries: {},
+    roleAr: roleAr(me.role), roleArFn: roleAr, savedEntries: {},
+    committeeKey: cKey, committee, meetings, meeting,
     evidenceDir: evidenceDir(me, number, recEntryId),
   });
   if (UNSUPPORTED.length > before)
