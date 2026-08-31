@@ -1,4 +1,4 @@
-import { FolderStore, HttpStore, safeName } from "./storage.js?v=5d4cd3e4";
+import { FolderStore, HttpStore, safeName } from "./storage.js?v=960143df";
 
 export const ROLE_AR = {
   PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",
@@ -106,7 +106,7 @@ export async function openSource({ dataUrl } = {}) {
 }
 
 export async function loadBundle(store) {
-  const [manifest, school, roster, records, tools, results, support, improvement] = await Promise.all([
+  const [manifest, school, roster, records, tools, results, support, improvement, exec] = await Promise.all([
     store.readJson("manifest.json"),
     store.readJson("بيانات/school.json"),
     store.readJson("بيانات/roster.json"),
@@ -115,8 +115,9 @@ export async function loadBundle(store) {
     store.readJson("بيانات/results.json"),
     store.readJson("بيانات/support.json"),
     store.readJson("بيانات/تحسين.json"),
+    store.readJson("بيانات/تنفيذية.json"),
   ]);
-  return { manifest, school, roster, records, tools, results, support, improvement };
+  return { manifest, school, roster, records, tools, results, support, improvement, exec };
 }
 
 /** إثبات مسار الكتابة: يُسجّل اتصال الشخص في مجلده */
@@ -238,3 +239,6 @@ export async function saveSignature(store, person, dataUrl) {
   await store.writeJson(signaturePath(person), rec);
   return rec;
 }
+
+/** خطتي التنفيذية المحرَّرة — تُحفظ في مجلد الوظيفة فتنتقل مع شاغلها */
+export const execPlanPath = (person) => personFolder(person) + "/خطتي التنفيذية.json";

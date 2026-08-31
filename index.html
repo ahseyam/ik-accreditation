@@ -353,6 +353,8 @@
   .meeting-scope{border-inline-start:3px solid var(--gold);margin-top:10px}
   h3.sec.meeting{text-align:center;color:var(--brand);font-size:16.5px;border-bottom:0;
                  border-top:2px solid var(--brand-soft);padding-top:12px}
+  details.exec-w>summary{background:var(--panel);color:var(--ink)}
+  details.exec-w[open]>summary{background:var(--brand-soft);color:var(--brand)}
   .hidden{display:none!important}
   @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
 </style>
@@ -493,6 +495,23 @@
         <div class="card"><h2>البرامج التحسينية المعتمدة (نافِس)</h2><div id="impPrograms"></div></div>
       </section>
 
+      <section id="screenExec" class="hidden">
+        <div class="rowhead">
+          <div class="sp"><h1>خطتي التنفيذية</h1><div class="muted" id="execMeta"></div></div>
+          <select class="f-in" id="execSem" style="width:auto">
+            <option value="1">الفصل الأول</option><option value="2">الفصل الثاني</option>
+          </select>
+          <button class="b-ghost b-sm" id="execPrint">🖨️ طباعة</button>
+        </div>
+        <div class="note" style="margin-bottom:16px">مهامك الأسبوعية مأخوذة من خطة مدرستك.
+          عدّل ما تشاء وأضف مهامك، وسجّل التنفيذ أسبوعًا بأسبوع — ويُحفظ في مجلدك.</div>
+        <div id="execWeeks"></div>
+        <div class="sticky-save">
+          <button class="b-main" id="execSave">حفظ خطتي</button>
+          <span class="muted" id="execStat"></span>
+        </div>
+      </section>
+
       <section id="screenVault" class="hidden">
         <h1>مستودع المدرسة</h1>
         <p class="sub" id="vaultSub"></p>
@@ -523,36 +542,36 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=5d4cd3e4";
+import { FolderStore } from "./storage.js?v=960143df";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature } from "./app.js?v=5d4cd3e4";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=5d4cd3e4";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=5d4cd3e4";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=5d4cd3e4";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=5d4cd3e4";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=960143df";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=960143df";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=960143df";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=960143df";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=960143df";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js?v=5d4cd3e4";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=5d4cd3e4";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js?v=960143df";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=960143df";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=5d4cd3e4";
-import { surveyLink, extractCodes } from "./survey.js?v=5d4cd3e4";
+         fullBackup } from "./vault.js?v=960143df";
+import { surveyLink, extractCodes } from "./survey.js?v=960143df";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=5d4cd3e4";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=960143df";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const show = (id, on) => $(id).classList.toggle("hidden", !on);
 const SCREENS = ["screenConnect","screenWho","screenDash","screenRecords","screenRecord",
-                 "screenTools","screenTool","screenImp","screenPlans","screenVault"];
+                 "screenTools","screenTool","screenImp","screenPlans","screenVault","screenExec"];
 const SCREEN_TITLE = {
   screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
   screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
   screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية", screenWho: "منسوبو المدرسة",
-  screenVault: "مستودع المدرسة",
+  screenVault: "مستودع المدرسة", screenExec: "خطتي التنفيذية",
 };
 let activeScreen = "screenConnect";
 function only(id){
@@ -713,6 +732,9 @@ const NAV = [
   { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(), count: () => myTools.length },
   { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => openImprovement(),
     when: () => canSeeImprovement(me.role, bundle.support) },
+  { id: "exec", ic: "✎", label: "خطتي التنفيذية", go: () => goExec(),
+    count: () => (bundle.exec?.byRole?.[me.role] || []).length,
+    when: () => (bundle.exec?.byRole?.[me.role] || []).length > 0 },
   { id: "plans", ic: "▥", label: "الخطط المرجعية", go: () => goPlans() },
   { id: "vault", ic: "🗄", label: "مستودع المدرسة", go: () => goVault(),
     when: () => me.role === "PRINCIPAL" || keeper?.id === me.id },
@@ -1335,6 +1357,83 @@ document.addEventListener("click", (e) => {
   if (!$("prefsPop").contains(e.target) && e.target !== $("prefsBtn")) $("prefsPop").classList.add("hidden");
   if (!$("searchBox").contains(e.target)) $("gresults").classList.add("hidden");
 });
+
+/* ── خطتي التنفيذية: 38 أسبوعًا قابلة للتحرير والحفظ ── */
+let execState = null;
+
+async function goExec() {
+  only("screenExec"); markNav("exec");
+  const mine = (bundle.exec?.byRole?.[me.role] || []);
+  if (!execState) {
+    try { execState = await store.readJson(execPlanPath(me)); }
+    catch { execState = { edits: {}, added: {}, done: {}, notes: {} }; }
+  }
+  const sem = Number($("execSem").value || 1);
+  const weeks = [...new Set(mine.filter((t) => t.semester === sem).map((t) => t.week))].sort((a, b) => a - b);
+  const cur = currentWeek(bundle.support?.weeks);
+  $("execMeta").textContent = mine.length + " مهمة عبر الفصلين · " + roleAr(me.role) +
+    (cur ? " · الأسبوع الحالي " + cur.weekNumber : "");
+
+  $("execWeeks").innerHTML = weeks.map((w) => {
+    const tasks = mine.filter((t) => t.semester === sem && t.week === w);
+    const isNow = cur && cur.semester === sem && cur.weekNumber === w;
+    const added = execState.added[sem + "-" + w] || [];
+    return '<details class="tree exec-w"' + (isNow ? " open" : "") + '><summary>' +
+      "الأسبوع " + w + (isNow ? '<span class="tag gold" style="margin-inline-start:9px">الأسبوع الحالي</span>' : "") +
+      '<span class="tag gray" style="margin-inline-start:9px">' + (tasks.length + added.length) + "</span></summary>" +
+      '<table><thead><tr><th style="width:38px">م</th><th>المهمة</th><th style="width:150px">المصدر</th>' +
+      '<th style="width:92px">التنفيذ</th><th>ملاحظات</th></tr></thead><tbody>' +
+      tasks.map((t, i) => {
+        const id = sem + "-" + w + "-" + t.order;
+        const val = execState.edits[id] ?? t.text;
+        return "<tr><td>" + (i + 1) + '</td><td><input class="f-in sm" data-edit="' + id + '" value="' +
+          esc(val) + '"></td><td class="muted">' + esc(t.rowLabel || t.source || "—") + "</td>" +
+          '<td><input type="checkbox" data-done="' + id + '"' + (execState.done[id] ? " checked" : "") + "></td>" +
+          '<td><input class="f-in sm" data-note="' + id + '" value="' + esc(execState.notes[id] ?? "") + '"></td></tr>';
+      }).join("") +
+      added.map((t, i) => {
+        const id = sem + "-" + w + "-x" + i;
+        return "<tr><td>+</td><td><input class=\"f-in sm\" data-add=\"" + sem + "|" + w + "|" + i +
+          '" value="' + esc(t) + '"></td><td class="muted">مهمة مضافة</td>' +
+          '<td><input type="checkbox" data-done="' + id + '"' + (execState.done[id] ? " checked" : "") + "></td>" +
+          '<td><input class="f-in sm" data-note="' + id + '" value="' + esc(execState.notes[id] ?? "") + '"></td></tr>';
+      }).join("") +
+      '</tbody></table><button class="b-ghost b-sm" data-addw="' + sem + "|" + w + '">+ مهمة في هذا الأسبوع</button></details>';
+  }).join("");
+
+  const bind = (attr, fn) => $("execWeeks").querySelectorAll("[data-" + attr + "]").forEach((el2) => {
+    const h = () => fn(el2.dataset[attr], el2);
+    el2.addEventListener(el2.type === "checkbox" ? "change" : "input", h);
+  });
+  bind("edit", (id, el2) => { execState.edits[id] = el2.value; });
+  bind("note", (id, el2) => { execState.notes[id] = el2.value; });
+  bind("done", (id, el2) => { execState.done[id] = el2.checked; });
+  bind("add", (k, el2) => {
+    const [sm, wk, i] = k.split("|");
+    (execState.added[sm + "-" + wk] ||= [])[+i] = el2.value;
+  });
+  $("execWeeks").querySelectorAll("[data-addw]").forEach((b) => {
+    b.onclick = () => {
+      const [sm, wk] = b.dataset.addw.split("|");
+      (execState.added[sm + "-" + wk] ||= []).push("");
+      goExec();
+    };
+  });
+}
+$("execSem").onchange = goExec;
+$("execSave").onclick = async () => {
+  $("execStat").textContent = "جارٍ الحفظ…";
+  try {
+    await store.writeJson(execPlanPath(me), {
+      ...execState, role: me.role, roleAr: roleAr(me.role), person: me.fullName,
+      school: bundle.school.nameAr, savedAt: new Date().toISOString(),
+    });
+    const bk = await backupEntry(store, { kind: "خطط تنفيذية", sourcePath: execPlanPath(me),
+      data: execState, person: me.fullName, roleAr: roleAr(me.role) });
+    $("execStat").textContent = "✅ حُفظت خطتك" + (bk.ok ? " · ونُسخت للمستودع" : "");
+  } catch (e) { $("execStat").textContent = "❌ " + e.message; }
+};
+$("execPrint").onclick = printCurrent;
 
 /* ── مستودع المدرسة ── */
 async function goVault() {
