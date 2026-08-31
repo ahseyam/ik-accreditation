@@ -109,6 +109,12 @@ export class FolderStore {
     await w.close();
   }
 
+  /** قراءة ملف ثنائي — تلزم النسخة الاحتياطية الكاملة */
+  async readBinary(relPath) {
+    const handle = await this._file(relPath);
+    return (await handle.getFile()).arrayBuffer();
+  }
+
   /** رابط عرض مؤقت لملف ثنائي (PDF مثلًا) — يُحرَّر بـ revokeObjectURL */
   async fileUrl(relPath) {
     const handle = await this._file(relPath);
@@ -146,6 +152,11 @@ export class HttpStore {
   async writeText(relPath, text) { this.written.set(relPath, text); }
   async writeJson(relPath, data) { await this.writeText(relPath, JSON.stringify(data, null, 1)); }
   async writeBinary(relPath, buf) { this.written.set(relPath, "[ثنائي " + buf.byteLength + " بايت]"); }
+  async readBinary(relPath) {
+    const r = await fetch(this._url(relPath));
+    if (!r.ok) throw new Error("تعذّر جلب " + relPath);
+    return r.arrayBuffer();
+  }
   async fileUrl(relPath) { return this._url(relPath); }
   /** يدمج فهرس الخادم مع ما كُتب في الذاكرة كي يتصرّف كالمجلد الحقيقي */
   async list(relPath = "") {

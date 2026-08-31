@@ -464,6 +464,22 @@
         <div class="card"><h2>البرامج التحسينية المعتمدة (نافِس)</h2><div id="impPrograms"></div></div>
       </section>
 
+      <section id="screenVault" class="hidden">
+        <h1>مستودع المدرسة</h1>
+        <p class="sub" id="vaultSub"></p>
+        <div class="kpi" id="vaultKpi"></div>
+        <div class="card"><h2>أمين المستودع</h2>
+          <div class="muted" style="margin-bottom:12px">تتجمّع عنده نسخة من كل ما يُدخِله التنفيذيون،
+            فلو حُذف مجلد أحدهم أو استقال قبل التسليم تبقى النسخة كاملة.</div>
+          <div id="vaultKeeper"></div></div>
+        <div class="card"><h2>نسخة كاملة تشمل الشواهد</h2>
+          <div class="muted" style="margin-bottom:12px">النسخ التلقائي يشمل الإدخالات فقط لخفّتها.
+            هذا الأمر ينسخ كذلك ملفات الشواهد الثنائية.</div>
+          <button class="b-main" id="vaultFull">تشغيل نسخة كاملة الآن</button>
+          <span class="muted" id="vaultStat" style="margin-inline-start:12px"></span></div>
+        <div class="card"><h2>آخر ما نُسخ</h2><div class="scroll" id="vaultItems"></div></div>
+      </section>
+
       <section id="screenPlans" class="hidden">
         <h1>الخطط المرجعية</h1>
         <p class="sub">الخطة التشغيلية للمدرسة وخطتك التنفيذية — نسخ PDF معتمدة.</p>
@@ -491,6 +507,8 @@ import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./pr
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
          rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js";
 import { scopeTools, canSeeImprovement } from "./scope.js";
+import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
+         fullBackup } from "./vault.js";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
          TOTAL_WEEKS, WEEKS_PER_SEMESTER } from "./improve.js";
 
@@ -498,11 +516,12 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const show = (id, on) => $(id).classList.toggle("hidden", !on);
 const SCREENS = ["screenConnect","screenWho","screenDash","screenRecords","screenRecord",
-                 "screenTools","screenTool","screenImp","screenPlans"];
+                 "screenTools","screenTool","screenImp","screenPlans","screenVault"];
 const SCREEN_TITLE = {
   screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
   screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
   screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية", screenWho: "منسوبو المدرسة",
+  screenVault: "مستودع المدرسة",
 };
 let activeScreen = "screenConnect";
 function only(id){
@@ -568,7 +587,7 @@ async function start(s) {
   await renderPeople();
 }
 
-let rosterOv = null, roster = [], mySignature = null;
+let rosterOv = null, roster = [], mySignature = null, settings = {}, keeper = null;
 
 async function renderPeople() {
   only("screenWho"); show("nav", false); show("searchBox", false); show("prefsBtn", false);
@@ -647,6 +666,8 @@ async function pick(person) {
   $("navWho").textContent = me.fullName || "—";
   $("navRole").textContent = roleAr(me.role);
   mySignature = await loadSignature(store, me);
+  settings = await loadSettings(store);
+  keeper = vaultKeeper(settings, roster);
   buildNav();
   show("nav", true);
   show("searchBox", true);
@@ -662,6 +683,8 @@ const NAV = [
   { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => openImprovement(),
     when: () => canSeeImprovement(me.role, bundle.support) },
   { id: "plans", ic: "▥", label: "الخطط المرجعية", go: () => goPlans() },
+  { id: "vault", ic: "🗄", label: "مستودع المدرسة", go: () => goVault(),
+    when: () => me.role === "PRINCIPAL" || keeper?.id === me.id },
 ];
 function buildNav() {
   const items = NAV.filter((n) => !n.when || n.when());
@@ -852,7 +875,11 @@ $("recSave").onclick = async () => {
       school: bundle.school.nameAr, academicYear: bundle.school.academicYear.greg,
       etecIndicators: recTemplate.etecIndicators, data: recState,
     });
-    $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA");
+    const bk = await backupEntry(store, { kind: "سجلات", sourcePath: entryPath(me, recTemplate.number, recEntryId),
+      data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
+      person: me.fullName, roleAr: roleAr(me.role) });
+    $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
+      (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");
   } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
 };
 $("recPrint").onclick = async () => {
@@ -1013,7 +1040,11 @@ $("toolSave").onclick = async () => {
       conductedBy: me.fullName, conductedByRole: me.role, school: bundle.school.nameAr,
       answers: toolState.answers, evidenceCounts: toolState.evidence,
     });
-    $("toolStatus").textContent = "✅ حُفظت (" + answered + " من " + total + " فقرة)";
+    const bk = await backupEntry(store, { kind: "تقويم", sourcePath: toolResponsePath(curTool.key, id),
+      data: { toolKey: curTool.key, responseId: id, answers: toolState.answers },
+      person: me.fullName, roleAr: roleAr(me.role) });
+    $("toolStatus").textContent = "✅ حُفظت (" + answered + " من " + total + " فقرة)" +
+      (bk.ok ? " · ونُسخت للمستودع" : "");
   } catch (e) { $("toolStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
 };
 
@@ -1185,6 +1216,50 @@ document.addEventListener("click", (e) => {
   if (!$("prefsPop").contains(e.target) && e.target !== $("prefsBtn")) $("prefsPop").classList.add("hidden");
   if (!$("searchBox").contains(e.target)) $("gresults").classList.add("hidden");
 });
+
+/* ── مستودع المدرسة ── */
+async function goVault() {
+  only("screenVault"); markNav("vault");
+  const idx = await vaultIndex(store);
+  const total = Object.values(idx.counts || {}).reduce((a, b) => a + b, 0);
+  $("vaultSub").textContent = "أمين المستودع: " + (keeper?.fullName || "—") +
+    " · آخر نسخ تلقائي: " + (idx.lastBackupAt ? new Date(idx.lastBackupAt).toLocaleString("ar-SA") : "لا يوجد");
+  $("vaultKpi").innerHTML = [
+    ["نسخ محفوظة", total],
+    ["إدخالات سجلات", (idx.counts || {})["سجلات"] || 0],
+    ["استجابات أدوات", (idx.counts || {})["تقويم"] || 0],
+    ["ملفات النسخة الكاملة", idx.fullBackupFiles || 0],
+  ].map(([l, v]) => '<div class="box"><div class="v">' + v + '</div><div class="l">' + esc(l) + "</div></div>").join("");
+
+  const canPick = me.role === "PRINCIPAL";
+  $("vaultKeeper").innerHTML = canPick
+    ? '<select class="f-in" id="keeperSel" style="max-width:380px">' +
+      roster.map((p) => '<option value="' + esc(p.id) + '"' + (keeper?.id === p.id ? " selected" : "") +
+        ">" + esc(p.fullName || "—") + " — " + esc(roleAr(p.role)) + "</option>").join("") +
+      "</select>"
+    : '<b>' + esc(keeper?.fullName || "—") + "</b> · " + esc(roleAr(keeper?.role));
+  if (canPick) $("keeperSel").onchange = async (e) => {
+    settings = await saveSettings(store, { vaultKeeperId: e.target.value });
+    keeper = vaultKeeper(settings, roster);
+    buildNav(); goVault();
+  };
+
+  const items = (idx.items || []).slice(-25).reverse();
+  $("vaultItems").innerHTML = items.length === 0
+    ? '<div class="warn" style="margin:0">لم يُنسخ شيء بعد — يبدأ النسخ تلقائيًا مع أول حفظ.</div>'
+    : "<table><thead><tr><th>النوع</th><th>المسار</th><th>الوقت</th></tr></thead><tbody>" +
+      items.map((x) => "<tr><td>" + esc(x.kind) + "</td><td>" + esc(x.dest) + "</td><td>" +
+        new Date(x.at).toLocaleString("ar-SA") + "</td></tr>").join("") + "</tbody></table>";
+}
+$("vaultFull").onclick = async () => {
+  $("vaultStat").textContent = "جارٍ النسخ…";
+  try {
+    const r = await fullBackup(store, (n) => { $("vaultStat").textContent = "نُسخ " + n + " ملفًا…"; });
+    $("vaultStat").textContent = "✅ " + r.files + " ملفًا" +
+      (r.errors ? " · تعذّر " + r.errors : "");
+    goVault();
+  } catch (e) { $("vaultStat").textContent = "❌ " + e.message; }
+};
 
 /* ── توقيعي: يُرسم مرّة ويُستدعى في كل موضع ── */
 function signatureModal() {
