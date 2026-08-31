@@ -158,6 +158,15 @@ export async function preparePrint(template, state, ctx) {
   /* ⚠️ **تحميل مسبق إلزامي**: الصور الثلاث مذكورة داخل «@media print» وحدها،
      فلا يجلبها المتصفّح قبل الطباعة — فتخرج الورقة بيضاء. قِسناه: أربع أوراق
      بيضاء تمامًا رغم صحّة الأنماط المحسوبة. الانتظار هنا هو العلاج لا التأخير. */
+  /* ⚠️ والخطّ مثل الصور تمامًا: «Al Jazeera Arabic» لا يُستعمل على الشاشة، فلا
+     يُحمِّله المتصفّح إلا عند أول رسم — وقد يفوت الطباعة فيسقط المطبوع إلى خطّ
+     النظام. قِسناه على الموقع المنشور: document.fonts.check = false. */
+  if (document.fonts?.load) {
+    await Promise.all([
+      document.fonts.load("400 14px 'Al Jazeera Arabic'"),
+      document.fonts.load("700 14px 'Al Jazeera Arabic'"),
+    ]).catch(() => {});
+  }
   await Promise.all([sheet, header, footer].map((src) => new Promise((res) => {
     const img = new Image();
     img.onload = img.onerror = () => res(src);
