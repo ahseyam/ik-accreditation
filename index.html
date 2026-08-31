@@ -63,7 +63,12 @@
   main{flex:1;min-width:0;display:flex;flex-direction:column}
   .bar{position:sticky;top:0;z-index:5;background:rgba(242,246,245,.92);backdrop-filter:blur(8px);
        border-bottom:1px solid var(--line);padding:13px 26px;display:flex;align-items:center;gap:14px}
-  .bar .crumb{font-size:13.5px;color:var(--ink-2)}
+  .bar .logos{display:flex;align-items:center;gap:11px;flex:none}
+  .bar .logos img{height:30px;width:auto;object-fit:contain}
+  .bar .logos img[alt="وزارة التعليم"]{height:34px}
+  .bar .divider{width:1px;height:22px;background:var(--line-2)}
+  .bar .crumb{font-size:13.5px;color:var(--ink-2);padding-inline-start:6px;
+              border-inline-start:1px solid var(--line-2)}
   .bar .crumb b{color:var(--ink)}
   .bar .sp{flex:1}
   .wrap{padding:26px 26px 64px;max-width:1180px;width:100%}
@@ -244,8 +249,16 @@
 
   <main>
     <div class="bar" id="topbar">
+      <div class="logos">
+        <img src="moe.png" alt="وزارة التعليم" title="وزارة التعليم">
+        <span class="divider"></span>
+        <img src="maarif.png" alt="شركة معارف للتعليم" title="شركة معارف للتعليم">
+        <span class="divider"></span>
+        <img src="ibn-khaldun-mark-240.webp" alt="مدارس ابن خلدون" title="مدارس ابن خلدون">
+      </div>
       <div class="crumb" id="ctx">مدارس ابن خلدون · السجلات والشواهد للتقويم الخارجي</div>
       <div class="sp"></div>
+      <button class="b-ghost b-sm hidden" id="printPage">🖨️ طباعة الصفحة</button>
     </div>
     <div class="wrap">
 
@@ -362,7 +375,7 @@ import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses } from "./app.js";
 import { renderRecordForm, UNSUPPORTED } from "./record.js";
-import { printRecord, preparePrint, printDocument } from "./print.js";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
          rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js";
 import { scopeTools, canSeeImprovement } from "./scope.js";
@@ -372,7 +385,30 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":
 const show = (id, on) => $(id).classList.toggle("hidden", !on);
 const SCREENS = ["screenConnect","screenWho","screenDash","screenRecords","screenRecord",
                  "screenTools","screenTool","screenImp","screenPlans"];
-function only(id){ for (const s of SCREENS) show(s, s === id); }
+const SCREEN_TITLE = {
+  screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
+  screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
+  screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية", screenWho: "منسوبو المدرسة",
+};
+let activeScreen = "screenConnect";
+function only(id){
+  for (const s of SCREENS) show(s, s === id);
+  activeScreen = id;
+  show("printPage", !!(store && bundle && me && SCREEN_TITLE[id]));
+}
+
+/* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
+async function printCurrent() {
+  const sec = document.getElementById(activeScreen);
+  if (!sec || !bundle) return;
+  const title = activeScreen === "screenRecord" ? $("recTitle").textContent
+              : activeScreen === "screenTool" ? $("toolTitle").textContent
+              : SCREEN_TITLE[activeScreen] || "مستند";
+  const sub = bundle.school.nameAr + " · العام " + bundle.school.academicYear.greg +
+              " · " + (me?.fullName || "") + " (" + roleAr(me?.role) + ")";
+  await printDocument(snapshotForPrint(sec, title, sub),
+    { store, school: bundle.school, person: me, roleAr: roleAr(me?.role) });
+}
 
 let store = null, bundle = null, me = null;
 let myRecords = [], myTools = [], recIndex = -1, toolIndex = -1;
@@ -839,6 +875,7 @@ $("impPrint").onclick = async () => {
 window.__preparePrint = () => preparePrint(recTemplate, recState, {
   store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId });
 
+$("printPage").onclick = printCurrent;
 $("switchUser").onclick = renderPeople;
 
 (async function boot() {

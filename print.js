@@ -190,7 +190,10 @@ function printCss(o) {
     ".print-root{display:none}",
     "@media print{",
     "  @page{size:A4 portrait;margin:0}",
-    "  body>.wrap,body>.status{display:none!important}",
+    /* ⚠️ يجب أن يطابق هذا المُحدِّد بنية الصفحة الحالية. بعد إعادة البناء صار
+       المتن داخل «.app > main > .wrap» فلم يعد «body>.wrap» يطابق شيئًا،
+       فطُبعت الواجهة كلها **فوق الكليشة**. قِيس: تطابق الترويسة 44% بدل 84%. */
+    "  .app,.status{display:none!important}",
     /* ⚠️ الخلفية على «html وbody» معًا لا على الجذر وحده. قِسناه: بالجذر وحده
        تظهر الكليشة في لقطة وسيط الطباعة لكن **تخرج الأوراق بيضاء تمامًا** من
        page.pdf — خلفية الجذر تُنقَل إلى القُماشة ولا تُرسَم في المطبوع. وبإضافة
@@ -231,6 +234,33 @@ function printCss(o) {
     "  table.p-table tr{break-inside:avoid}",
     "  img.p-sig{max-height:22mm;display:block}",
     "  ul.p-files{margin:2px 0;padding-inline-start:18px;font-size:10pt}",
+    // أنماط عامة لأي شاشة تُلتقط للطباعة
+    "  .p-doc .card,.p-doc .tile,.p-doc .kpi .box,.p-doc .prog,.p-doc .item-card,.p-doc .tool-row{",
+    "       border:0.75pt solid #c6d5d1;border-radius:4pt;padding:7pt 9pt;margin-bottom:7pt;",
+    "       box-shadow:none;background:transparent;break-inside:avoid}",
+    "  .p-doc .card::before,.p-doc .tile::before,.p-doc .kpi .box::before,",
+    "  .p-doc .prog::before,.p-doc .tool-row::before,.p-doc .tile::after{display:none}",
+    "  .p-doc .kpi{display:flex;flex-wrap:wrap;gap:6pt}",
+    "  .p-doc .kpi .box{min-width:96pt}",
+    "  .p-doc .tile .n,.p-doc .kpi .box .v{font-size:15pt;font-weight:700;color:#155e4e}",
+    /* ⚠️ الجداول العريضة تفيض خارج متن الورقة فتغطّي الكليشة بالأبيض.
+       قِسناه: 4 أوراق من 13 فشلت في حارس الكليشة. table-layout ثابت + كسر
+       الكلمة يبقيان الجدول داخل المتن. */
+    "  .p-doc table{width:100%;max-width:100%;border-collapse:collapse;font-size:8.5pt;",
+    "       margin-bottom:7pt;table-layout:fixed;word-break:break-word;overflow-wrap:anywhere}",
+    "  .p-doc{overflow:hidden}",
+    /* ⚠️ قاعدة كاسحة: أي خلفية بيضاء موروثة من أنماط الشاشة تطمس الكليشة.
+       تُصفَّر كلها ثم تُعاد الألوان المقصودة وحدها (ترويسة الجدول). */
+    "  .print-root *{background-color:transparent!important;max-width:100%!important;",
+    "       box-shadow:none!important}",
+    "  .p-doc .kpi{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:5pt}",
+    "  .p-doc th{background-color:#eef4f2!important}",
+    "  .p-doc th,.p-doc td{border:0.75pt solid #b9c6d1;padding:3pt 5pt;text-align:right}",
+    "  .p-doc th{background:#eef4f2}",
+    "  .p-doc .scroll{overflow:visible;border:0;max-height:none}",
+    "  .p-doc .bar-m{display:none}",
+    "  .p-val{border-bottom:0.5pt dotted #9fb3ae;padding:0 3pt;min-width:36pt;display:inline-block}",
+    "  .p-doc h1{font-size:15pt}.p-doc h2{font-size:12pt;color:#155e4e;margin:9pt 0 5pt}",
     "  .p-etec{margin-top:14px;font-size:9.5pt;color:#5b7185;",
     "       border-top:0.75pt solid #cfe3dd;padding-top:6px}",
     "}",
@@ -241,4 +271,34 @@ function printCss(o) {
 export async function printDocument(docNode, ctx) {
   await preparePrint(null, {}, { ...ctx, docNode });
   window.print();
+}
+
+/** يحوّل شاشة تفاعلية إلى مستند طباعة: القيم بدل الحقول، وبلا أزرار */
+export function snapshotForPrint(section, title, subtitle) {
+  const doc = el("div", "p-doc");
+  const head = el("div", "p-title");
+  head.append(el("h1", null, title));
+  if (subtitle) head.append(el("div", "p-meta", subtitle));
+  doc.append(head);
+
+  const body = section.cloneNode(true);
+  body.querySelectorAll("button, .pager, .toolbar, .sticky-save, script").forEach((n) => n.remove());
+  // الحقول تصير نصًّا — وإلا طُبعت فارغة
+  body.querySelectorAll("input, select, textarea").forEach((n) => {
+    const span = document.createElement("span");
+    if (n.type === "checkbox" || n.type === "radio") span.textContent = n.checked ? "☑" : "☐";
+    else if (n.tagName === "SELECT") span.textContent = n.options[n.selectedIndex]?.text ?? "";
+    else span.textContent = n.value ?? "";
+    span.className = "p-val";
+    n.replaceWith(span);
+  });
+  body.querySelectorAll("canvas").forEach((c) => {
+    const img = document.createElement("img");
+    img.className = "p-sig";
+    try { img.src = c.toDataURL("image/png"); } catch { /* فارغ */ }
+    c.replaceWith(img);
+  });
+  body.querySelectorAll(".hidden").forEach((n) => n.remove());
+  doc.append(body);
+  return doc;
 }
