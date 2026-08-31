@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>استبانة — مدارس ابن خلدون</title>
+<link rel="icon" href="ibn-khaldun-mark-240.webp">
+<style>
+  @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:swap;
+             src:url("AlJazeera-Regular.v2.woff2") format("woff2")}
+  @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:swap;
+             src:url("AlJazeera-Bold.v2.woff2") format("woff2")}
+  :root{--ink:#122a25;--ink-2:#43616a;--line:#e2eae9;--bg:#f2f6f5;--panel:#fff;
+        --brand:#155e4e;--brand-2:#1d7a63;--brand-soft:#e9f3f0;--gold:#eac83c;--danger:#a32b22}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8;
+       font-family:"Al Jazeera Arabic","Segoe UI",Tahoma,system-ui,Arial,sans-serif}
+  .top{background:#0d443a;color:#eaf5f1;padding:16px 18px;display:flex;align-items:center;gap:12px}
+  .top .plate{background:#fff;border-radius:10px;padding:6px 11px;display:flex;align-items:center;gap:10px}
+  .top .plate img{height:26px}
+  .top .plate img.mf{height:17px}
+  .top b{color:var(--gold);font-size:15px;display:block}
+  .top span{font-size:12.5px;color:#a9c8c0}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 16px 90px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;
+        margin-bottom:14px;position:relative;overflow:hidden;
+        box-shadow:0 1px 2px rgba(18,42,37,.04),0 18px 40px -28px rgba(18,42,37,.3)}
+  .card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
+                background:linear-gradient(90deg,var(--brand),var(--brand-2) 46%,#a97c1f)}
+  h1{font-size:21px;margin:0 0 6px}
+  .sub{color:var(--ink-2);font-size:14px;margin:0 0 6px}
+  .q{font-size:15px;margin-bottom:11px}
+  .q .n{color:var(--ink-2);font-size:13px;margin-inline-end:7px}
+  .scale{display:flex;flex-wrap:wrap;gap:8px}
+  .scale label{display:flex;align-items:center;gap:7px;font-size:14px;border:1px solid #cddedb;
+               border-radius:9px;padding:8px 14px;cursor:pointer;background:#fff}
+  .scale label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
+  .bar{position:fixed;inset-inline:0;inset-block-end:0;background:var(--panel);
+       border-top:1px solid var(--line);padding:12px 16px;display:flex;gap:11px;align-items:center;
+       justify-content:center;box-shadow:0 -6px 24px -14px rgba(18,42,37,.4)}
+  button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 22px;cursor:pointer}
+  .go{background:var(--brand);color:#fff}
+  .wa{background:#25d366;color:#0b3d24}
+  .prog{font-size:13.5px;color:var(--ink-2)}
+  .note{background:var(--brand-soft);border:1px solid #cfe3dd;border-radius:9px;padding:13px 15px;font-size:14px}
+  .err{background:#fbeceb;border:1px solid #eec9c6;border-radius:9px;padding:13px 15px;font-size:14px;color:var(--danger)}
+  .done{text-align:center;padding:34px 20px}
+  .done .tick{font-size:44px}
+  code{background:#eef2f2;padding:3px 8px;border-radius:6px;font-size:13px;word-break:break-all}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="plate">
+    <img src="ibn-khaldun-mark-240.webp" alt="مدارس ابن خلدون">
+    <img class="mf" src="maarif.png" alt="معارف">
+  </div>
+  <div><b id="tTitle">استبانة</b><span id="tSchool"></span></div>
+</div>
+<div class="wrap">
+  <div class="card" id="intro"></div>
+  <div id="items"></div>
+</div>
+<div class="bar hidden" id="bar">
+  <span class="prog" id="prog"></span>
+  <button class="go" id="send">إرسال</button>
+</div>
+
+<script type="module">
+import { encodeAnswers } from "./survey.js";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const q = new URLSearchParams(location.search);
+const toolKey = q.get("t") || "PARENT_SURVEY";
+const school = q.get("s") || "";
+const wa = (q.get("wa") || "").replace(/\D/g, "");
+const api = q.get("api") || "";
+
+const data = await (await fetch("استبانات.json")).json();
+const tool = data.tools.find((t) => t.key === toolKey) || data.tools[0];
+const answers = {};
+
+$("tTitle").textContent = tool.nameAr;
+$("tSchool").textContent = school || "مدارس ابن خلدون";
+$("intro").innerHTML =
+  "<h1>" + esc(tool.nameAr) + "</h1>" +
+  '<p class="sub">' + (school ? esc(school) + " · " : "") + tool.items.length + " سؤالًا · دقيقتان</p>" +
+  '<div class="note">رأيك <b>مجهول تمامًا</b> ولا يُطلب اسمك ولا أي بيان يدلّ عليك. ' +
+  "يُستخدم في تحسين المدرسة ضمن دورة التقويم الذاتي.</div>";
+
+$("items").innerHTML = tool.items.map((it) =>
+  '<div class="card"><div class="q"><span class="n">' + it.n + ".</span>" + esc(it.t) + "</div>" +
+  '<div class="scale">' + tool.scaleLabels.map((lab, i) =>
+    '<label><input type="radio" name="q' + it.n + '" data-n="' + it.n + '" value="' + (i + 1) +
+    '"><span>' + esc(lab) + "</span></label>").join("") + "</div></div>").join("");
+
+const update = () => {
+  const n = Object.keys(answers).length;
+  $("prog").textContent = "أجبتَ عن " + n + " من " + tool.items.length;
+  $("send").disabled = n === 0;
+};
+$("items").querySelectorAll("input[data-n]").forEach((r) => {
+  r.onchange = () => { answers[+r.dataset.n] = +r.value; update(); };
+});
+$("bar").classList.remove("hidden");
+update();
+
+function finish(msg, extra) {
+  document.querySelector(".wrap").innerHTML =
+    '<div class="card done"><div class="tick">✅</div><h1>' + esc(msg) + "</h1>" +
+    '<p class="sub">شكرًا لوقتك — رأيك يصنع فرقًا في مدرستنا.</p>' + (extra || "") + "</div>";
+  $("bar").classList.add("hidden");
+  window.scrollTo(0, 0);
+}
+
+$("send").onclick = async () => {
+  const code = encodeAnswers(tool.key, school, answers, tool.items.length);
+  // ① المسار السحابي إن كان مهيّأ
+  if (api) {
+    $("send").disabled = true; $("send").textContent = "جارٍ الإرسال…";
+    try {
+      const r = await fetch(api, { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tool: tool.key, school, answers, at: new Date().toISOString() }) });
+      if (r.ok) { finish("وصلت استجابتك"); return; }
+      throw new Error("HTTP " + r.status);
+    } catch {
+      $("send").disabled = false; $("send").textContent = "إرسال";
+      // يسقط إلى مسار الواتساب
+    }
+  }
+  // ② مسار الواتساب: يفتح المحادثة برسالة جاهزة
+  if (wa) {
+    const text = "استجابة " + tool.nameAr + (school ? " — " + school : "") + "\n" + code;
+    finish("بقيت خطوة واحدة",
+      '<p class="sub">اضغط الزرّ ليفتح واتساب برسالة جاهزة، ثم أرسلها كما هي.</p>' +
+      '<a href="https://wa.me/' + wa + "?text=" + encodeURIComponent(text) +
+      '" target="_blank"><button class="wa">إرسال عبر واتساب</button></a>' +
+      '<p class="sub" style="margin-top:18px">أو انسخ هذا الرمز وأرسله بأي وسيلة:</p><code>' +
+      esc(code) + "</code>");
+    return;
+  }
+  // ③ بلا قناة مهيّأة: يُعرض الرمز للنسخ
+  finish("تمّت التعبئة",
+    '<p class="sub">انسخ هذا الرمز وأرسله لمدرستك:</p><code>' + esc(code) + "</code>");
+};
+</script>
+</body>
+</html>
