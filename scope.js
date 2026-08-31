@@ -44,7 +44,10 @@ export function scopeTools(tools, role, support) {
   });
 }
 
-/** الخطة التحسينية: قيادة المدرسة ولجنة التميّز */
-export function canSeeImprovement(role, support) {
-  return OVERSEER_ROLES.has(role) || excellenceRoles(support).has(role);
+/** ⚠️ الخطة التحسينية **لمدير المدرسة ووكلائه** حصرًا — قرار المستشار */
+export const IMPROVEMENT_ROLES = new Set([
+  "PRINCIPAL", "EDUCATIONAL_VP", "SCHOOL_AFFAIRS_VP", "STUDENT_AFFAIRS_VP",
+]);
+export function canSeeImprovement(role) {
+  return IMPROVEMENT_ROLES.has(role);
 }
