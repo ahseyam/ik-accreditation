@@ -78,12 +78,12 @@
   main{flex:1;min-width:0;display:flex;flex-direction:column}
   .bar{position:sticky;top:0;z-index:6;background:var(--brand-ink);
        border-bottom:3px solid transparent;border-image:var(--edge) 1;
-       padding:11px 22px;display:flex;align-items:center;gap:14px;color:#eaf5f1;
-       box-shadow:0 2px 14px -6px rgba(0,0,0,.4)}
+       padding:10px 22px;display:flex;align-items:center;gap:14px;color:#eaf5f1;
+       flex-wrap:wrap;box-shadow:0 2px 14px -6px rgba(0,0,0,.4)}
   .bar .h-btn{background:rgba(255,255,255,.10);color:#eaf5f1;border:1px solid rgba(255,255,255,.16);
               border-radius:9px;padding:7px 12px;font-size:13.5px;font-weight:400;line-height:1}
   .bar .h-btn:hover{background:rgba(255,255,255,.2)}
-  .bar .h-search{position:relative;flex:1;max-width:380px}
+  .bar .h-search{position:relative;flex:1;min-width:120px;max-width:340px}
   .bar .h-search input{width:100%;background:rgba(255,255,255,.10);color:#fff;
     border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:8px 34px 8px 12px;font-size:14px}
   .bar .h-search input::placeholder{color:#a9c8c0}
@@ -109,10 +109,11 @@
   .bar .logos img{height:30px;width:auto;object-fit:contain}
   .bar .logos img[alt="وزارة التعليم"]{height:34px}
   .bar .divider{width:1px;height:22px;background:var(--line-2)}
-  .bar .crumb{font-size:13px;color:#c6ded7;padding-inline-start:10px;
-              border-inline-start:1px solid rgba(255,255,255,.18);white-space:nowrap;
-              overflow:hidden;text-overflow:ellipsis;max-width:330px}
-  .bar .crumb b{color:#fff}
+  /* ⚠️ اسم المدرسة لا يُقصّ: يأخذ سطرين ولا يُضغط. البحث هو الذي يتقلّص. */
+  .bar .crumb{padding-inline-start:12px;border-inline-start:1px solid rgba(255,255,255,.18);
+              line-height:1.35;flex:none}
+  .bar .crumb b{color:#fff;font-size:15px;font-weight:700;display:block}
+  .bar .crumb span{color:#a9c8c0;font-size:12.5px}
   .bar .divider{background:rgba(255,255,255,.22)}
   .bar .logos img{background:#fff;border-radius:7px;padding:3px}
   .bar .crumb b{color:var(--ink)}
@@ -501,8 +502,9 @@ async function start(s) {
     store = null; return;
   }
   const { school } = bundle;
-  $("ctx").innerHTML = "<b>" + esc(school.nameAr) + "</b> · " + esc(STAGE_AR[school.stage]) +
-                       " · العام " + esc(school.academicYear.greg);
+  $("ctx").innerHTML = "<b>" + esc(school.nameAr) + "</b><span>" +
+                       esc(STAGE_AR[school.stage]) + " · العام " + esc(school.academicYear.greg) +
+                       " · " + esc(school.educationType) + "</span>";
   setStatus("متصل — " + (store.kind === "folder" ? "الحفظ مباشر إلى مجلد OneDrive" : "وضع القراءة (تطوير)"));
   renderPeople();
 }
