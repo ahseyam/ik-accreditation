@@ -34,15 +34,103 @@ function autoValue(field) {
   return field.default ?? "";
 }
 
+/* ⚠️ القوالب تحمل **متغيّرات غير مُستبدَلة** تظهر للمستخدم كما هي:
+   «مَحضَر اجتِماع رقم {meetingNum} — فَصل {semester} أ.{week}». 14 نوعًا و585
+   موضعًا. تُستبدَل من سياق المدرسة ومن بيانات العنصر نفسه، وما تعذّر يُحذف
+   بلا أقواس — فلا يرى المستخدم رمزًا لاتينيًا أبدًا. */
+const ROLE_CODE = /^[A-Z][A-Z_]{3,}$/;
+
+export function interpolate(text, scope) {
+  if (typeof text !== "string" || !text.includes("{")) return text;
+  return text.replace(/\{\{?([a-zA-Z_][\w.]*)\}?\}/g, (_, key) => {
+    const v = scope?.[key];
+    return v == null || v === "" ? "" : String(v);
+  }).replace(/\s{2,}/g, " ").replace(/[—·-]\s*$/, "").trim();
+}
+
+/** سياق الاستبدال: المدرسة والعام والأسبوع + بيانات العنصر + ترتيبه */
+export function interpScope(index, item) {
+  const f = FILL || {};
+  const W = f.week;
+  const n = (index ?? 0) + 1;
+  const base = {
+    year: f.school?.academicYear?.greg?.split("-")[0] || new Date().getFullYear(),
+    sequence: String(n).padStart(3, "0"),
+    schoolName: f.school?.nameAr,
+    semester: W ? (W.semester === 1 ? "الأول" : "الثاني") : "",
+    week: W?.weekNumber,
+    meetingNum: n, meetingNumber: n, programNumber: n,
+  };
+  for (const [k, v] of Object.entries(item || {})) {
+    if (typeof v === "string" && v.trim()) base[k] = v;
+  }
+  // أسماء شائعة تعتمد على حقل شقيق
+  base.programName = base.programName || item?.programName || item?.name || "";
+  base.clubName = base.clubName || item?.clubName || "";
+  base.leaderName = base.leaderName || item?.leaderName || "";
+  base.classLabel = base.classLabel || item?.classLabel || item?.className || "";
+  base.categoryLabel = base.categoryLabel || item?.categoryLabel || "";
+  base.fieldName = base.fieldName || item?.fieldName || "";
+  base.name = base.name || item?.name || "";
+  return base;
+}
+
+/* ⚠️ مصطلحات داخلية تتسرّب إلى النصّ الظاهر. تُعرَّب **ما له مقابل عربي فقط**،
+   وتُترك الأسماء العلمية (PISA · STEM · POWER School) كما هي — تعريبها تشويه. */
+export const TERM_AR = {
+  ADMIN_BOARD: "اللجنة الإدارية", EXCELLENCE: "لجنة التميّز المدرسي",
+  GUIDANCE: "لجنة التوجيه الطلابي", ACHIEVEMENT: "لجنة التحصيل الدراسي",
+  SAFETY: "فريق الأمن والسلامة", FUND: "فريق الصندوق المدرسي",
+  BOTH: "الفصلان معًا", FIRST: "الفصل الأول", SECOND: "الفصل الثاني",
+  AUDIT_LOG: "سجل التدقيق", CONTINUOUS: "مستمر", NONE: "بلا تحديد",
+  DAILY: "يومي", WEEKLY: "أسبوعي", MONTHLY: "شهري", YEARLY: "سنوي",
+  PER_EVENT: "عند كل حدث", AS_NEEDED: "عند الحاجة", PER_SEMESTER: "كل فصل",
+  semesterMode: "نطاق الفصل", weekType: "نوع الأسبوع",
+  SCIENCE: "العلوم", MATH: "الرياضيات", ARABIC: "اللغة العربية", ENGLISH: "اللغة الإنجليزية",
+};
+/* أسماء علم لا تُعرَّب — تعريبها تشويه */
+export const KEEP_LATIN = new Set(["PISA", "TIMSS", "STEM", "POWER", "ETEC", "SWOT",
+  "PDF", "DOCX", "XLS", "XLSX", "HTML", "PPT", "AHSEYAM"]);
+
+/** يعرّب رمز دور أو مصطلح داخلي إن ظهر كنصّ ظاهر */
+export function arabizeCode(v) {
+  if (typeof v !== "string") return v;
+  const t = v.trim();
+  if (TERM_AR[t]) return TERM_AR[t];
+  if (ROLE_CODE.test(t)) {
+    const ar = FILL?.roleArFn ? FILL.roleArFn(t) : null;
+    if (ar && ar !== t) return ar;
+  }
+  return v;
+}
+
+/** يعرّب المصطلحات داخل نصّ طويل — الكلمات المعروفة وحدها */
+export function arabizeText(t) {
+  if (typeof t !== "string" || !/[A-Z]{3,}/.test(t)) return t;
+  let out = t;
+  for (const [k, ar] of Object.entries(TERM_AR)) {
+    if (KEEP_LATIN.has(k)) continue;
+    out = out.replace(new RegExp("(^|[^A-Za-z_])" + k + "([^A-Za-z_]|$)", "g"), "$1" + ar + "$2");
+  }
+  // تعريب رمز بعد نصّه العربي يُنتج تكرارًا: «في العلوم العلوم» ⇐ يُطوى
+  out = out.replace(/(\S+)\s+\1(?=\s|$|[)،.])/g, "$1");
+  const roles = FILL?.roleArFn;
+  if (roles) out = out.replace(/\b[A-Z][A-Z_]{3,}\b/g, (m) => {
+    if (KEEP_LATIN.has(m)) return m;
+    const ar = roles(m); return ar && ar !== m ? ar : m;
+  });
+  return out;
+}
+
 function labelFor(field) {
   const wrap = el("div", "f-label");
-  wrap.append(el("span", null, field.label || field.key || ""));
+  wrap.append(el("span", null, arabizeText(arabizeCode(interpolate(field.label || field.key || "", interpScope(0))))));
   if (field.required) wrap.append(el("span", "req", " *"));
   return wrap;
 }
 
 function help(field) {
-  return field.helpText ? el("div", "f-help", field.helpText) : null;
+  return field.helpText ? el("div", "f-help", interpolate(field.helpText, interpScope(0))) : null;
 }
 
 /** غلاف موحّد لكل حقل */
@@ -102,7 +190,7 @@ function selectInput(field, state, key, options) {
   s.append(new Option("— اختر —", ""));
   for (const raw of options ?? field.options ?? []) {
     const o = optionOf(raw);
-    if (o) s.append(new Option(o.l, o.v));
+    if (o) s.append(new Option(arabizeText(arabizeCode(interpolate(o.l, interpScope(0)))), o.v));
   }
   return bindValue(s, field, state, key);
 }
@@ -129,10 +217,33 @@ function signaturePad(field, state, key) {
   window.addEventListener("mouseup", up);
   canvas.addEventListener("touchstart", down); canvas.addEventListener("touchmove", move);
   canvas.addEventListener("touchend", up);
-  const clear = el("button", "btn-ghost sm", "مسح");
+  const bar = el("div", "sig-bar");
+  const clear = el("button", "b-ghost b-sm", "مسح");
   clear.type = "button";
   clear.onclick = () => { ctx2d.clearRect(0, 0, canvas.width, canvas.height); state[k] = ""; };
-  wrap.append(canvas, clear);
+  bar.append(clear);
+
+  /* ⚠️ التوقيع يُرسم مرّة واحدة ويُستدعى — لا يُعاد رسمه في كل موضع.
+     المحفوظ يخصّ الوظيفة، فيتغيّر بتغيّر شاغلها. */
+  const mine = FILL?.mySignature?.dataUrl;
+  if (mine) {
+    const use = el("button", "b-main b-sm", "✍️ استخدم توقيعي المحفوظ");
+    use.type = "button";
+    use.onclick = () => {
+      const img = new Image();
+      img.onload = () => {
+        ctx2d.clearRect(0, 0, canvas.width, canvas.height);
+        const r = Math.min(canvas.width / img.width, canvas.height / img.height, 1);
+        ctx2d.drawImage(img, 0, 0, img.width * r, img.height * r);
+        state[k] = canvas.toDataURL("image/png");
+      };
+      img.src = mine;
+    };
+    bar.append(use);
+  } else {
+    bar.append(el("span", "f-help", "لم تحفظ توقيعك بعد — احفظه مرّة من «تفضيلاتي» ليظهر هنا بنقرة."));
+  }
+  wrap.append(canvas, bar);
   return wrap;
 }
 
@@ -193,7 +304,7 @@ function recurringTable(field, state, ctx) {
   const thead = el("thead");
   const htr = el("tr");
   htr.append(el("th", "num", "#"));
-  for (const c of cols) htr.append(el("th", null, c.label ?? c.key ?? ""));
+  for (const c of cols) htr.append(el("th", null, interpolate(c.label ?? c.key ?? "", interpScope(0))));
   htr.append(el("th", "num", ""));
   thead.append(htr);
   const tbody = el("tbody");
@@ -316,7 +427,8 @@ function repeatingSection(field, state, ctx) {
     state[k].forEach((item, i) => {
       const card = el("div", "repeat-item");
       const head = el("div", "repeat-head");
-      head.append(el("b", null, (field.itemLabel ?? "عنصر") + " " + (i + 1)));
+      const lbl = interpolate(field.itemLabel ?? "", interpScope(i, item));
+      head.append(el("b", null, lbl || "عنصر " + (i + 1)));
       const rm = el("button", "btn-ghost sm", "حذف");
       rm.type = "button";
       rm.onclick = () => { state[k].splice(i, 1); draw(); };
@@ -325,7 +437,7 @@ function repeatingSection(field, state, ctx) {
       for (const sub of field.fields ?? []) card.append(renderField(sub, item, ctx));
       wrap.append(card);
     });
-    const add = el("button", "btn-ghost sm", "+ إضافة " + (field.itemLabel ?? "عنصر"));
+    const add = el("button", "btn-ghost sm", "+ إضافة عنصر");
     add.type = "button";
     add.onclick = () => { state[k].push({}); draw(); };
     wrap.append(add);
@@ -376,14 +488,14 @@ function infoBox(field) {
   const has = Array.isArray(c) ? c.length > 0 : typeof c === "string" ? c.trim() !== "" : false;
   if (!has) return el("div", "hidden");          // لا صندوق فارغ
   const box = el("div", "note sm guide");
-  if (field.label) box.append(el("b", "guide-t", field.label));
+  if (field.label) box.append(el("b", "guide-t", arabizeText(interpolate(field.label, interpScope(0)))));
   if (Array.isArray(c)) {
     const ul = el("ul", "guide-list");
-    for (const line of c) ul.append(el("li", null, String(line)));
+    for (const line of c) ul.append(el("li", null, arabizeText(interpolate(String(line), interpScope(0)))));
     box.append(ul);
   } else {
     const d = el("div");
-    d.append(richText(c));
+    d.append(richText(arabizeText(interpolate(c, interpScope(0)))));
     box.append(d);
   }
   return box;
@@ -391,7 +503,7 @@ function infoBox(field) {
 
 /* ── سجلّ المعالجات: مفتاح النوع ⇐ دالة ── */
 export const HANDLERS = {
-  SECTION_HEADER: (f) => { const h = el("h3", "sec", f.label ?? ""); return h; },
+  SECTION_HEADER: (f) => el("h3", "sec", interpolate(f.label ?? "", interpScope(0))),
   INFO_BOX: (f) => infoBox(f),
   INFO_BLOCK: (f) => infoBox(f),
   COLOR_LEGEND: (f) => {
@@ -523,7 +635,7 @@ export function buildGuide(t, ctx) {
   box.append(sum);
   const body = el("div", "guide-body");
 
-  if (t.descriptionAr) body.append(el("p", "guide-desc", t.descriptionAr));
+  if (t.descriptionAr) body.append(el("p", "guide-desc", arabizeText(t.descriptionAr)));
 
   const facts = [];
   if (t.fillFrequency) facts.push(["الدورية", FREQ_HINT[t.fillFrequency] || t.fillFrequency]);

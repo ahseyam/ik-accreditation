@@ -324,6 +324,7 @@
   details.tree>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;
                        background:var(--brand-soft);color:var(--brand)}
   details.tree table{border-top:1px solid var(--line)}
+  .sig-bar{display:flex;gap:9px;align-items:center;margin-top:9px;flex-wrap:wrap}
   .hidden{display:none!important}
   @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
 </style>
@@ -482,7 +483,8 @@ import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
-         loadRosterOverride, applyRosterOverride, saveRosterEdit } from "./app.js";
+         loadRosterOverride, applyRosterOverride, saveRosterEdit,
+         loadSignature, saveSignature } from "./app.js";
 import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js";
 import { fillContext, currentWeek, semesterLabel } from "./autofill.js";
 import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js";
@@ -566,7 +568,7 @@ async function start(s) {
   await renderPeople();
 }
 
-let rosterOv = null, roster = [];
+let rosterOv = null, roster = [], mySignature = null;
 
 async function renderPeople() {
   only("screenWho"); show("nav", false); show("searchBox", false); show("prefsBtn", false);
@@ -644,6 +646,7 @@ async function pick(person) {
 
   $("navWho").textContent = me.fullName || "—";
   $("navRole").textContent = roleAr(me.role);
+  mySignature = await loadSignature(store, me);
   buildNav();
   show("nav", true);
   show("searchBox", true);
@@ -821,6 +824,7 @@ async function openRecord(number, entryId) {
 
   // سياق التعبئة التلقائية + لوحة «كيف يعمل هذا السجل»
   const fill = fillContext(bundle, me, roleAr, STAGE_AR[bundle.school.stage]);
+  fill.mySignature = mySignature;
   setFillContext(fill);
   $("recGuide").innerHTML = "";
   $("recGuide").append(buildGuide(recTemplate, { roleArFn: roleAr }));
@@ -1158,6 +1162,9 @@ $("prefsBtn").onclick = () => {
     '<button data-p="scale-up"><span>تكبير الخط</span><b>' + PREF.scale + "%</b></button>" +
     '<button data-p="scale-dn"><span>تصغير الخط</span><b>—</b></button>' +
     '<div class="sepline"></div>' +
+    '<button data-p="sign"><span>توقيعي</span><b>' +
+      (mySignature ? "محفوظ ✅" : "غير محفوظ") + "</b></button>" +
+    '<div class="sepline"></div>' +
     '<button data-p="user"><span>تبديل المستخدم</span><b>' + esc(roleAr(me?.role)) + "</b></button>" +
     '<button data-p="folder"><span>فصل الاتصال بالمجلد</span><b>⏏</b></button>';
   pop.classList.remove("hidden");
@@ -1167,6 +1174,7 @@ $("prefsBtn").onclick = () => {
       if (a === "theme") PREF.theme = { auto: "light", light: "dark", dark: "auto" }[PREF.theme];
       if (a === "scale-up") PREF.scale = Math.min(140, PREF.scale + 10);
       if (a === "scale-dn") PREF.scale = Math.max(80, PREF.scale - 10);
+      if (a === "sign") { pop.classList.add("hidden"); signatureModal(); return; }
       if (a === "user") { pop.classList.add("hidden"); await renderPeople(); return; }
       if (a === "folder") { await FolderStore.forget(); location.reload(); return; }
       savePrefs(); pop.classList.add("hidden"); $("prefsBtn").click();
@@ -1177,6 +1185,42 @@ document.addEventListener("click", (e) => {
   if (!$("prefsPop").contains(e.target) && e.target !== $("prefsBtn")) $("prefsPop").classList.add("hidden");
   if (!$("searchBox").contains(e.target)) $("gresults").classList.add("hidden");
 });
+
+/* ── توقيعي: يُرسم مرّة ويُستدعى في كل موضع ── */
+function signatureModal() {
+  const box = document.createElement("div");
+  box.className = "modal";
+  box.innerHTML = '<div class="modal-card"><h2>توقيعي</h2>' +
+    '<div class="note sm">ارسم توقيعك مرّة واحدة، فيظهر في كل موضع توقيع داخل سجلاتك ' +
+    'بنقرة «استخدم توقيعي المحفوظ». وهو مرتبط بالوظيفة، فيُستبدَل عند تغيّر شاغلها.</div>' +
+    '<canvas id="sigC" class="sig-pad" width="440" height="150"></canvas>' +
+    '<div style="display:flex;gap:10px;margin-top:14px">' +
+    '<button class="b-main" id="sigSave">حفظ التوقيع</button>' +
+    '<button class="b-ghost" id="sigClear">مسح</button>' +
+    '<button class="b-ghost" id="sigClose">إغلاق</button>' +
+    '<span class="muted" id="sigStat"></span></div></div>';
+  document.body.append(box);
+  const c = box.querySelector("#sigC"), g = c.getContext("2d");
+  g.lineWidth = 2; g.lineCap = "round"; g.strokeStyle = "#16232e";
+  if (mySignature?.dataUrl) { const i = new Image(); i.onload = () => g.drawImage(i, 0, 0); i.src = mySignature.dataUrl; }
+  let down = false;
+  const at = (e) => { const r = c.getBoundingClientRect(); const q = e.touches ? e.touches[0] : e;
+    return [q.clientX - r.left, q.clientY - r.top]; };
+  c.addEventListener("pointerdown", (e) => { down = true; g.beginPath(); g.moveTo(...at(e)); });
+  c.addEventListener("pointermove", (e) => { if (down) { g.lineTo(...at(e)); g.stroke(); } });
+  window.addEventListener("pointerup", () => { down = false; });
+  box.querySelector("#sigClear").onclick = () => g.clearRect(0, 0, c.width, c.height);
+  box.querySelector("#sigClose").onclick = () => box.remove();
+  box.onclick = (e) => { if (e.target === box) box.remove(); };
+  box.querySelector("#sigSave").onclick = async () => {
+    box.querySelector("#sigStat").textContent = "جارٍ الحفظ…";
+    try {
+      mySignature = await saveSignature(store, me, c.toDataURL("image/png"));
+      box.querySelector("#sigStat").textContent = "✅ حُفظ";
+      setTimeout(() => box.remove(), 700);
+    } catch (e) { box.querySelector("#sigStat").textContent = "❌ " + e.message; }
+  };
+}
 
 /* ── بحث عام: السجلات والأدوات والمؤشرات ── */
 function globalSearch(q) {

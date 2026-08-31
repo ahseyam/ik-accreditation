@@ -219,3 +219,22 @@ export async function saveRosterEdit(store, person, next, ov) {
   await store.writeJson(ROSTER_OVERRIDE, ov);
   return ov;
 }
+
+/* ── التوقيع المحفوظ: يُرسم مرّة ويُستدعى في كل موضع توقيع ──
+   المسار بالوظيفة كالمجلدات، فينتقل مع الوظيفة لا مع الشخص — ويُستبدَل
+   توقيع الشاغل الجديد عند تغييره. */
+export const signaturePath = (person) =>
+  "إدارة/تواقيع/" + safeName((person.orderNum ?? 0) + " - " + roleAr(person.role)) + ".json";
+
+export async function loadSignature(store, person) {
+  const path = signaturePath(person);
+  try { if (await store.exists(path)) return await store.readJson(path); } catch {}
+  return null;
+}
+
+export async function saveSignature(store, person, dataUrl) {
+  const rec = { dataUrl, person: person.fullName, role: person.role,
+                roleAr: roleAr(person.role), savedAt: new Date().toISOString() };
+  await store.writeJson(signaturePath(person), rec);
+  return rec;
+}
