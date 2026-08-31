@@ -7,9 +7,9 @@
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
 <style>
   @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;
-             src:url("AlJazeeraArabic-Regular.woff2") format("woff2")}
+             src:url("AlJazeera-Regular.v2.woff2") format("woff2")}
   @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;
-             src:url("AlJazeeraArabic-Bold.woff2") format("woff2")}
+             src:url("AlJazeera-Bold.v2.woff2") format("woff2")}
   :root{
     --ink:#122a25; --ink-2:#43616a; --line:#e2eae9; --line-2:#cddedb;
     --bg:#f2f6f5; --panel:#fff;
@@ -48,7 +48,7 @@
   .app{position:relative;z-index:1}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.75;
+  body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8;
        font-family:"Al Jazeera Arabic","Segoe UI",Tahoma,system-ui,Arial,sans-serif;
        -webkit-font-smoothing:antialiased}
   button,input,select,textarea{font-family:inherit}
@@ -118,10 +118,10 @@
   .bar .crumb b{color:var(--ink)}
   .bar .sp{flex:1}
   .wrap{padding:26px 26px 64px;max-width:1180px;width:100%}
-  h1{font-size:22px;margin:0 0 6px}
-  h2{font-size:17.5px;margin:0 0 14px}
-  h3{font-size:15px;margin:0 0 10px}
-  .sub{color:var(--ink-2);font-size:14px;margin:0 0 22px}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.2px;margin:0 0 7px}
+  h2{font-size:18px;font-weight:700;margin:0 0 15px}
+  h3{font-size:15.5px;font-weight:700;margin:0 0 10px}
+  .sub{color:var(--ink-2);font-size:14.5px;margin:0 0 24px;line-height:1.7}
 
   .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
         padding:26px;box-shadow:var(--sh);margin-bottom:20px;position:relative;overflow:hidden}
@@ -159,8 +159,8 @@
              border-top:2px solid var(--gold-soft);display:inline-block}
 
   table{width:100%;border-collapse:collapse;font-size:14.5px}
-  th,td{text-align:right;padding:11px 12px;border-bottom:1px solid var(--line)}
-  th{color:var(--ink-2);font-weight:700;font-size:12.5px;letter-spacing:.2px;
+  th,td{text-align:right;padding:11px 13px;border-bottom:1px solid var(--line);line-height:1.65}
+  th{color:var(--ink-2);font-weight:700;font-size:13px;letter-spacing:.1px;
      background:#f8fbfa;position:sticky;top:0}
   tbody tr.click{cursor:pointer}
   tbody tr.click:hover{background:var(--brand-soft)}
@@ -201,7 +201,9 @@
   /* ── نموذج السجل ── */
   .field{margin:0 0 18px}
   .f-label{font-size:14.5px;font-weight:700;margin-bottom:7px}
-  .f-label .req{color:var(--danger)}
+  /* ⚠️ حزام أمان مزدوج: خطّ الجزيرة يرسم مكان «*» شعارَ القناة. حُذف المحرف من
+     الخطّ، ويُفرَض هنا خطّ النظام على العلامة كي لا تعود لو رجع الخطّ الأصلي. */
+  .f-label .req{color:var(--danger);font-family:Tahoma,Arial,sans-serif;font-weight:700}
   .f-help{font-size:12.5px;color:var(--ink-2);margin-top:5px}
   .f-in{width:100%;padding:10px 13px;border:1px solid var(--line-2);border-radius:var(--r-sm);
         font:inherit;background:var(--panel);color:var(--ink)}
@@ -299,8 +301,6 @@
         <img src="moe.png" alt="وزارة التعليم" title="وزارة التعليم">
         <span class="divider"></span>
         <img src="maarif.png" alt="شركة معارف للتعليم" title="شركة معارف للتعليم">
-        <span class="divider"></span>
-        <img src="ibn-khaldun-mark-240.webp" alt="مدارس ابن خلدون" title="مدارس ابن خلدون">
       </div>
       <div class="crumb" id="ctx">مدارس ابن خلدون · السجلات والشواهد للتقويم الخارجي</div>
       <div class="sp"></div>
