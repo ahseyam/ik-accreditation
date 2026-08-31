@@ -26,6 +26,21 @@
     /* شريط الهوية: أخضر ابن خلدون ← ذهبي */
     --edge:linear-gradient(90deg,var(--brand) 0%,var(--brand-2) 46%,var(--gold) 100%);
   }
+  /* الوضع الليلي — تُبدَّل الرموز وحدها فتبقى القواعد كما هي */
+  html[data-theme="dark"]{
+    --ink:#e6f0ee; --ink-2:#9fb8b3; --line:#22403a; --line-2:#2e544c;
+    --bg:#0d1f1c; --panel:#132a26;
+    --brand:#4fbf9c; --brand-2:#63d2ae; --brand-soft:#17332d; --brand-ink:#0a1815;
+    --gold:#d9ad55; --gold-soft:#2a2418;
+    --danger:#f08a80; --danger-soft:#33201e; --ok:#5fd3a0;
+    --sh:0 1px 2px rgba(0,0,0,.30), 0 4px 10px -4px rgba(0,0,0,.34),
+         0 20px 44px -28px rgba(0,0,0,.7);
+    --sh-lift:0 2px 4px rgba(0,0,0,.32), 0 10px 20px -8px rgba(0,0,0,.4),
+              0 28px 56px -30px rgba(0,0,0,.75);
+  }
+  html[data-theme="dark"] .bar .logos img{background:#fff;border-radius:7px;padding:3px}
+  html[data-theme="dark"] .sig-pad,html[data-theme="dark"] .f-in{background:var(--panel)}
+  html[data-theme="dark"] table.rec-table th,html[data-theme="dark"] th{background:#17332d}
   /* بصمة الخلفية: «رُبع الحِزب» — مربّعان متقاطعان بزاوية 45°، بكثافة 5% */
   body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cg fill='none' stroke='%23155e4e' stroke-opacity='.032' stroke-width='.9'%3E%3Crect x='11' y='11' width='18' height='18'/%3E%3Crect x='11' y='11' width='18' height='18' transform='rotate(45 20 20)'/%3E%3C/g%3E%3C/svg%3E");
@@ -61,14 +76,45 @@
   .nav .foot b{color:#fff;display:block;font-size:13.5px;opacity:1}
 
   main{flex:1;min-width:0;display:flex;flex-direction:column}
-  .bar{position:sticky;top:0;z-index:5;background:rgba(242,246,245,.92);backdrop-filter:blur(8px);
-       border-bottom:1px solid var(--line);padding:13px 26px;display:flex;align-items:center;gap:14px}
+  .bar{position:sticky;top:0;z-index:6;background:var(--brand-ink);
+       border-bottom:3px solid transparent;border-image:var(--edge) 1;
+       padding:11px 22px;display:flex;align-items:center;gap:14px;color:#eaf5f1;
+       box-shadow:0 2px 14px -6px rgba(0,0,0,.4)}
+  .bar .h-btn{background:rgba(255,255,255,.10);color:#eaf5f1;border:1px solid rgba(255,255,255,.16);
+              border-radius:9px;padding:7px 12px;font-size:13.5px;font-weight:400;line-height:1}
+  .bar .h-btn:hover{background:rgba(255,255,255,.2)}
+  .bar .h-search{position:relative;flex:1;max-width:380px}
+  .bar .h-search input{width:100%;background:rgba(255,255,255,.10);color:#fff;
+    border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:8px 34px 8px 12px;font-size:14px}
+  .bar .h-search input::placeholder{color:#a9c8c0}
+  .bar .h-search input:focus{outline:2px solid var(--brand-2);background:rgba(255,255,255,.16)}
+  .bar .h-search .ico{position:absolute;inset-inline-start:11px;inset-block-start:8px;
+                      color:#a9c8c0;font-size:13px;pointer-events:none}
+  .results{position:absolute;inset-block-start:44px;inset-inline:0;background:var(--panel);
+    border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--sh-lift);
+    max-height:380px;overflow:auto;z-index:20}
+  .results a{display:block;padding:10px 14px;font-size:14px;color:var(--ink);
+             text-decoration:none;border-bottom:1px solid var(--line);cursor:pointer}
+  .results a:hover{background:var(--brand-soft)}
+  .results .k{font-size:11.5px;color:var(--ink-2);margin-inline-start:8px}
+  .menu-pop{position:absolute;inset-block-start:52px;inset-inline-end:22px;background:var(--panel);
+    border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--sh-lift);
+    min-width:230px;z-index:20;padding:7px}
+  .menu-pop button{display:flex;width:100%;justify-content:space-between;align-items:center;
+    background:none;border:0;color:var(--ink);padding:9px 12px;font-size:14px;font-weight:400;
+    border-radius:7px;text-align:right}
+  .menu-pop button:hover{background:var(--brand-soft)}
+  .menu-pop .sepline{height:1px;background:var(--line);margin:5px 8px}
   .bar .logos{display:flex;align-items:center;gap:11px;flex:none}
   .bar .logos img{height:30px;width:auto;object-fit:contain}
   .bar .logos img[alt="وزارة التعليم"]{height:34px}
   .bar .divider{width:1px;height:22px;background:var(--line-2)}
-  .bar .crumb{font-size:13.5px;color:var(--ink-2);padding-inline-start:6px;
-              border-inline-start:1px solid var(--line-2)}
+  .bar .crumb{font-size:13px;color:#c6ded7;padding-inline-start:10px;
+              border-inline-start:1px solid rgba(255,255,255,.18);white-space:nowrap;
+              overflow:hidden;text-overflow:ellipsis;max-width:330px}
+  .bar .crumb b{color:#fff}
+  .bar .divider{background:rgba(255,255,255,.22)}
+  .bar .logos img{background:#fff;border-radius:7px;padding:3px}
   .bar .crumb b{color:var(--ink)}
   .bar .sp{flex:1}
   .wrap{padding:26px 26px 64px;max-width:1180px;width:100%}
@@ -258,8 +304,16 @@
       </div>
       <div class="crumb" id="ctx">مدارس ابن خلدون · السجلات والشواهد للتقويم الخارجي</div>
       <div class="sp"></div>
-      <button class="b-ghost b-sm hidden" id="printPage">🖨️ طباعة الصفحة</button>
+      <div class="h-search hidden" id="searchBox">
+        <span class="ico">🔍</span>
+        <input id="gsearch" placeholder="ابحث في سجلاتك وأدواتك ومؤشراتك…" autocomplete="off">
+        <div class="results hidden" id="gresults"></div>
+      </div>
+      <button class="h-btn hidden" id="printPage" title="طباعة هذه الصفحة بالكليشة">🖨️ طباعة</button>
+      <button class="h-btn" id="themeBtn" title="الوضع الليلي">🌙</button>
+      <button class="h-btn hidden" id="prefsBtn" title="تفضيلاتي">⚙️ تفضيلاتي</button>
     </div>
+    <div class="menu-pop hidden" id="prefsPop"></div>
     <div class="wrap">
 
       <section id="screenConnect" class="card">
@@ -482,6 +536,8 @@ async function pick(person) {
   $("navRole").textContent = roleAr(me.role);
   buildNav();
   show("nav", true);
+  show("searchBox", true);
+  show("prefsBtn", true);
   goDash();
 }
 
@@ -875,8 +931,96 @@ $("impPrint").onclick = async () => {
 window.__preparePrint = () => preparePrint(recTemplate, recState, {
   store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId });
 
+/* ── تفضيلات المستخدم: الوضع الليلي وحجم الخط ── */
+const PREF = { theme: "auto", scale: 100 };
+function loadPrefs() {
+  try { Object.assign(PREF, JSON.parse(localStorage.getItem("ik-prefs") || "{}")); } catch {}
+  applyPrefs();
+}
+function savePrefs() {
+  try { localStorage.setItem("ik-prefs", JSON.stringify(PREF)); } catch {}
+  applyPrefs();
+}
+function applyPrefs() {
+  const dark = PREF.theme === "dark" ||
+    (PREF.theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+  document.documentElement.style.fontSize = (PREF.scale / 100 * 16).toFixed(1) + "px";
+  $("themeBtn").textContent = dark ? "☀️" : "🌙";
+  $("themeBtn").title = dark ? "الوضع النهاري" : "الوضع الليلي";
+}
+$("themeBtn").onclick = () => {
+  const dark = document.documentElement.getAttribute("data-theme") === "dark";
+  PREF.theme = dark ? "light" : "dark"; savePrefs();
+};
+$("prefsBtn").onclick = () => {
+  const pop = $("prefsPop");
+  if (!pop.classList.contains("hidden")) { pop.classList.add("hidden"); return; }
+  pop.innerHTML =
+    '<button data-p="theme"><span>سِمَة العرض</span><b>' +
+      ({ auto: "حسب النظام", light: "نهاري", dark: "ليلي" })[PREF.theme] + "</b></button>" +
+    '<button data-p="scale-up"><span>تكبير الخط</span><b>' + PREF.scale + "%</b></button>" +
+    '<button data-p="scale-dn"><span>تصغير الخط</span><b>—</b></button>' +
+    '<div class="sepline"></div>' +
+    '<button data-p="user"><span>تبديل المستخدم</span><b>' + esc(roleAr(me?.role)) + "</b></button>" +
+    '<button data-p="folder"><span>فصل الاتصال بالمجلد</span><b>⏏</b></button>';
+  pop.classList.remove("hidden");
+  pop.querySelectorAll("button").forEach((b) => {
+    b.onclick = async () => {
+      const a = b.dataset.p;
+      if (a === "theme") PREF.theme = { auto: "light", light: "dark", dark: "auto" }[PREF.theme];
+      if (a === "scale-up") PREF.scale = Math.min(140, PREF.scale + 10);
+      if (a === "scale-dn") PREF.scale = Math.max(80, PREF.scale - 10);
+      if (a === "user") { pop.classList.add("hidden"); renderPeople(); return; }
+      if (a === "folder") { await FolderStore.forget(); location.reload(); return; }
+      savePrefs(); pop.classList.add("hidden"); $("prefsBtn").click();
+    };
+  });
+};
+document.addEventListener("click", (e) => {
+  if (!$("prefsPop").contains(e.target) && e.target !== $("prefsBtn")) $("prefsPop").classList.add("hidden");
+  if (!$("searchBox").contains(e.target)) $("gresults").classList.add("hidden");
+});
+
+/* ── بحث عام: السجلات والأدوات والمؤشرات ── */
+function globalSearch(q) {
+  const t = q.trim();
+  if (t.length < 2) return [];
+  const hits = [];
+  for (const r of myRecords) {
+    if (r.nameAr.includes(t)) hits.push({ kind: "سجل", label: r.seq + ". " + r.nameAr,
+      go: () => openRecord(r.number) });
+  }
+  for (const x of myTools) {
+    if (x.tool.nameAr.includes(t)) hits.push({ kind: "أداة", label: x.tool.nameAr,
+      go: () => openTool(x.tool.key) });
+  }
+  if (bundle.improvement && canSeeImprovement(me.role, bundle.support)) {
+    for (const i of bundle.improvement.indicatorScores) {
+      if ((i.code || "").includes(t) || (i.textAr || "").includes(t))
+        hits.push({ kind: "مؤشر", label: i.code + " · " + (i.textAr || "").slice(0, 56),
+          go: () => openImprovement() });
+    }
+  }
+  return hits.slice(0, 12);
+}
+$("gsearch").oninput = () => {
+  const hits = globalSearch($("gsearch").value);
+  const box = $("gresults");
+  if (hits.length === 0) { box.classList.add("hidden"); return; }
+  box.innerHTML = hits.map((h, i) =>
+    '<a data-i="' + i + '">' + esc(h.label) + '<span class="k">' + h.kind + "</span></a>").join("");
+  box.querySelectorAll("a").forEach((a) => {
+    a.onclick = () => { box.classList.add("hidden"); $("gsearch").value = ""; hits[+a.dataset.i].go(); };
+  });
+  box.classList.remove("hidden");
+};
+
 $("printPage").onclick = printCurrent;
 $("switchUser").onclick = renderPeople;
+
+loadPrefs();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyPrefs);
 
 (async function boot() {
   if (!dataUrl && !FolderStore.supported()) { renderConnect("unsupported"); return; }
