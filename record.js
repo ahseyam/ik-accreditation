@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=fee6c3ba";
-import { derive, seedRows } from "./autofill.js?v=fee6c3ba";
+import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=e77937ec";
+import { derive, seedRows } from "./autofill.js?v=e77937ec";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -823,6 +823,13 @@ export function buildGuide(t, ctx) {
   const files = countFileFields(t);
   if (files) facts.push(["الشواهد", files + " حقل رفع — أرفق صورًا أو ملفات لكل عملية"]);
 
+  /* دلالات التحقق الرسمية للمؤشرات التي يحملها هذا السجل — ما يفتحه الزائر */
+  const verify = [];
+  for (const code of t.etecIndicators || []) {
+    const d = (ctx.verifyTool?.domains || []).find((x) => x.key === code);
+    for (const it of d?.items || []) verify.push({ code, text: it.r || it.rephrased || "" });
+  }
+
   const dl = el("div", "guide-facts");
   for (const [k, v] of facts) {
     const row = el("div", "gf");
@@ -830,6 +837,18 @@ export function buildGuide(t, ctx) {
     dl.append(row);
   }
   body.append(dl);
+
+  if (verify.length) {
+    body.append(el("div", "guide-vt", "ما يبحث عنه الزائر في هذا السجل (" + verify.length + " دلالة تحقّق)"));
+    const ul = el("ul", "guide-list");
+    for (const v of verify) {
+      const li = el("li");
+      li.append(el("span", "vcode", v.code), document.createTextNode(" " + v.text));
+      ul.append(li);
+    }
+    body.append(ul);
+  }
+
   box.append(body);
   return box;
 }

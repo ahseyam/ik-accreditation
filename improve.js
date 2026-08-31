@@ -59,6 +59,12 @@ export function recordsForIndicator(records, code) {
   return (records || []).filter((r) => (r.etecIndicators || []).includes(code));
 }
 
+/** دلالات التحقّق الرسمية للمؤشر — من أداة التحقق المعتمدة */
+export function verifyStatements(verifyTool, code) {
+  const d = (verifyTool?.domains || []).find((x) => x.key === code);
+  return (d?.items || []).map((i) => i.r || i.rephrased || "").filter(Boolean);
+}
+
 /** فقرات الأدوات العشر التي تقيس هذا المؤشر */
 export function toolItemsForIndicator(tools, code) {
   const out = [];
@@ -112,6 +118,7 @@ export function buildProcedures(ind, ctx) {
   const span = prog?.durationWeeks || 8;
   const steps = (prog?.steps || []).filter(Boolean);
 
+  const verify = verifyStatements(ctx.verify, ind.code);
   const rows = [];
   const push = (name, week, weeksSpan, method, requirements, evidence, notes) => rows.push({
     name, week, semester: semLabel(week), weeks: weeksLabel(week, weeksSpan),
@@ -129,6 +136,18 @@ export function buildProcedures(ind, ctx) {
     "محضر ورشة التشخيص موثَّق في " + (recs[0] ? "سجل " + recs[0].number : "سجل لجنة التميّز") +
       " مع جدول الأسباب والأولويات",
     gap);
+
+  /* ⚠️ حيث توجد دلالات تحقّق رسمية، تُصبح هي مرجع «مؤشر التحقق» بدل صياغتنا —
+     فالجدول يتكلّم بلغة المُقيِّم لا بلغتنا. */
+  if (verify.length) {
+    push("استيفاء دلالات التحقق الرسمية للمؤشر (" + verify.length + " دلالة)",
+      start + 1, Math.max(4, span - 2),
+      "مراجعة كل دلالة على حدة: ما المُستوفى وما الناقص، وتكليف مسؤول وشاهد لكل ناقص.",
+      verify.map((v, i) => (i + 1) + ") " + v).join(" · "),
+      verify.length + " دلالة مستوفاة ومثبتة بشاهدها في " +
+        (recs[0] ? "سجل " + recs[0].number : "ملف شواهد المؤشر"),
+      "هذه الدلالات هي ما يفتحه الزائر لهذا المؤشر");
+  }
 
   push(prog ? "اعتماد " + prog.name : "اعتماد برنامج تحسيني للمؤشر " + ind.code,
     start + 1, 1,
@@ -167,7 +186,9 @@ export function buildProcedures(ind, ctx) {
     Math.min(TOTAL_WEEKS, start + span + 3), 1,
     "إعداد تقرير أثر مدعوم بالشواهد وعرضه على اللجنة الإدارية وتحديد ما يُستدام وما يُعدَّل.",
     "نتائج القياس · الشواهد المجمّعة · " + recRef,
-    "تقرير الأثر معتمَد بتوقيع مدير المدرسة + جاهزية المؤشر لزيارة التقويم القادمة",
+    verify.length
+      ? "استيفاء " + verify.length + " دلالة تحقّق رسمية بشواهدها + تقرير أثر معتمَد بتوقيع المدير"
+      : "تقرير الأثر معتمَد بتوقيع مدير المدرسة + جاهزية المؤشر لزيارة التقويم القادمة",
     "يُرفق بملف الاعتماد");
 
   return rows;
