@@ -495,6 +495,19 @@
         <div class="card"><h2>البرامج التحسينية المعتمدة (نافِس)</h2><div id="impPrograms"></div></div>
       </section>
 
+      <section id="screenReady" class="hidden">
+        <div class="rowhead">
+          <div class="sp"><h1>جاهزية الزيارة</h1><div class="muted" id="readyMeta"></div></div>
+          <button class="b-ghost b-sm" id="readyRefresh">↻ إعادة الحساب</button>
+        </div>
+        <div class="card" id="readyScore"></div>
+        <div class="card"><h2>أبعاد الجاهزية — وما بُنيت عليه</h2>
+          <div class="scroll" id="readyDims"></div></div>
+        <div class="card"><h2>حالة المؤشرات — ما يفتحه الزائر</h2>
+          <div class="muted" style="margin-bottom:11px">مرتّبة من الأدنى درجةً في التقويم الخارجي.</div>
+          <div class="scroll" id="readyInd"></div></div>
+      </section>
+
       <section id="screenExec" class="hidden">
         <div class="rowhead">
           <div class="sp"><h1>خطتي التنفيذية</h1><div class="muted" id="execMeta"></div></div>
@@ -542,36 +555,38 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=e84427ef";
+import { FolderStore } from "./storage.js?v=fee6c3ba";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=e84427ef";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=e84427ef";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=e84427ef";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=e84427ef";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=e84427ef";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=fee6c3ba";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=fee6c3ba";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=fee6c3ba";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=fee6c3ba";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=fee6c3ba";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=e84427ef";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=e84427ef";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=fee6c3ba";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=fee6c3ba";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=e84427ef";
-import { surveyLink, extractCodes } from "./survey.js?v=e84427ef";
+         fullBackup } from "./vault.js?v=fee6c3ba";
+import { surveyLink, extractCodes } from "./survey.js?v=fee6c3ba";
+import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
+         readinessLabel, indicatorStatus } from "./readiness.js?v=fee6c3ba";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=e84427ef";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=fee6c3ba";
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const show = (id, on) => $(id).classList.toggle("hidden", !on);
 const SCREENS = ["screenConnect","screenWho","screenDash","screenRecords","screenRecord",
-                 "screenTools","screenTool","screenImp","screenPlans","screenVault","screenExec"];
+                 "screenTools","screenTool","screenImp","screenPlans","screenVault","screenExec","screenReady"];
 const SCREEN_TITLE = {
   screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
   screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
   screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية", screenWho: "منسوبو المدرسة",
-  screenVault: "مستودع المدرسة", screenExec: "خطتي التنفيذية",
+  screenVault: "مستودع المدرسة", screenExec: "خطتي التنفيذية", screenReady: "جاهزية الزيارة",
 };
 let activeScreen = "screenConnect";
 function only(id){
@@ -730,6 +745,8 @@ const NAV = [
   { id: "dash", ic: "▣", label: "لوحتي", go: () => goDash() },
   { id: "records", ic: "▤", label: "سجلاتي", go: () => goRecords(), count: () => myRecords.length },
   { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(), count: () => myTools.length },
+  { id: "ready", ic: "◉", label: "جاهزية الزيارة", go: () => goReady(),
+    when: () => canSeeImprovement(me.role, bundle.support) },
   { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => openImprovement(),
     when: () => canSeeImprovement(me.role, bundle.support) },
   { id: "exec", ic: "✎", label: "خطتي التنفيذية", go: () => goExec(),
@@ -1370,6 +1387,64 @@ document.addEventListener("click", (e) => {
   if (!$("prefsPop").contains(e.target) && e.target !== $("prefsBtn")) $("prefsPop").classList.add("hidden");
   if (!$("searchBox").contains(e.target)) $("gresults").classList.add("hidden");
 });
+
+/* ── جاهزية الزيارة ── */
+async function goReady() {
+  only("screenReady"); markNav("ready");
+  $("readyMeta").textContent = "جارٍ الحساب من مجلد المدرسة…";
+  const counts = await countSavedRecords(store);
+  const evidence = await countEvidence(store);
+  const execPlans = await countExecPlans(store);
+  const sums = [];
+  for (const t of bundle.tools.tools) sums.push(summarize(t, await loadToolResponses(store, t.key)));
+  const selfByCode = new Map(rollupByIndicator(sums).map((r) => [r.code, r]));
+
+  const R = computeReadiness({
+    records: bundle.records.records, recordCounts: counts, toolSummaries: sums,
+    improvement: bundle.improvement, evidence, execPlans, rosterSize: roster.length,
+  });
+  const lab = readinessLabel(R.score);
+  $("readyMeta").textContent = bundle.school.nameAr + " · حُسِبت الآن من مجلد المدرسة";
+  $("readyScore").innerHTML =
+    '<div style="display:flex;align-items:center;gap:26px;flex-wrap:wrap">' +
+    '<div><div style="font-size:52px;font-weight:700;color:var(--brand);line-height:1">' +
+      R.score.toFixed(0) + '<span style="font-size:24px">%</span></div>' +
+    '<div class="tag ' + (lab.c === "ok" ? "" : "gold") + '" style="margin-top:8px">' + esc(lab.t) + "</div></div>" +
+    '<div style="flex:1;min-width:280px">' + DIMENSIONS.map((d) => {
+      const x = R.dims[d.key];
+      return '<div style="display:flex;align-items:center;gap:11px;margin-bottom:7px">' +
+        '<span style="min-width:150px;font-size:13.5px">' + esc(d.label) + "</span>" +
+        '<span class="bar-m" style="flex:1"><i style="width:' + x.pct.toFixed(0) + '%"></i></span>' +
+        '<b style="min-width:44px;font-size:13.5px">' + x.pct.toFixed(0) + "%</b>" +
+        '<span class="muted" style="min-width:38px">×' + d.weight + "</span></div>";
+    }).join("") + "</div></div>";
+
+  $("readyDims").innerHTML =
+    "<table><thead><tr><th>البُعد</th><th>الوزن</th><th>النسبة</th><th>الدليل</th></tr></thead><tbody>" +
+    DIMENSIONS.map((d) => {
+      const x = R.dims[d.key];
+      return "<tr><td><b>" + esc(d.label) + "</b></td><td>" + d.weight + "%</td>" +
+        '<td><span class="bar-m" style="width:80px"><i style="width:' + x.pct.toFixed(0) + '%"></i></span> ' +
+        x.pct.toFixed(0) + "%</td><td>" + esc(x.note) + "</td></tr>";
+    }).join("") + "</tbody></table>";
+
+  const verifyTool = bundle.tools.tools.find((t) => t.key === "EVIDENCE_VERIFICATION");
+  const st = indicatorStatus({ improvement: bundle.improvement, records: bundle.records.records,
+                               recordCounts: counts, selfByCode, verifyTool });
+  $("readyInd").innerHTML =
+    "<table><thead><tr><th>المؤشر</th><th>التقويم الخارجي</th><th>تقويمنا الذاتي</th>" +
+    "<th>السجلات المُفعَّلة</th><th>دلالات التحقق</th></tr></thead><tbody>" +
+    st.map((x) => "<tr" + (x.isWeak ? ' class="weak"' : "") + "><td><b>" + esc(x.code) + "</b>" +
+      '<div class="muted">' + esc(shortLabel(x.textAr)) + "</div></td>" +
+      "<td>" + (x.external == null ? "—" : x.external.toFixed(1)) +
+        (x.isWeak ? ' <span class="tag gold">دون المستوى</span>' : "") + "</td>" +
+      "<td>" + (x.self == null ? "—" : x.self.toFixed(0) + "%") + "</td>" +
+      "<td>" + (x.records === 0 ? '<span class="muted">لا سجل</span>'
+        : x.filled + " من " + x.records + (x.filled === 0 ? " ⚠️" : "")) + "</td>" +
+      "<td>" + (x.hasVerify ? '<span class="tag">متوفرة</span>' : '<span class="muted">لم تُضَف بعد</span>') +
+      "</td></tr>").join("") + "</tbody></table>";
+}
+$("readyRefresh").onclick = goReady;
 
 /* ── خطتي التنفيذية: 38 أسبوعًا قابلة للتحرير والحفظ ── */
 let execState = null;

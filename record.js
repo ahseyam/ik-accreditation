@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=e84427ef";
-import { derive, seedRows } from "./autofill.js?v=e84427ef";
+import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=fee6c3ba";
+import { derive, seedRows } from "./autofill.js?v=fee6c3ba";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -736,6 +736,20 @@ function evalShowWhen(rule, state) {
   return Array.isArray(v) ? v.includes(state[k]) : state[k] === v;
 }
 
+/** نموذج شواهد عام — يُستعمل حين يخلو القالب من الحقول */
+const GENERIC_EVIDENCE_FIELDS = [
+  { type: "SECTION_HEADER", label: "بيانات العمل" },
+  { type: "TEXT", key: "title", label: "عنوان العمل أو النشاط", required: true },
+  { type: "DATE", key: "entryDate", label: "التاريخ", autoFill: "TODAY" },
+  { type: "TEXTAREA", key: "summary", label: "وصف ما نُفِّذ", rows: 4 },
+  { type: "TEXTAREA", key: "outcome", label: "الأثر والنتائج", rows: 3 },
+  { type: "SECTION_HEADER", label: "الشواهد" },
+  { type: "FILES", key: "evidence", label: "أرفق الشواهد",
+    helpText: "صور · تقارير · كشوف حضور · أي شاهد رسمي." },
+  { type: "SECTION_HEADER", label: "الاعتماد" },
+  { type: "USER_SIGNATURE", key: "sign", label: "توقيع المسؤول" },
+];
+
 /** يبني النموذج كاملًا لقالب سجل */
 export function renderRecordForm(container, template, state, ctx) {
   container.innerHTML = "";
@@ -751,7 +765,16 @@ export function renderRecordForm(container, template, state, ctx) {
     }
     container.append(head);
   }
-  for (const f of ff.fields ?? []) container.append(renderField(f, state, ctx));
+  const fields = ff.fields ?? [];
+  /* ⚠️ سجل بلا حقول ولا حاوية يفتح **فارغًا** أمام صاحبه (رُصد في سجل 36).
+     يُعطى نموذج شواهد عامًّا بدل الفراغ: وصف · شواهد · توقيع. */
+  if (fields.length === 0 && !template.isContainer) {
+    container.append(el("div", "note sm",
+      "هذا السجل بلا نموذج محدَّد في القالب — استعمله ملفَّ شواهد: صف العمل وأرفق أدلّته."));
+    for (const f of GENERIC_EVIDENCE_FIELDS) container.append(renderField(f, state, ctx));
+    return container;
+  }
+  for (const f of fields) container.append(renderField(f, state, ctx));
   return container;
 }
 
