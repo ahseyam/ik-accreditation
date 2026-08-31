@@ -1,3 +1,5 @@
+import { derive, seedRows } from "./autofill.js";
+
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
    مرئي ويُحصى في UNSUPPORTED كي لا نَدَّعي تغطية لا نملكها.                 */
@@ -16,14 +18,20 @@ const AR_DAYS = ["الأحد", "الاثنين", "الثلاثاء", "الأرب
 function todayISO() { return new Date().toISOString().slice(0, 10); }
 function nowISO() { return new Date().toISOString().slice(0, 16); }
 
-/** القيم التلقائية المعلنة في الـDSL */
-function autoValue(field, ctx) {
+/** القيم التلقائية: ما يعلنه الـDSL، ثم ما يستطيع النظام اشتقاقه */
+let FILL = null;
+export function setFillContext(ctx) { FILL = ctx; }
+
+function autoValue(field) {
   switch (field.autoFill) {
     case "NOW": case "NOW_ON_RETURN": return nowISO();
-    case "TODAY": return todayISO();
-    case "TODAY_HIJRI": return todayISO();
-    default: return field.default ?? "";
+    case "TODAY": case "TODAY_HIJRI": return todayISO();
   }
+  if (FILL) {
+    const d = derive(field, FILL);
+    if (d != null && d !== "") return d;
+  }
+  return field.default ?? "";
 }
 
 function labelFor(field) {
@@ -49,9 +57,15 @@ function box(field, control) {
 
 function bindValue(input, field, state, key) {
   const k = key ?? field.key ?? field.id;
-  const initial = state[k] !== undefined ? state[k] : autoValue(field, null);
+  const initial = state[k] !== undefined ? state[k] : autoValue(field);
   if (input.type === "checkbox") input.checked = Boolean(initial);
   else input.value = initial ?? "";
+  // يُسجَّل المشتقّ في الحالة فورًا كي يُحفظ ولو لم يلمسه المستخدم
+  if (state[k] === undefined && initial !== "" && input.type !== "checkbox") {
+    state[k] = initial;
+    input.classList.add("auto");
+    input.title = "عُبِّئ تلقائيًا — يمكنك تعديله";
+  }
   if (field.readOnly) input.readOnly = true;
   input.addEventListener("input", () => {
     state[k] = input.type === "checkbox" ? input.checked : input.value;
@@ -167,8 +181,12 @@ function recurringTable(field, state, ctx) {
   const k = field.key ?? field.id;
   const cols = field.columns ?? [];
   if (!state[k]) {
-    const n = field.initialRows ?? field.defaultRows ?? 3;
-    state[k] = Array.from({ length: n }, () => ({}));
+    const seeded = FILL ? seedRows(field, FILL) : null;
+    if (seeded && seeded.length) state[k] = seeded;
+    else {
+      const n = field.initialRows ?? field.defaultRows ?? 3;
+      state[k] = Array.from({ length: n }, () => ({}));
+    }
   }
   const wrap = el("div", "table-wrap");
   const table = el("table", "rec-table");
@@ -336,11 +354,46 @@ function dutyRoster(field, state, ctx) {
   return wrap;
 }
 
+/* ⚠️ محتوى صناديق الإرشاد يأتي بثلاثة أشكال: **نصّ بماركداون خفيف** (42) ·
+   **مصفوفة بنود** (84) · و**غائب تمامًا** (170). كان يُمرَّر كنصّ واحد، فالمصفوفة
+   تُطبع بفواصل، والغائب يُظهر صندوقًا فارغًا رآه المستشار. */
+function richText(t) {
+  const frag = document.createDocumentFragment();
+  String(t).split(/\n+/).forEach((line, i) => {
+    if (i) frag.append(document.createElement("br"));
+    // **غامق**
+    line.split(/\*\*(.+?)\*\*/g).forEach((part, j) => {
+      if (!part) return;
+      frag.append(j % 2 ? Object.assign(document.createElement("b"), { textContent: part })
+                        : document.createTextNode(part));
+    });
+  });
+  return frag;
+}
+
+function infoBox(field) {
+  const c = field.content;
+  const has = Array.isArray(c) ? c.length > 0 : typeof c === "string" ? c.trim() !== "" : false;
+  if (!has) return el("div", "hidden");          // لا صندوق فارغ
+  const box = el("div", "note sm guide");
+  if (field.label) box.append(el("b", "guide-t", field.label));
+  if (Array.isArray(c)) {
+    const ul = el("ul", "guide-list");
+    for (const line of c) ul.append(el("li", null, String(line)));
+    box.append(ul);
+  } else {
+    const d = el("div");
+    d.append(richText(c));
+    box.append(d);
+  }
+  return box;
+}
+
 /* ── سجلّ المعالجات: مفتاح النوع ⇐ دالة ── */
 export const HANDLERS = {
   SECTION_HEADER: (f) => { const h = el("h3", "sec", f.label ?? ""); return h; },
-  INFO_BOX: (f) => el("div", "note sm", f.content ?? f.label ?? ""),
-  INFO_BLOCK: (f) => el("div", "note sm", f.content ?? f.label ?? ""),
+  INFO_BOX: (f) => infoBox(f),
+  INFO_BLOCK: (f) => infoBox(f),
   COLOR_LEGEND: (f) => {
     const w = el("div", "legend");
     for (const it of f.items ?? f.options ?? []) {
@@ -451,4 +504,62 @@ function resolvePrimary(def, ctx) {
     case "currentUser.role": return ctx.roleAr;
     default: return def.value ?? (def.from?.includes("Date") ? todayISO() : "");
   }
+}
+
+
+const FREQ_HINT = {
+  DAILY: "يُعبَّأ كل يوم دراسي", WEEKLY: "يُعبَّأ مرّة كل أسبوع",
+  MONTHLY: "يُعبَّأ مرّة كل شهر", PER_SEMESTER: "يُعبَّأ مرّة كل فصل",
+  YEARLY: "يُعبَّأ مرّة في العام", ANNUAL: "يُعبَّأ مرّة في العام",
+  PER_EVENT: "يُعبَّأ عند كل حدث أو نشاط", AS_NEEDED: "يُعبَّأ عند الحاجة",
+  CONTINUOUS: "يُحدَّث باستمرار",
+};
+
+/** لوحة «كيف يعمل هذا السجل» — كلها من بيانات القالب، بلا تأليف */
+export function buildGuide(t, ctx) {
+  const box = el("details", "guide-panel");
+  box.open = true;
+  const sum = el("summary", null, "كيف يعمل هذا السجل");
+  box.append(sum);
+  const body = el("div", "guide-body");
+
+  if (t.descriptionAr) body.append(el("p", "guide-desc", t.descriptionAr));
+
+  const facts = [];
+  if (t.fillFrequency) facts.push(["الدورية", FREQ_HINT[t.fillFrequency] || t.fillFrequency]);
+  if (t.expectedEntriesPerSemester)
+    facts.push(["المتوقَّع", t.expectedEntriesPerSemester + " إدخالًا في الفصل"]);
+  if ((t.primaryRoles || []).length)
+    facts.push(["المسؤول", t.primaryRoles.map(ctx.roleArFn).join("، ")]);
+  if ((t.dataEntryRoles || []).length)
+    facts.push(["يشارك في الإدخال", t.dataEntryRoles.map(ctx.roleArFn).join("، ")]);
+  if ((t.etecIndicators || []).length)
+    facts.push(["مؤشرات ETEC", t.etecIndicators.join("، ")]);
+  if ((t.docAnalysisItems || []).length)
+    facts.push(["فقرات تحليل الوثائق", t.docAnalysisItems.join("، ")]);
+  const files = countFileFields(t);
+  if (files) facts.push(["الشواهد", files + " حقل رفع — أرفق صورًا أو ملفات لكل عملية"]);
+
+  const dl = el("div", "guide-facts");
+  for (const [k, v] of facts) {
+    const row = el("div", "gf");
+    row.append(el("span", "gk", k), el("span", "gv", v));
+    dl.append(row);
+  }
+  body.append(dl);
+  box.append(body);
+  return box;
+}
+
+function countFileFields(t) {
+  let n = 0;
+  const walk = (fields) => {
+    for (const f of fields || []) {
+      if (f.type === "FILE" || f.type === "FILES") n++;
+      for (const c of f.columns || []) if (c.type === "FILE" || c.type === "FILES") n++;
+      if (f.fields) walk(f.fields);
+    }
+  };
+  walk(t.formFields?.fields);
+  return n;
 }

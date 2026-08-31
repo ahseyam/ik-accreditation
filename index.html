@@ -305,6 +305,25 @@
   table.mirror td.wk{border-inline-start:1px solid var(--line)}
   table.mirror td.wk.on{background:var(--brand-2)!important}
   table.mirror .sem2{border-inline-start:2px solid var(--gold)!important}
+  .f-in.auto{background:var(--gold-soft);border-color:#e3d3ab}
+  html[data-theme="dark"] .f-in.auto{background:#2a2418;border-color:#4a3f24}
+  .guide-panel{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--brand-soft);
+               margin-bottom:18px;overflow:hidden}
+  .guide-panel>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;color:var(--brand)}
+  .guide-body{padding:0 16px 15px}
+  .guide-desc{margin:0 0 11px;font-size:14px;line-height:1.75}
+  .guide-facts{display:grid;gap:6px}
+  .gf{display:flex;gap:10px;font-size:13.5px;align-items:baseline}
+  .gk{color:var(--ink-2);min-width:112px;flex:none}
+  .gv{font-weight:700}
+  .guide .guide-t{display:block;margin-bottom:6px}
+  ul.guide-list{margin:4px 0 0;padding-inline-start:18px}
+  ul.guide-list li{margin-bottom:3px}
+  details.tree{border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:10px;
+               background:var(--panel);overflow:hidden}
+  details.tree>summary{cursor:pointer;padding:12px 16px;font-weight:700;font-size:14.5px;
+                       background:var(--brand-soft);color:var(--brand)}
+  details.tree table{border-top:1px solid var(--line)}
   .hidden{display:none!important}
   @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
 </style>
@@ -368,6 +387,7 @@
         <p class="sub" id="recsSub"></p>
         <div class="toolbar">
           <input class="search" id="recSearch" placeholder="ابحث باسم السجل…">
+          <button class="b-ghost b-sm" id="recView" data-mode="flat">🗂️ عرض شجري</button>
           <select class="f-in" id="recFilter" style="width:auto">
             <option value="">كل التعبئات</option><option value="DAILY">يومي</option>
             <option value="WEEKLY">أسبوعي</option><option value="MONTHLY">شهري</option>
@@ -389,6 +409,7 @@
           <button class="b-ghost b-sm" id="recBack">القائمة</button>
         </div>
         <div id="recSaved"></div>
+        <div id="recGuide"></div>
         <div class="card"><form id="recForm" onsubmit="return false"></form></div>
         <div class="sticky-save">
           <button class="b-main" id="recSave">حفظ في مجلدي</button>
@@ -462,7 +483,8 @@ import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit } from "./app.js";
-import { renderRecordForm, UNSUPPORTED } from "./record.js";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js";
 import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
          rollupByIndicator, evidenceFromRecords, toolResponsePath } from "./tools.js";
@@ -689,11 +711,50 @@ function goRecords() {
     myRecords.filter((r) => r._shared).length + " تشارك في إدخالها · الترقيم بترتيب صفحتك";
   drawRecords();
 }
+/* العرض الشجري: الحاويات آباء وما تحتها أبناء — 40 حاوية و161 سجلًا لها أب */
+function drawTree(rows) {
+  const byId = new Map(bundle.records.records.map((r) => [r.id ?? r.key ?? r.number, r]));
+  const mine = new Set(rows.map((r) => r.number));
+  const containers = bundle.records.records.filter((r) => r.isContainer);
+  const childrenOf = (c) => bundle.records.records.filter(
+    (r) => r.parentTemplateId && (r.parentTemplateId === c.id) && mine.has(r.number));
+  const seq = new Map(myRecords.map((r) => [r.number, r.seq]));
+  const parts = [];
+  const used = new Set();
+  for (const c of containers) {
+    const kids = childrenOf(c);
+    if (kids.length === 0) continue;
+    kids.forEach((k) => used.add(k.number));
+    parts.push('<details class="tree" open><summary>' + esc(c.nameAr) +
+      '<span class="tag gray" style="margin-inline-start:9px">' + kids.length + "</span></summary>" +
+      "<table><tbody>" + kids.map((r) =>
+        '<tr class="click" data-num="' + r.number + '"><td style="width:44px">' + (seq.get(r.number) ?? "") +
+        "</td><td>" + esc(r.nameAr) + '</td><td style="width:120px"><span class="tag gray">' +
+        esc(freqAr(r.fillFrequency)) + "</span></td></tr>").join("") + "</tbody></table></details>");
+  }
+  const loose = rows.filter((r) => !used.has(r.number));
+  if (loose.length) parts.push('<details class="tree" open><summary>سجلات مستقلة' +
+    '<span class="tag gray" style="margin-inline-start:9px">' + loose.length + "</span></summary>" +
+    "<table><tbody>" + loose.map((r) =>
+      '<tr class="click" data-num="' + r.number + '"><td style="width:44px">' + r.seq + "</td><td>" +
+      esc(r.nameAr) + '</td><td style="width:120px"><span class="tag gray">' +
+      esc(freqAr(r.fillFrequency)) + "</span></td></tr>").join("") + "</tbody></table></details>");
+  return parts.join("");
+}
+
 function drawRecords() {
   const q = ($("recSearch").value || "").trim();
   const f = $("recFilter").value;
   const rows = myRecords.filter((r) =>
     (!q || r.nameAr.includes(q)) && (!f || r.fillFrequency === f));
+  if ($("recView").dataset.mode === "tree") {
+    $("myRecords").innerHTML = rows.length ? drawTree(rows)
+      : '<div class="warn" style="margin:0">لا سجلات مطابقة.</div>';
+    $("myRecords").querySelectorAll("tr.click").forEach((tr) => {
+      tr.onclick = () => openRecord(Number(tr.dataset.num));
+    });
+    return;
+  }
   $("myRecords").innerHTML = rows.length === 0
     ? '<div class="warn" style="margin:0">لا سجلات مطابقة.</div>'
     : "<table><thead><tr><th style='width:44px'>م</th><th>السجل</th><th style='width:120px'>التعبئة</th>" +
@@ -708,6 +769,12 @@ function drawRecords() {
     tr.onclick = () => openRecord(Number(tr.dataset.num));
   });
 }
+$("recView").onclick = () => {
+  const t = $("recView").dataset.mode === "tree";
+  $("recView").dataset.mode = t ? "flat" : "tree";
+  $("recView").textContent = t ? "🗂️ عرض شجري" : "☰ عرض قائمة";
+  drawRecords();
+};
 $("recSearch").oninput = drawRecords;
 $("recFilter").onchange = drawRecords;
 
@@ -720,7 +787,9 @@ async function listSaved(number) {
                 .map((f) => f.name.replace(/\.json$/, ""));
   } catch { return []; }
 }
+let fillWeek = null;
 async function openRecord(number, entryId) {
+  fillWeek = currentWeek(bundle.support?.weeks);
   recIndex = myRecords.findIndex((r) => r.number === number);
   recTemplate = myRecords[recIndex];
   if (!recTemplate) return;
@@ -734,7 +803,8 @@ async function openRecord(number, entryId) {
   $("recMeta").textContent =
     "التعبئة: " + freqAr(recTemplate.fillFrequency) +
     (recTemplate.etecIndicators.length ? " · مؤشرات ETEC: " + recTemplate.etecIndicators.join("، ") : "") +
-    " · الإدخال: " + recEntryId;
+    " · الإدخال: " + recEntryId +
+    (fillWeek ? " · " + semesterLabel(fillWeek) + " الأسبوع " + fillWeek.weekNumber : "");
   $("recPos").textContent = recTemplate.seq + " من " + myRecords.length;
   $("recPrev").disabled = recIndex <= 0;
   $("recNext").disabled = recIndex >= myRecords.length - 1;
@@ -748,6 +818,12 @@ async function openRecord(number, entryId) {
   $("recSaved").querySelectorAll("a").forEach((a) => {
     a.onclick = (e) => { e.preventDefault(); openRecord(number, a.dataset.id); };
   });
+
+  // سياق التعبئة التلقائية + لوحة «كيف يعمل هذا السجل»
+  const fill = fillContext(bundle, me, roleAr, STAGE_AR[bundle.school.stage]);
+  setFillContext(fill);
+  $("recGuide").innerHTML = "";
+  $("recGuide").append(buildGuide(recTemplate, { roleArFn: roleAr }));
 
   const before = UNSUPPORTED.length;
   renderRecordForm($("recForm"), recTemplate, recState, {
