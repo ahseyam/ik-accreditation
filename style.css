@@ -234,9 +234,13 @@
   .f-label{color:var(--ink)}
   .f-help{color:var(--ink-2)}
   .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-sm);padding:9px;background:#fbfdfc}
-  table.rec-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:520px}
-  table.rec-table th{background:#f4f8f7;font-size:12.5px;padding:8px;white-space:nowrap;position:static}
-  table.rec-table td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.rec-table{width:100%;border-collapse:collapse;font-size:12.8px;min-width:520px}
+  /* ⚠️ `white-space:nowrap` على العنوان يمنع كسره فيمطّ العمود بلا حدّ.
+     والعرض الأدنى لكل عمود يُشتقّ الآن في record.js من نوعه ومحتواه. */
+  table.rec-table th{background:#f4f8f7;font-size:12.4px;padding:7px 8px;position:static;
+                     white-space:normal;vertical-align:middle;text-align:center;line-height:1.4}
+  table.rec-table td{padding:6px 8px;border-bottom:1px solid var(--line);
+                     vertical-align:middle;text-align:center}
   table.rec-table td.num,table.rec-table th.num{width:34px;text-align:center;color:var(--ink-2)}
   .sig-pad{border:1px dashed var(--line-2);border-radius:var(--r-sm);background:#fff;display:block;touch-action:none;max-width:100%}
   .primary{display:flex;flex-wrap:wrap;gap:9px 26px;background:var(--brand-soft);
@@ -354,7 +358,9 @@
   .rich-bar.docked{position:fixed;inset-inline:8px;bottom:calc(10px + var(--statusH));
                    top:auto;max-width:none;justify-content:center;
                    box-shadow:0 -6px 22px -12px rgba(0,0,0,.45)}
-  .f-in.rich{min-height:38px;line-height:1.7;overflow-wrap:anywhere}
+  /* ⚠️ `anywhere` يكسر داخل الكلمة الواحدة فتتوزّع حروفها على سطرين.
+     `break-word` لا يكسرها إلا إن استحال غير ذلك. */
+  .f-in.rich{min-height:36px;line-height:1.65;overflow-wrap:break-word;word-break:normal}
   .f-in.rich:empty::before{content:"اكتب هنا…";color:var(--ink-2)}
   /* إخراج المحضر */
   .meeting-scope{border-inline-start:3px solid var(--gold);margin-top:10px}
@@ -483,3 +489,18 @@
 /* صفّ الاجتماع الواقع في الأسبوع الجاري */
 .rec-table tr.row-now>td{background:var(--gold-soft)}
 .rec-table tr.row-now>td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
+
+/* ── اتّزان خلايا الجداول: توسيط رأسي عامّ، وأفقي لما يقصر، وخطّ أصغر
+   قليلًا حتى لا تنكسر الكلمة الواحدة. أجهزة اللمس تبقى على 16px لأن
+   ما دونها يُجبر سفاري على تكبير الصفحة. ── */
+.rec-table{font-size:12.8px}
+.rec-table th{line-height:1.4;overflow-wrap:break-word;word-break:normal}
+.rec-table td .f-in{text-align:center;overflow-wrap:break-word;word-break:normal}
+.rec-table td.t-start,.rec-table td.t-start .f-in{text-align:start}
+.rec-table td textarea.f-in{text-align:start;line-height:1.6}
+.rec-table td .f-in{font-size:12.8px;padding:6px 8px;min-height:34px}
+.rec-table td .f-in.rich{display:flex;align-items:center;justify-content:center}
+.rec-table td.t-start .f-in.rich{justify-content:flex-start;align-items:flex-start}
+@media(pointer:coarse){
+  .rec-table,.rec-table td .f-in{font-size:16px}
+}

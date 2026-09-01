@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=88fcafeb";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=88fcafeb";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=d8bc5fff";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=d8bc5fff";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -295,6 +295,31 @@ function filesInput(field, state, ctx, key, multiple) {
 /* عمود المسلسل: القالب يصرّح `autoFill:"ROW_NUMBER"` وكان المحرّك يتجاهله
    فيظهر عمود «م» مربّعًا فارغًا للقراءة فقط بجوار عمود «#» الذي يرسمه المحرّك —
    عمودان لرقم واحد، وأحدهما يسأل المستخدم عمّا لا جواب له. */
+/* ── عرض الخليّة بقدر ما يُكتب فيها ──
+   قياس: 416 كلمة تنكسر حروفها على سطرين، جُلّها «الأول» في عمود «الفَصل»
+   لأن عرضه تبع عنوانه لا محتواه. يُشتقّ حدّ أدنى لكل عمود من نوعه وطول
+   عنوانه وأطول خيار فيه، فلا يضيق عن كلمته ولا يتمدّد بلا داع.
+   التشكيل لا يشغل عرضًا فيُنزع قبل القياس. */
+const bareLen = (t) => String(t ?? "").replace(/[\u064B-\u0652\u0640]/g, "").trim().length;
+function colMinWidth(c) {
+  if (isSerialCol(c)) return 46;
+  const t = String(c.type ?? "TEXT").toUpperCase();
+  const head = bareLen(c.label) * 7.4 + 26;          // العنوان لا ينكسر أيضًا
+  const opts = (c.options ?? []).map((o) => bareLen(o?.l ?? o?.label ?? o));
+  const widest = opts.length ? Math.max(...opts) * 7.4 + 52 : 0;
+  switch (t) {
+    case "DATE": return Math.max(138, head);
+    case "TIME": return Math.max(100, head);
+    case "NUMBER": return Math.max(88, head);
+    case "BOOLEAN": return Math.max(64, head);
+    case "SELECT": case "MULTI_SELECT": case "LOOKUP": case "TEACHER_PICKER":
+      return Math.max(150, head, widest);
+    case "TEXTAREA": return Math.max(210, head);
+    case "SIGNATURE": case "USER_SIGNATURE": case "REMOTE_SIGNATURE": return Math.max(150, head);
+    default: return Math.max(112, head);
+  }
+}
+
 const isSerialCol = (c) =>
   c.autoFill === "ROW_NUMBER" || /^(م|#|مسلسل|الرقم)$/.test(String(c.label ?? "").trim());
 
@@ -317,6 +342,9 @@ const isoDay = (d) => {
   return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
 };
 
+const countAr = (n, one, two, few, many) =>
+  n === 1 ? one : n === 2 ? two : n <= 10 ? n + " " + few : n + " " + many;
+
 function seedSchedule(field, ctx) {
   const cols = field.columns ?? [];
   if (!isScheduleTable(cols)) return null;
@@ -332,8 +360,9 @@ function seedSchedule(field, ctx) {
     semester: m.semester === 1 ? "الأول" : "الثاني",
     week: m.weekNumber,
     scheduledAt: isoDay(m.date),
-    itemsCount: agendaForMeeting(committee, m, meetings.length)
-      .map((it) => it.n + ". " + it.text).join(" • "),
+    // مفتاح العمود `itemsCount` — عدد لا نصّ. البنود كاملةً تُكتب في محضر
+    // الاجتماع نفسه (CommitteeMeeting.agendaItems)، فلا تُكرَّر هنا وتُطيل الصفّ.
+    itemsCount: countAr(agendaForMeeting(committee, m, meetings.length).length, "بند", "بندان", "بنود", "بندًا"),
     status: "",
   }));
 }
@@ -441,6 +470,7 @@ function recurringTable(field, state, ctx) {
       const th = el("th", isSerialCol(c) ? "num" : null,
         interpolate(c.label ?? c.key ?? "", interpScope(0)));
       if (c.width) th.style.width = c.width;
+      else th.style.minWidth = colMinWidth(c) + "px";
       htr.append(th);
     }
     htr.append(el("th", "num", ""));
@@ -487,6 +517,9 @@ function recurringTable(field, state, ctx) {
           if (c.width) td.style.width = c.width;
           const ctrl = columnControl(c, row, ctx, field);
           controls[c.key] = ctrl.querySelector?.("input,select,textarea,[contenteditable]") ?? ctrl;
+          // القصير يُوسَّط، والطويل يبدأ من اليمين — توسيط فقرة يُتعب القراءة
+          const long = bareLen(row[c.key]) > 42 || String(c.type).toUpperCase() === "TEXTAREA";
+          if (long) td.classList.add("t-start");
           td.append(ctrl);
         }
         tr.append(td);
