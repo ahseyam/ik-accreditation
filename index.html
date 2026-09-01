@@ -223,30 +223,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=cde37496";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=9f2ac9d2";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=cde37496";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=cde37496";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=cde37496";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=cde37496";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=cde37496";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=9f2ac9d2";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=9f2ac9d2";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=9f2ac9d2";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=9f2ac9d2";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=9f2ac9d2";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=cde37496";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=cde37496";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=9f2ac9d2";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=9f2ac9d2";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=cde37496";
-import { surveyLink, extractCodes } from "./survey.js?v=cde37496";
+         fullBackup } from "./vault.js?v=9f2ac9d2";
+import { surveyLink, extractCodes } from "./survey.js?v=9f2ac9d2";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=cde37496";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=9f2ac9d2";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=cde37496";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=9f2ac9d2";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=cde37496";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=cde37496";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=9f2ac9d2";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=9f2ac9d2";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -602,6 +602,8 @@ async function openRecord(number, entryId) {
   const fill = fillContext(bundle, me, roleAr, STAGE_AR[bundle.school.stage]);
   fill.mySignature = mySignature;
   setFillContext(fill);
+  // توحيد صيغ المسمّيات المكرّرة — يُبنى من الحزمة مرّة واحدة
+  buildLabelCanon(bundle.records.records || bundle.records);
   $("recGuide").innerHTML = "";
   $("recGuide").append(buildGuide(recTemplate, { roleArFn: roleAr,
     verifyTool: bundle.tools.tools.find((t) => t.key === "EVIDENCE_VERIFICATION") }));

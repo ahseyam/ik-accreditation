@@ -2,8 +2,8 @@
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فحص تغطية محرّك السجلات</title></head>
 <body><div id="sink"></div><pre id="out">…</pre>
 <script type="module">
-import { HttpStore } from "./storage.js?v=cde37496";
-import { renderRecordForm, UNSUPPORTED, HANDLERS } from "./record.js?v=cde37496";
+import { HttpStore } from "./storage.js?v=9f2ac9d2";
+import { renderRecordForm, UNSUPPORTED, HANDLERS } from "./record.js?v=9f2ac9d2";
 const data = new URLSearchParams(location.search).get("data");
 const store = new HttpStore(data);
 const [records, support, school] = await Promise.all([

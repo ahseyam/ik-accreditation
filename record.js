@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=cde37496";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=cde37496";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=9f2ac9d2";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=9f2ac9d2";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -126,9 +126,66 @@ export function arabizeText(t) {
   return out;
 }
 
+/* ── توحيد صيغة «ملاحظات» ──
+   القوالب تحمل ثماني صيغ للكلمة نفسها في 53 موضعًا: مُلاحَظات · ملحوظات ·
+   ملاحَظات · ملحوظة · ملاحظات · مَلاحَظة · مَلحوظة · المُلاحَظات. الاختلاف
+   بلا معنى، ويظهر للمقيّم الخارجي تفاوتًا في وثيقة واحدة. تُوحَّد **عند
+   العرض** على الصيغة الأكثر ورودًا، فيسري على الحزم الإحدى والأربعين معًا
+   ويبقى بعد إعادة توليدها.
+   ⚠️ المركّبة لا تُمَسّ: «ملحوظات عامة (اختياري)» و«مُلاحَظة المدير»
+   و«ملاحظات وإجراءات المتعثّرين» لها معانٍ إضافية. */
+/* والعلّة أوسع: 35 مسمّى آخر يظهر بصيغتين لا يفرّق بينهما إلا التشكيل
+   («بَيانات الخِطة» و«بَيانات الخطة»، «عُنوان التَقرير» و«عنوان التقرير»).
+   يُبنى جدول توحيد من الحزمة نفسها: لكل مجموعة تتطابق بعد تجريد التشكيل
+   تُختار الصيغة الأكثر ورودًا، وعند التساوي الأوفى تشكيلًا — فأسلوب
+   الحزمة مُشكَّل. لا قائمة مكتوبة بيدي تُنسى عند تغيّر البيانات. */
+let LABEL_CANON = new Map();
+// ⚠️ المفتاح يجب أن يُبنى بعد نزع الزخرفة أيضًا: عناوين الأقسام تُعرض
+//    بلا «═══» فلا يجدها الجدول إن حُفظت بها.
+const stripTashkeel = (t) =>
+  stripDecor(String(t ?? "")).replace(/[\u064B-\u0652\u0640]/g, "").trim();
+const tashkeelCount = (t) => (String(t).match(/[\u064B-\u0652]/g) || []).length;
+
+export function buildLabelCanon(records) {
+  const groups = new Map();
+  const visit = (o) => {
+    if (Array.isArray(o)) { o.forEach(visit); return; }
+    if (!o || typeof o !== "object") return;
+    const lab = o.label;
+    if (typeof lab === "string" && lab.trim() && !lab.includes("{")) {
+      const k = stripTashkeel(lab);
+      if (k) {
+        if (!groups.has(k)) groups.set(k, new Map());
+        const g = groups.get(k);
+        g.set(lab, (g.get(lab) ?? 0) + 1);
+      }
+    }
+    for (const v of Object.values(o)) visit(v);
+  };
+  for (const r of records || []) visit(r.formFields);
+  const canon = new Map();
+  for (const [k, forms] of groups) {
+    if (forms.size < 2) continue;
+    const best = [...forms].sort((a, b) =>
+      b[1] - a[1] || tashkeelCount(b[0]) - tashkeelCount(a[0]) || a[0].localeCompare(b[0], "ar"))[0][0];
+    canon.set(k, best);
+  }
+  LABEL_CANON = canon;
+  return canon;
+}
+
+const NOTES_CANON = "مُلاحَظات";
+const NOTES_BARE = /^(?:ال)?(?:ملاحظات|ملحوظات|ملاحظة|ملحوظة)$/;
+export function canonLabel(text) {
+  if (typeof text !== "string") return text;
+  const bare = stripTashkeel(text);
+  if (NOTES_BARE.test(bare)) return NOTES_CANON;
+  return LABEL_CANON.get(bare) ?? text;
+}
+
 function labelFor(field) {
   const wrap = el("div", "f-label");
-  wrap.append(el("span", null, arabizeText(arabizeCode(interpolate(field.label || field.key || "", interpScope(0))))));
+  wrap.append(el("span", null, canonLabel(arabizeText(arabizeCode(interpolate(field.label || field.key || "", interpScope(0)))))));
   if (field.required) wrap.append(el("span", "req", " *"));
   return wrap;
 }
@@ -491,7 +548,7 @@ function recurringTable(field, state, ctx) {
     if (!serialCol) htr.append(el("th", "num", "#"));
     for (const c of shownCols()) {
       const th = el("th", isSerialCol(c) ? "num" : null,
-        interpolate(c.label ?? c.key ?? "", interpScope(0)));
+        canonLabel(interpolate(c.label ?? c.key ?? "", interpScope(0))));
       if (c.width) th.style.width = c.width;
       else th.style.minWidth = colMinWidth(c) + "px";
       htr.append(th);
@@ -906,7 +963,7 @@ function sectionHeader(field, ctx) {
   const raw = interpolate(field.label ?? "", interpScope(0));
   const lvl = ctx?.insideRepeat ? 3 : headingLevel(raw);
   const h = el(lvl === 1 ? "h3" : "h4", "sec lvl" + lvl);
-  h.append(el("span", "sec-mark"), el("span", "sec-t", arabizeText(stripDecor(raw))));
+  h.append(el("span", "sec-mark"), el("span", "sec-t", canonLabel(arabizeText(stripDecor(raw)))));
   return h;
 }
 
