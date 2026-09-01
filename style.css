@@ -380,4 +380,72 @@
   body.ro .sticky-save::before{content:"وضع القراءة — الحفظ غير متاح على هذا الجهاز";
     color:var(--gold);font-size:13.5px;font-weight:700}
   .hidden{display:none!important}
-  @media(max-width:860px){.nav{position:fixed;inset-inline-start:-236px}.wrap{padding:18px}}
+  @media(max-width:860px){.wrap{padding:18px}}
+
+/* ── التنبيهات ── */
+.h-btn .badge{position:absolute;inset-block-start:-6px;inset-inline-start:-6px;
+  background:var(--danger);color:#fff;border-radius:99px;font-size:11px;font-weight:700;
+  min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px;
+  box-shadow:0 2px 6px rgba(0,0,0,.4)}
+#bellBtn{position:relative}
+.alerts-pop{position:absolute;inset-block-start:56px;inset-inline-end:16px;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lift);
+  width:min(420px,calc(100vw - 32px));max-height:min(72vh,560px);overflow:auto;z-index:30}
+.alerts-pop .ah{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;
+  display:flex;align-items:center;gap:10px}
+.alerts-pop .ah .sub{font-weight:400;font-size:12.5px;color:var(--ink-2);margin:0}
+.alert{display:block;width:100%;text-align:right;background:none;border:0;
+  border-bottom:1px solid var(--line);padding:13px 18px;cursor:pointer;font:inherit}
+.alert:hover{background:var(--brand-soft)}
+.alert .t{font-weight:700;font-size:14px;display:block}
+.alert .w{font-size:12.5px;color:var(--ink-2);display:block;margin-top:3px}
+.alert .lv{font-size:11px;border-radius:99px;padding:1px 9px;margin-inline-end:8px;white-space:nowrap}
+.lv-late{background:#fbeceb;color:var(--danger)}
+.lv-today{background:var(--gold-soft);color:var(--gold)}
+.lv-week{background:var(--brand-soft);color:var(--brand)}
+.lv-soon{background:#eef2f2;color:var(--ink-2)}
+.alerts-empty{padding:26px 18px;text-align:center;color:var(--ink-2);font-size:14px}
+
+/* ── التجاوب: القائمة درجًا على الشاشات الصغيرة ── */
+.nav-toggle{display:none}
+.nav-scrim{position:fixed;inset:0;background:rgba(10,24,21,.5);z-index:7}
+@media(max-width:900px){
+  .nav-toggle{display:inline-block}
+  .nav{position:fixed;inset-block:0;inset-inline-start:0;z-index:8;width:262px;
+       transform:translateX(100%);transition:transform .22s ease;height:100vh}
+  .nav.open{transform:translateX(0)}
+  .bar{padding:9px 14px;gap:10px}
+  .bar .logos{padding:5px 9px;gap:9px}
+  .bar .logos img[alt="مدارس ابن خلدون"]{height:24px}
+  .bar .logos img.mf{height:15px}
+  .bar .crumb b{font-size:13.5px}
+  .bar .crumb span{font-size:11.5px}
+  .bar .h-btn .lbl{display:none}
+  .bar .h-search{order:9;flex-basis:100%;max-width:none;min-width:0}
+  .wrap{padding:16px 14px calc(24px + var(--statusH))}
+  .rowhead{flex-wrap:wrap}
+  .status{font-size:11.5px;padding:6px 12px}
+}
+@media(max-width:560px){
+  h1{font-size:20px}
+  .card{padding:18px 16px;border-radius:12px}
+  .tiles{grid-template-columns:1fr 1fr;gap:11px}
+  .tile{padding:15px}
+  .tile .n{font-size:26px}
+  .bar .crumb{border:0;padding:0}
+  .kpi{grid-template-columns:1fr 1fr}
+  .scale label{padding:8px 12px}
+  .f-in{font-size:16px}   /* يمنع تكبير سفاري التلقائي عند التركيز */
+  /* صفّان لا ثلاثة: (الشعارات + المسار) ثم (الأزرار + البحث) — يوفّر ~50px من ارتفاع الشاشة */
+  .bar{padding:7px 12px;gap:7px}
+  .bar .crumb{flex:1 1 240px;min-width:0}
+  .bar .crumb b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar .h-btn{padding:7px 10px}
+  .bar .h-search{flex:1 1 120px;flex-basis:120px}
+}
+
+/* أجهزة اللمس (جوال/آيباد): أي حقل أصغر من 16px يُجبر سفاري على تكبير الصفحة عند التركيز */
+@media(pointer:coarse){
+  .f-in,input[type=text],input[type=date],input[type=number],input[type=email],
+  input[type=tel],textarea,select{font-size:16px}
+}

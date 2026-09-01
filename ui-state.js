@@ -35,6 +35,7 @@ export function only(id) {
   const ready = !!(S.store && S.bundle && S.me);
   show("printPage", ready && !!SCREEN_TITLE[id]);
   show("homeBtn", ready && id !== "screenDash");
+  show("navToggle", ready);
 }
 
 export function markNav(id) {

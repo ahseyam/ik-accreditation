@@ -37,12 +37,17 @@
         <input id="gsearch" placeholder="ابحث في سجلاتك وأدواتك ومؤشراتك…" autocomplete="off">
         <div class="results hidden" id="gresults"></div>
       </div>
-      <button class="h-btn hidden" id="homeBtn" title="العودة إلى لوحتي وتبديل المستخدم">🏠 اللوحة</button>
-      <button class="h-btn hidden" id="printPage" title="طباعة هذه الصفحة بالكليشة">🖨️ طباعة</button>
+      <button class="h-btn nav-toggle hidden" id="navToggle" title="القائمة" aria-label="القائمة">☰</button>
+      <button class="h-btn hidden" id="bellBtn" title="المطلوب منك الآن" aria-label="التنبيهات">
+        🔔<span class="badge hidden" id="bellCount">0</span></button>
+      <button class="h-btn hidden" id="homeBtn" title="العودة إلى لوحتي وتبديل المستخدم">🏠 <span class="lbl">اللوحة</span></button>
+      <button class="h-btn hidden" id="printPage" title="طباعة هذه الصفحة بالكليشة">🖨️ <span class="lbl">طباعة</span></button>
       <button class="h-btn" id="themeBtn" title="الوضع الليلي">🌙</button>
-      <button class="h-btn hidden" id="prefsBtn" title="تفضيلاتي">⚙️ تفضيلاتي</button>
+      <button class="h-btn hidden" id="prefsBtn" title="تفضيلاتي">⚙️ <span class="lbl">تفضيلاتي</span></button>
     </div>
     <div class="menu-pop hidden" id="prefsPop"></div>
+    <div class="alerts-pop hidden" id="bellPop"></div>
+    <div class="nav-scrim hidden" id="navScrim"></div>
     <div class="wrap">
 
       <section id="screenConnect" class="card">
@@ -217,29 +222,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=692f6011";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=8d5c3c1a";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=692f6011";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=692f6011";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=692f6011";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=692f6011";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=692f6011";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=8d5c3c1a";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=8d5c3c1a";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=8d5c3c1a";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=8d5c3c1a";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=8d5c3c1a";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=692f6011";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=692f6011";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=8d5c3c1a";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=8d5c3c1a";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=692f6011";
-import { surveyLink, extractCodes } from "./survey.js?v=692f6011";
+         fullBackup } from "./vault.js?v=8d5c3c1a";
+import { surveyLink, extractCodes } from "./survey.js?v=8d5c3c1a";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=692f6011";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=8d5c3c1a";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=692f6011";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=8d5c3c1a";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=692f6011";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=8d5c3c1a";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=8d5c3c1a";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -402,6 +408,7 @@ async function pick(person) {
   buildNav();
   show("nav", true);
   show("searchBox", true);
+  refreshAlerts();
   show("prefsBtn", true);
   goDash();
 }
@@ -428,7 +435,7 @@ function buildNav() {
     '<li><a data-nav="' + n.id + '"><span class="ic">' + n.ic + "</span>" + esc(n.label) +
     (n.count ? '<span class="ct">' + n.count() + "</span>" : "") + "</a></li>").join("");
   $("navMenu").querySelectorAll("a").forEach((a) => {
-    a.onclick = () => items.find((n) => n.id === a.dataset.nav).go();
+    a.onclick = () => { drawer(false); items.find((n) => n.id === a.dataset.nav).go(); };
   });
 }
 
@@ -624,6 +631,7 @@ $("recSave").onclick = async () => {
     const bk = await backupEntry(store, { kind: "سجلات", sourcePath: entryPath(me, recTemplate.number, recEntryId),
       data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
       person: me.fullName, roleAr: roleAr(me.role) });
+    refreshAlerts();
     $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
       (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");
   } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
@@ -874,6 +882,7 @@ $("toolSave").onclick = async () => {
     const bk = await backupEntry(store, { kind: "تقويم", sourcePath: toolResponsePath(curTool.key, id),
       data: { toolKey: curTool.key, responseId: id, answers: toolState.answers },
       person: me.fullName, roleAr: roleAr(me.role) });
+    refreshAlerts();
     $("toolStatus").textContent = "✅ حُفظت (" + answered + " من " + total + " فقرة)" +
       (bk.ok ? " · ونُسخت للمستودع" : "");
   } catch (e) { $("toolStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
@@ -1052,6 +1061,8 @@ $("prefsBtn").onclick = () => {
 document.addEventListener("click", (e) => {
   if (!$("prefsPop").contains(e.target) && e.target !== $("prefsBtn")) $("prefsPop").classList.add("hidden");
   if (!$("searchBox").contains(e.target)) $("gresults").classList.add("hidden");
+  if (!$("bellPop").contains(e.target) && e.target !== $("bellBtn") && !$("bellBtn").contains(e.target))
+    $("bellPop").classList.add("hidden");
 });
 
 /* ── جاهزية الزيارة ── */
@@ -1184,6 +1195,7 @@ $("execSave").onclick = async () => {
     });
     const bk = await backupEntry(store, { kind: "خطط تنفيذية", sourcePath: execPlanPath(me),
       data: execState, person: me.fullName, roleAr: roleAr(me.role) });
+    refreshAlerts();
     $("execStat").textContent = "✅ حُفظت خطتك" + (bk.ok ? " · ونُسخت للمستودع" : "");
   } catch (e) { $("execStat").textContent = "❌ " + e.message; }
 };
@@ -1302,6 +1314,70 @@ $("gsearch").oninput = () => {
   });
   box.classList.remove("hidden");
 };
+
+/* ── درج القائمة على الشاشات الصغيرة ── */
+const drawer = (open) => {
+  $("nav").classList.toggle("open", open);
+  show("navScrim", open);
+};
+$("navToggle").onclick = () => drawer(!$("nav").classList.contains("open"));
+$("navScrim").onclick = () => drawer(false);
+
+/* ── التنبيهات: ما المطلوب منك الآن ── */
+let alerts = [];
+
+async function refreshAlerts() {
+  if (!store || !bundle || !me) return;
+  try {
+    const entryDates = await myEntryDates(store, me, personFolder);
+    let execState2 = null;
+    try { execState2 = await store.readJson(execPlanPath(me)); execState2._saved = true; } catch {}
+    const sums = [];
+    for (const x of myTools) sums.push(summarize(x.tool, await loadToolResponses(store, x.tool.key)));
+    alerts = buildAlerts({
+      myRecords, entryDates, weeks: bundle.support?.weeks,
+      execTasks: bundle.exec?.byRole?.[me.role] || [],
+      execState: execState2 || execState, myTools, toolSummaries: sums,
+      committees: bundle.support?.committees, role: me.role,
+    });
+  } catch { alerts = []; }
+  const n = urgentCount(alerts);
+  $("bellCount").textContent = alerts.length > 99 ? "99+" : alerts.length;
+  show("bellCount", alerts.length > 0);
+  $("bellCount").style.background = n > 0 ? "var(--danger)" : "var(--brand-2)";
+  show("bellBtn", true);
+}
+
+$("bellBtn").onclick = () => {
+  const pop = $("bellPop");
+  if (!pop.classList.contains("hidden")) { pop.classList.add("hidden"); return; }
+  const n = urgentCount(alerts);
+  pop.innerHTML =
+    '<div class="ah">🔔 المطلوب منك الآن' +
+    '<span class="sub">' + (alerts.length === 0 ? "لا شيء مستحقّ"
+      : alerts.length + " بند · " + n + " عاجل") + "</span></div>" +
+    (alerts.length === 0
+      ? '<div class="alerts-empty">لا مطلوب عليك الآن.<br>يُحدَّث تلقائيًا مع تقدّم الأسابيع.</div>'
+      : alerts.map((a, i) =>
+          '<button class="alert" data-i="' + i + '">' +
+          '<span class="lv lv-' + a.level + '">' + esc(levelAr(a.level)) + "</span>" +
+          '<span class="t">' + esc(a.title) + "</span>" +
+          '<span class="w">' + esc(a.why) + (a.when ? " · " + esc(a.when) : "") + "</span></button>").join(""));
+  pop.querySelectorAll("button.alert").forEach((btn) => {
+    btn.onclick = () => { pop.classList.add("hidden"); goAlert(alerts[+btn.dataset.i]); };
+  });
+  pop.classList.remove("hidden");
+};
+
+function goAlert(a) {
+  if (!a) return;
+  const g = a.go || {};
+  if (g.screen === "record" && g.number != null) openRecord(g.number);
+  else if (g.screen === "tool" && g.key) openTool(g.key);
+  else if (g.screen === "exec") goExec();
+  else if (g.screen === "records") goRecords();
+  else goDash();
+}
 
 $("homeBtn").onclick = () => (me ? goDash() : renderPeople());
 $("dashWho").onclick = () => renderPeople();
