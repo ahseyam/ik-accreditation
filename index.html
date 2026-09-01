@@ -223,30 +223,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=9f2ac9d2";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=d922c164";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=9f2ac9d2";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=9f2ac9d2";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=9f2ac9d2";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=9f2ac9d2";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=9f2ac9d2";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=d922c164";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=d922c164";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=d922c164";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=d922c164";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=d922c164";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=9f2ac9d2";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=9f2ac9d2";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=d922c164";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=d922c164";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=9f2ac9d2";
-import { surveyLink, extractCodes } from "./survey.js?v=9f2ac9d2";
+         fullBackup } from "./vault.js?v=d922c164";
+import { surveyLink, extractCodes } from "./survey.js?v=d922c164";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=9f2ac9d2";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=d922c164";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=9f2ac9d2";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=d922c164";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=9f2ac9d2";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=9f2ac9d2";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=d922c164";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=d922c164";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {

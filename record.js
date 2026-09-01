@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=9f2ac9d2";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=9f2ac9d2";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=d922c164";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=d922c164";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -151,8 +151,11 @@ export function buildLabelCanon(records) {
   const visit = (o) => {
     if (Array.isArray(o)) { o.forEach(visit); return; }
     if (!o || typeof o !== "object") return;
-    const lab = o.label;
-    if (typeof lab === "string" && lab.trim() && !lab.includes("{")) {
+    const raw = o.label;
+    if (typeof raw === "string" && raw.trim() && !raw.includes("{")) {
+      /* ⚠️ تُخزَّن الصيغة **بلا زخرفة**: عناوين الأقسام تُعرض بعد stripDecor،
+         فتخزين الخام يُعيد «═══» إلى الشاشة بعد أن نُزعت. */
+      const lab = stripDecor(raw);
       const k = stripTashkeel(lab);
       if (k) {
         if (!groups.has(k)) groups.set(k, new Map());
