@@ -101,7 +101,17 @@ export function buildProcedures(ind, ctx) {
   const items = toolItemsForIndicator(tools, ind.code);
   const prog = (central || []).find((c) => c.code === ind.code);
 
-  const owner = prog?.roles?.[0] || recs[0]?.primaryRoles?.[0] || "PRINCIPAL";
+  /* ⚠️ 30 إجراءً من 35 كانت ملكيتها «مدير المدرسة» لأن البرنامج المركزي
+     يضع المدير أولًا في أدواره. المسؤول الطبيعي هو صاحب السجل الذي يُثبت
+     المؤشّر؛ ويبقى المدير مالكًا حين لا سجل له. */
+  /* أوّل سجل ليس أولى الناس بالمؤشّر: الأخذ به ركّز 61 إجراءً من 71 على
+     الوكيل التعليمي. المالك هو الدور **الأكثر تكرارًا** في سجلات المؤشّر. */
+  const tally = new Map();
+  for (const r of recs) for (const role of (r.primaryRoles || []))
+    tally.set(role, (tally.get(role) ?? 0) + 1);
+  const recOwner = [...tally].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const progOwner = (prog?.roles || []).find((r) => r !== "PRINCIPAL") || prog?.roles?.[0];
+  const owner = recOwner || progOwner || "PRINCIPAL";
   const supporters = [...new Set([...(prog?.roles?.slice(1) || []),
     ...recs.flatMap((r) => r.primaryRoles || [])])].filter((r) => r !== owner).slice(0, 3);
 
@@ -114,7 +124,13 @@ export function buildProcedures(ind, ctx) {
   const gap = ind.externalScore == null ? "" :
     "الدرجة " + ind.externalScore.toFixed(1) + " · الفجوة " + (100 - ind.externalScore).toFixed(1) + " نقطة";
 
-  const start = prog?.startWeek || 3;
+  /* ⚠️ كل مؤشّر بلا برنامج مركزي كان يبدأ في الأسبوع 3، فتكدّست الإجراءات:
+     قِيس 35 إجراءً في 5 أسابيع من 38، وذروة 8 إجراءات في أسبوع واحد — خطة
+     لا تُنفَّذ. تُوزَّع البدايات على النصف الأول من السنة بترتيب أولوية
+     المؤشّر (الأضعف أولًا)، ويبقى للبرنامج المركزي أسبوعه إن حدّده. */
+  const rank = ctx.rank ?? 0, cohort = Math.max(1, ctx.cohort ?? 1);
+  const spread = Math.max(2, Math.floor(20 / cohort));
+  const start = prog?.startWeek || Math.min(24, 3 + rank * spread);
   const span = prog?.durationWeeks || 8;
   const steps = (prog?.steps || []).filter(Boolean);
 
@@ -166,7 +182,7 @@ export function buildProcedures(ind, ctx) {
   });
 
   if (recs.length) {
-    push("تفعيل السجلات المرتبطة بالمؤشر وتوثيق شواهدها",
+    push("تفعيل سجلات المؤشر " + ind.code + " وتوثيق شواهدها",
       start + 2, span,
       "تعبئة السجلات بانتظام حسب دورية كل سجل ورفع الشواهد داخل منظومة الاعتماد الخارجي.",
       recs.map((r) => "سجل " + r.number).join(" · "),
@@ -174,7 +190,7 @@ export function buildProcedures(ind, ctx) {
       "هذه السجلات هي ما يفتحه الزائر لهذا المؤشر");
   }
 
-  push("قياس الأثر بأدوات التقويم الذاتي",
+  push("قياس أثر التحسين في المؤشر " + ind.code + " بأدوات التقويم الذاتي",
     start + span, 2,
     "تطبيق فقرات الأدوات التي تقيس المؤشر ومقارنة النتيجة بدرجة التقويم الخارجي.",
     toolRef,
@@ -200,12 +216,25 @@ export function buildProcedures(ind, ctx) {
    التحصيل الدراسي. */
 function proceduresFromApprovedProgram(pr, ind, ctx) {
   const { roleAr } = ctx;
+  /* ⚠️ كل برنامج معتمَد كان يبدأ في الأسبوع 3 ويُقيَّم في 14 — أرقام ثابتة،
+     فتجمّع 15 إجراءً في أسبوع واحد. تُوزَّع حسب ترتيب البرنامج. */
+  const pRank = ctx.progRank ?? 0, pCount = Math.max(1, ctx.progCount ?? 1);
+  const step = Math.max(1, Math.floor(16 / pCount));
+  const startW = Math.min(20, 3 + pRank * step);
+  const reviewW = Math.min(TOTAL_WEEKS - 1, startW + 11);
   const prof = profileOf(ind?.domainAr);
   const recs = recordsForIndicator(ctx.records, ind?.code);
   const recRef = recs.length
     ? recs.slice(0, 3).map((r) => "سجل " + r.number + " «" + r.nameAr + "»").join(" · ")
     : "ملف شواهد البرنامج العلاجي";
-  const owner = (pr.start?.roles || [])[0] || "EDUCATIONAL_VP";
+  /* ⚠️ الافتراض الثابت «EDUCATIONAL_VP» ركّز 61 إجراءً من 71 على شخص واحد.
+     المالك يُشتقّ من سجلات المؤشّر بالأغلبية كما في الإجراءات المولَّدة،
+     ولا يُلجأ إلى دور البرنامج إلا حين لا سجل. */
+  const tallyP = new Map();
+  for (const r of recs) for (const role of (r.primaryRoles || []))
+    tallyP.set(role, (tallyP.get(role) ?? 0) + 1);
+  const owner = [...tallyP].sort((a, b) => b[1] - a[1])[0]?.[0]
+             || (pr.start?.roles || [])[0] || "EDUCATIONAL_VP";
   const support = [...new Set([...(pr.start?.roles || []).slice(1), ...(pr.review?.roles || [])])]
     .filter((r) => r !== owner).slice(0, 3);
   const mk = (name, week, span, method, evidence, notes) => ({
@@ -219,15 +248,15 @@ function proceduresFromApprovedProgram(pr, ind, ctx) {
   });
   const out = [];
   if (pr.start?.text)
-    out.push(mk("🚀 بَدء تطبيق " + pr.name, 3, 8, pr.start.text,
+    out.push(mk("🚀 بَدء تطبيق " + pr.name, startW, 8, pr.start.text,
       pr.start.achievement || "شواهد بدء التطبيق موثَّقة في " + recRef,
       "برنامج علاجي معتمَد" + (pr.priorityScore ? " · أولوية " + pr.priorityScore : "")));
   if (pr.review?.text)
-    out.push(mk("📋 تقييم " + pr.name, 14, 3, pr.review.text,
+    out.push(mk("📋 تقييم " + pr.name, reviewW, 3, pr.review.text,
       pr.review.achievement || "تقرير أثر البرنامج معتمَدًا بتوقيع مدير المدرسة",
       "المرحلة الختامية للبرنامج"));
   if (!out.length)
-    out.push(mk(pr.name, 3, 10, pr.description || "برنامج علاجي معتمَد.",
+    out.push(mk(pr.name, startW, 10, pr.description || "برنامج علاجي معتمَد.",
       "شواهد التنفيذ في " + recRef, "بلا مراحل معلنة"));
   return out;
 }
@@ -238,18 +267,24 @@ export function buildImprovementPlan(ctx) {
   const byId = new Map(scores.map((x) => [x.indicatorId, x]));
   const groups = [];
 
-  for (const ind of scores.filter((x) => x.isWeak)) {
-    groups.push({ indicator: ind, tag: indicatorTag(ind), procedures: buildProcedures(ind, ctx) });
-  }
+  // الأضعف أولًا، ولكلٍّ رتبته ليُوزَّع بدؤه على السنة
+  const weak = scores.filter((x) => x.isWeak)
+    .slice().sort((a, b) => (a.externalScore ?? 999) - (b.externalScore ?? 999));
+  weak.forEach((ind, i) => {
+    groups.push({ indicator: ind, tag: indicatorTag(ind),
+                  procedures: buildProcedures(ind, { ...ctx, rank: i, cohort: weak.length }) });
+  });
   // البرامج المعتمدة تُلحَق بمؤشراتها، أو تُفتح مجموعة جديدة إن كان مؤشرها غير ضعيف
-  for (const pr of ctx.approved || []) {
+  const approved = ctx.approved || [];
+  approved.forEach((pr, pi) => {
     const ind = byId.get(pr.indicatorId) || null;
-    const rows = proceduresFromApprovedProgram(pr, ind, ctx);
+    const rows = proceduresFromApprovedProgram(pr, ind,
+      { ...ctx, progRank: pi, progCount: approved.length });
     const g = groups.find((x) => x.indicator?.indicatorId === pr.indicatorId);
     if (g) g.procedures.push(...rows);
     else groups.push({ indicator: ind, tag: ind ? indicatorTag(ind) : "برنامج علاجي",
                        approvedOnly: true, procedures: rows });
-  }
+  });
   groups.sort((a, b) => (a.indicator?.externalScore ?? 999) - (b.indicator?.externalScore ?? 999));
   return { groups, totalProcedures: groups.reduce((a, g) => a + g.procedures.length, 0) };
 }

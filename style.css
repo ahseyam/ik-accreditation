@@ -463,7 +463,15 @@
   .f-in{font-size:16px}   /* يمنع تكبير سفاري التلقائي عند التركيز */
   /* صفّان لا ثلاثة: (الشعارات + المسار) ثم (الأزرار + البحث) — يوفّر ~50px من ارتفاع الشاشة */
   .bar{padding:7px 12px;gap:7px}
-  .bar .crumb{flex:1 1 240px;min-width:0}
+  /* ⚠️ الاتّكال على التفاف flex التلقائي غير مضمون: ضبطُ الأساس لـ360px
+     ردّ 390px إلى ثلاثة صفوف. يُفرَض الفاصل صراحةً فيثبت الصفّان في كل عرض. */
+  .bar .crumb{flex:1 1 150px;min-width:0}
+  .bar .row-break{flex-basis:100%;height:0;margin:0}
+  @media(max-width:380px){
+    .bar .logos{padding:4px 7px;gap:7px}
+    .bar .logos img[alt="مدارس ابن خلدون"]{height:21px}
+    .bar .logos img.mf{height:13px}
+  }
   .bar .crumb b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .bar .h-btn{padding:7px 10px}
   .bar .h-search{flex:1 1 120px;flex-basis:120px}
@@ -503,6 +511,9 @@
 /* ── اتّزان خلايا الجداول: توسيط رأسي عامّ، وأفقي لما يقصر، وخطّ أصغر
    قليلًا حتى لا تنكسر الكلمة الواحدة. أجهزة اللمس تبقى على 16px لأن
    ما دونها يُجبر سفاري على تكبير الصفحة. ── */
+.row-break{display:none}
+@media(max-width:900px){.bar .row-break{display:block}}
+
 .rec-table{font-size:12.8px}
 .rec-table th{line-height:1.4;overflow-wrap:break-word;word-break:normal}
 .rec-table td .f-in{text-align:center;overflow-wrap:break-word;word-break:normal}
@@ -514,3 +525,14 @@
 @media(pointer:coarse){
   .rec-table,.rec-table td .f-in{font-size:16px}
 }
+
+/* شواهد الروبرك المتوقّعة تحت كل دلالة تحقّق */
+.vevi{margin:0 0 10px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--panel);font-size:12.5px}
+.vevi>summary{cursor:pointer;padding:7px 11px;color:var(--brand);font-weight:700;list-style:none}
+.vevi>summary::-webkit-details-marker{display:none}
+.vevi>summary::before{content:"▾ ";opacity:.7}
+.vevi[open]>summary{border-bottom:1px solid var(--line)}
+.vevi ul{margin:8px 0;padding-inline-start:26px;color:var(--ink-2);line-height:1.75}
+.vevi .vsrc{padding:5px 11px 8px;color:var(--ink-2);border-top:1px dashed var(--line)}
+.vevi .vsrc b{color:var(--ink)}

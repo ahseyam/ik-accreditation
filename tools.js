@@ -50,6 +50,10 @@ export function flattenTool(tool) {
     text: it.rephrased ?? it.r ?? it.text ?? "",
     etec: asArray(it.etec),
     observations: it.observations ?? null,
+    // شواهد الروبرك المتوقّعة، والسجل الذي تُطلَب منه، ومن يقدّمها
+    evidences: it.evidences ?? null,
+    documents: it.documents ?? null,
+    source: it.source ?? null,
     thresholds: it.thresholds ?? null,
     records: it.records ?? null,
     group: group ?? null,

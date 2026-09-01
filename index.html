@@ -31,6 +31,7 @@
         <img class="mf" src="maarif.png" alt="شركة معارف للتعليم">
       </div>
       <div class="crumb" id="ctx">مدارس ابن خلدون · السجلات والشواهد للتقويم الخارجي</div>
+      <div class="row-break" aria-hidden="true"></div>
       <div class="sp"></div>
       <div class="h-search hidden" id="searchBox">
         <span class="ico">🔍</span>
@@ -223,30 +224,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=16d6fa51";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=74af7fa7";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=16d6fa51";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=16d6fa51";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=16d6fa51";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=16d6fa51";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=16d6fa51";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=74af7fa7";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=74af7fa7";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=74af7fa7";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=74af7fa7";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=74af7fa7";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=16d6fa51";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=16d6fa51";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=74af7fa7";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=74af7fa7";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=16d6fa51";
-import { surveyLink, extractCodes } from "./survey.js?v=16d6fa51";
+         fullBackup } from "./vault.js?v=74af7fa7";
+import { surveyLink, extractCodes } from "./survey.js?v=74af7fa7";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=16d6fa51";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=74af7fa7";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=16d6fa51";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=74af7fa7";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=16d6fa51";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=16d6fa51";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=74af7fa7";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=74af7fa7";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -760,6 +761,17 @@ function openTool(key) {
     html.push('<div class="item-card" data-n="' + esc(it.uid) + '">');
     html.push('<div class="item-txt"><span class="item-n">' + it.n + ".</span>" + esc(it.text) + "</div>");
     if (it.etec.length) html.push('<div class="muted" style="margin-bottom:9px">مؤشرات: ' + esc(it.etec.join("، ")) + "</div>");
+    /* شواهد الروبرك المتوقّعة: ما الذي يبحث عنه المقيّم بالضبط، وفي أي سجل،
+       وممّن يُطلب. كانت في البيانات ولا تُعرض، فيحكم المستخدم بلا معيار. */
+    if (it.evidences && it.evidences.length) {
+      html.push('<details class="vevi"><summary>ما الذي يُتحقَّق منه؟ · ' +
+        it.evidences.length + " شاهدًا</summary><ul>" +
+        it.evidences.map((e) => "<li>" + esc(e) + "</li>").join("") + "</ul>" +
+        (it.documents && it.documents.length
+          ? '<div class="vsrc"><b>السجل:</b> ' + esc(it.documents.join(" · ")) + "</div>" : "") +
+        (it.source ? '<div class="vsrc"><b>يقدّمه:</b> ' + esc(it.source) + "</div>" : "") +
+        "</details>");
+    }
     if (ev && it.observations && it.observations.length) {
       html.push('<div class="obs">' + it.observations.map((o, i) =>
         '<label><input type="checkbox" data-obs="' + esc(it.uid) + '" data-i="' + i + '"><span>' + esc(o) + "</span></label>").join("") + "</div>");
@@ -1117,10 +1129,16 @@ async function goReady() {
     }).join("") + "</div></div>";
 
   $("readyDims").innerHTML =
+    '<div class="note sm" style="margin:0 0 12px">الأوزان اجتهاد مهني لا نظام منشور من ' +
+    "هيئة تقويم التعليم، ولكلٍّ أساسه المذكور. وقياس الحسّاسية على أربعة أنظمة أوزان " +
+    "معقولة وستّة حالات: حكم الجاهزية لا يتبدّل، وأقصى فارق 8.4 نقطة.</div>" +
     "<table><thead><tr><th>البُعد</th><th>الوزن</th><th>النسبة</th><th>الدليل</th></tr></thead><tbody>" +
     DIMENSIONS.map((d) => {
       const x = R.dims[d.key];
-      return "<tr><td><b>" + esc(d.label) + "</b></td><td>" + d.weight + "%</td>" +
+      // سبب الوزن معروض لا مخفيّ — كي يدافع المدير عن الرقم أمام الزائر
+      return "<tr><td><b>" + esc(d.label) + "</b>" +
+        (d.basis ? '<div class="muted" style="font-weight:400;margin-top:3px">' + esc(d.basis) + "</div>" : "") +
+        "</td><td>" + d.weight + "%</td>" +
         '<td><span class="bar-m" style="width:80px"><i style="width:' + x.pct.toFixed(0) + '%"></i></span> ' +
         x.pct.toFixed(0) + "%</td><td>" + esc(x.note) + "</td></tr>";
     }).join("") + "</tbody></table>";
