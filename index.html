@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=b68cab3a">
+<link rel="stylesheet" href="style.css?v=d30b4122">
 </head>
 <body>
 <div class="app">
@@ -224,30 +224,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=3bf23fe2";   // ReadOnlyStore أُلغي من الواجهة
+import { FolderStore } from "./storage.js?v=d30b4122";   // ReadOnlyStore أُلغي من الواجهة
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=3bf23fe2";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=3bf23fe2";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=3bf23fe2";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=3bf23fe2";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=3bf23fe2";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=d30b4122";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=d30b4122";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=d30b4122";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=d30b4122";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=d30b4122";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=3bf23fe2";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=3bf23fe2";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=d30b4122";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=d30b4122";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=3bf23fe2";
-import { surveyLink, extractCodes } from "./survey.js?v=3bf23fe2";
+         fullBackup } from "./vault.js?v=d30b4122";
+import { surveyLink, extractCodes } from "./survey.js?v=d30b4122";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=3bf23fe2";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=d30b4122";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=3bf23fe2";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=d30b4122";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=3bf23fe2";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=3bf23fe2";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=d30b4122";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=d30b4122";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
