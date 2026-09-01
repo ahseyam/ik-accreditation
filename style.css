@@ -548,3 +548,15 @@
   border-radius:var(--r-sm);padding:14px 16px;max-width:52ch;margin:0 auto 18px;font-size:13.5px}
 .blockcard .blockdo ol{margin:9px 0 0;padding-inline-start:22px;line-height:1.9;color:var(--ink-2)}
 .blockcard .blockdo b{color:var(--ink)}
+
+/* اختيار مجلد المدرسة عند الدخول بحساب مايكروسوفت */
+.folder-pick{display:grid;gap:7px;margin-top:10px;text-align:start}
+.folder-pick button{border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:var(--r-sm);padding:10px 13px;font:inherit;font-size:13.5px;cursor:pointer;text-align:start}
+.folder-pick button:hover{border-color:var(--brand);background:var(--brand-soft)}
+
+/* ضبط Graph — مطويّ عن المستخدم العادي، متاح للمستشار */
+.setup-adv{text-align:start;margin-top:6px}
+.setup-adv>summary{cursor:pointer;color:var(--ink-2);font-size:12.5px;padding:6px 0;list-style:none}
+.setup-adv>summary::-webkit-details-marker{display:none}
+.setup-adv>summary::before{content:"⚙ ";opacity:.7}
