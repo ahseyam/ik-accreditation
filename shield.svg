@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الاعتماد الخارجي">
+  <defs>
+    <linearGradient id="shBg" x1="56" y1="40" x2="456" y2="472" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5aa0f2"/>
+      <stop offset="0.52" stop-color="#3f83e0"/>
+      <stop offset="1" stop-color="#2f6ccc"/>
+    </linearGradient>
+    <linearGradient id="shTick" x1="196" y1="236" x2="330" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3fbf5a"/>
+      <stop offset="1" stop-color="#2f9f46"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="116" fill="url(#shBg)"/>
+  <path d="M256 92 L392 146 V266 C392 344 336 400 256 428 C176 400 120 344 120 266 V146 Z"
+        fill="#ffffff"/>
+  <path d="M196 262 L238 306 L322 216"
+        stroke="url(#shTick)" stroke-width="34" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
