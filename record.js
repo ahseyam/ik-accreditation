@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=57a8e1e6";
-import { derive, seedRows } from "./autofill.js?v=57a8e1e6";
+import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=63240f1e";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=63240f1e";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -23,13 +23,13 @@ function nowISO() { return new Date().toISOString().slice(0, 16); }
 let FILL = null;
 export function setFillContext(ctx) { FILL = ctx; }
 
-function autoValue(field) {
+function autoValue(field, opts = {}) {
   switch (field.autoFill) {
     case "NOW": case "NOW_ON_RETURN": return nowISO();
     case "TODAY": case "TODAY_HIJRI": return todayISO();
   }
   if (FILL) {
-    const d = derive(field, FILL);
+    const d = derive(field, FILL, opts);
     if (d != null && d !== "") return d;
   }
   return field.default ?? "";
@@ -144,9 +144,9 @@ function box(field, control) {
   return b;
 }
 
-function bindValue(input, field, state, key) {
+function bindValue(input, field, state, key, opts = {}) {
   const k = key ?? field.key ?? field.id;
-  const initial = state[k] !== undefined ? state[k] : autoValue(field);
+  const initial = state[k] !== undefined ? state[k] : autoValue(field, opts);
   if (input.type === "checkbox") input.checked = Boolean(initial);
   else input.value = initial ?? "";
   // يُسجَّل المشتقّ في الحالة فورًا كي يُحفظ ولو لم يلمسه المستخدم
@@ -165,13 +165,13 @@ function bindValue(input, field, state, key) {
   return input;
 }
 
-function textInput(type, field, state, key) {
+function textInput(type, field, state, key, opts = {}) {
   const i = el("input", "f-in");
   i.type = type;
   if (field.placeholder) i.placeholder = field.placeholder;
   if (field.min != null) i.min = field.min;
   if (field.max != null) i.max = field.max;
-  return bindValue(i, field, state, key);
+  return bindValue(i, field, state, key, opts);
 }
 
 /* ⚠️ الخيارات تأتي بشكلين في المصدر: نصوص، و**كائنات بمفتاحَي `v` و`l`**
@@ -270,7 +270,10 @@ function filesInput(field, state, ctx, key, multiple) {
   input.multiple = Boolean(multiple);
   if (field.accept) input.accept = field.accept;
   input.onchange = async () => {
-    const dir = ctx.evidenceDir + "/" + (field.key || "شواهد");
+    // مجلد المجال يفصل شواهد حقلين في سجل واحد. وإن كان مفتاحه «شواهد»
+    // نفسه فلا يُضاف، وإلا صار المسار …/شواهد/<الإدخال>/شواهد/
+    const sub = field.key && field.key !== "شواهد" ? "/" + field.key : "";
+    const dir = ctx.evidenceDir + sub;
     for (const file of Array.from(input.files ?? [])) {
       const path = dir + "/" + file.name;
       try {
@@ -289,6 +292,83 @@ function filesInput(field, state, ctx, key, multiple) {
 }
 
 /** جدول متكرر — عمود واحد لكل تعريف، وصفوف تُضاف وتُحذف */
+/* عمود المسلسل: القالب يصرّح `autoFill:"ROW_NUMBER"` وكان المحرّك يتجاهله
+   فيظهر عمود «م» مربّعًا فارغًا للقراءة فقط بجوار عمود «#» الذي يرسمه المحرّك —
+   عمودان لرقم واحد، وأحدهما يسأل المستخدم عمّا لا جواب له. */
+const isSerialCol = (c) =>
+  c.autoFill === "ROW_NUMBER" || /^(م|#|مسلسل|الرقم)$/.test(String(c.label ?? "").trim());
+
+/* ── اشتقاق داخل الصف ──
+   عناوين تَعِد بالتلقائية ولا شيء يُنفّذها: «التَخصُّص (تلقائي)» في 21 جدولًا،
+   و«اليَوم» مقرونًا بـ«التاريخ» في 20 جدولًا، و«الأُسبوع» في 12. كان المستخدم
+   يكتب بيده ما تعرفه الحزمة. يُشتقّ الآن من خليّة أخرى في الصف نفسه.
+   ⚠️ لا يُشتقّ ما لا مصدر له: «الفَصل» و«الصَف» يتبعان الطالب، ولا قائمة طلاب
+   في بيانات الحزمة، فيبقيان إدخالًا يدويًا صريحًا. */
+const DAY_AR = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+const colBy = (cols, re) =>
+  cols.find((c) => re.test(String(c.key ?? "")) || re.test(String(c.label ?? "")));
+
+function weekNumberOf(iso, weeks) {
+  if (!iso || !Array.isArray(weeks)) return "";
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return "";
+  const w = weeks.find((x) => t >= new Date(x.startDate).getTime() &&
+                              t <= new Date(x.endDate).getTime() + 864e5 * 2);
+  return w ? String(w.weekNumber) : "";
+}
+
+/** يربط الخلايا المشتقّة بمصادرها داخل الصف الواحد */
+function wireRowDerivations(cols, row, controls, ctx) {
+  const set = (col, value) => {
+    if (!col || value == null || value === "") return;
+    const elm = controls[col.key];
+    row[col.key] = value;
+    if (!elm) return;
+    if (elm.tagName === "SELECT") {
+      const opt = [...elm.options].find((o) => o.value === value || o.textContent.trim() === value);
+      if (opt) elm.value = opt.value; else return;
+    } else if (elm.isContentEditable) elm.textContent = value;
+    else elm.value = value;
+    elm.classList.add("auto");
+    elm.title = "عُبِّئ تلقائيًا — يمكنك تعديله";
+  };
+
+  const dateC = cols.find((c) => c.type === "DATE") ?? colBy(cols, /^date$|تاريخ/i);
+  const dayC = colBy(cols, /^(.*day.*)$|^اليَوم$|^اليوم$/i);
+  const weekC = colBy(cols, /week|^الأُسبوع$|^الأسبوع$/i);
+  const fromDate = () => {
+    const v = row[dateC?.key];
+    if (!v) return;
+    const d = new Date(v);
+    if (!Number.isFinite(d.getTime())) return;
+    set(dayC, DAY_AR[d.getDay()]);
+    set(weekC, weekNumberOf(v, ctx.support?.weeks));
+  };
+
+  const teachC = cols.find((c) => c.type === "TEACHER_PICKER") ?? colBy(cols, /teacherName|اسم المُعَلِّم|اسم المعلم/i);
+  const specC = colBy(cols, /^specialty$|^specialization$|التَخصُّص|التخصص/i);
+  const subjC = colBy(cols, /^subject$|^المادة$|المادة \(تلقائي\)/i);
+  const fromTeacher = () => {
+    const name = row[teachC?.key];
+    if (!name) return;
+    const t = (ctx.support?.teachers ?? []).find((x) => x.fullName === name);
+    if (!t) return;
+    set(specC, t.specialization || "");
+    set(subjC, (Array.isArray(t.subjects) ? t.subjects.join("، ") : t.subjects) || t.specialization || "");
+  };
+
+  if (dateC && (dayC || weekC)) {
+    fromDate();
+    const e = controls[dateC.key];
+    if (e) { e.addEventListener("change", fromDate); e.addEventListener("input", fromDate); }
+  }
+  if (teachC && (specC || subjC)) {
+    fromTeacher();
+    const e = controls[teachC.key];
+    if (e) { e.addEventListener("change", fromTeacher); e.addEventListener("input", fromTeacher); }
+  }
+}
+
 function recurringTable(field, state, ctx) {
   const k = field.key ?? field.id;
   const cols = field.columns ?? [];
@@ -300,39 +380,80 @@ function recurringTable(field, state, ctx) {
       state[k] = Array.from({ length: n }, () => ({}));
     }
   }
+  const serialCol = cols.find(isSerialCol);
   const wrap = el("div", "table-wrap");
   const table = el("table", "rec-table");
   const thead = el("thead");
   const htr = el("tr");
-  htr.append(el("th", "num", "#"));
-  for (const c of cols) htr.append(el("th", null, interpolate(c.label ?? c.key ?? "", interpScope(0))));
+  if (!serialCol) htr.append(el("th", "num", "#"));
+  for (const c of cols) {
+    const th = el("th", isSerialCol(c) ? "num" : null,
+      interpolate(c.label ?? c.key ?? "", interpScope(0)));
+    if (c.width) th.style.width = c.width;
+    htr.append(th);
+  }
   htr.append(el("th", "num", ""));
   thead.append(htr);
   const tbody = el("tbody");
   table.append(thead, tbody);
 
+  // شريط التراجع: الحذف كان نهائيًا بلا رجعة — صفٌّ مبذور يُحذف بالخطأ فلا يعود
+  const undoBar = el("div", "undo-bar hidden");
+  let removed = null;
+  const showUndo = (row, i) => {
+    removed = { row, i };
+    undoBar.innerHTML = "";
+    const t = el("span", null, "حُذف الصف " + (i + 1) + ".");
+    const b = el("button", "btn-ghost sm", "↶ تراجع");
+    b.type = "button";
+    b.onclick = () => {
+      if (!removed) return;
+      state[k].splice(removed.i, 0, removed.row);
+      removed = null;
+      undoBar.classList.add("hidden");
+      drawRows();
+    };
+    undoBar.append(t, b);
+    undoBar.classList.remove("hidden");
+  };
+
   const drawRows = () => {
     tbody.innerHTML = "";
     state[k].forEach((row, i) => {
       const tr = el("tr");
-      tr.append(el("td", "num", String(i + 1)));
+      if (!serialCol) tr.append(el("td", "num", String(i + 1)));
+      const controls = {};
       for (const c of cols) {
         const td = el("td");
-        td.append(columnControl(c, row, ctx, field));
+        if (isSerialCol(c)) {
+          td.className = "num";
+          td.textContent = String(i + 1);
+          row[c.key] = i + 1;          // يُحفظ مع الإدخال كما لو أُدخل
+        } else {
+          if (c.width) td.style.width = c.width;
+          const ctrl = columnControl(c, row, ctx, field);
+          controls[c.key] = ctrl.querySelector?.("input,select,textarea,[contenteditable]") ?? ctrl;
+          td.append(ctrl);
+        }
         tr.append(td);
       }
+      wireRowDerivations(cols, row, controls, ctx);
       const td = el("td", "num");
       const rm = el("button", "btn-ghost sm", "✕");
       rm.type = "button";
       rm.title = "حذف الصف";
-      rm.onclick = () => { state[k].splice(i, 1); drawRows(); };
+      rm.onclick = () => {
+        const [gone] = state[k].splice(i, 1);
+        drawRows();
+        showUndo(gone, i);
+      };
       td.append(rm);
       tr.append(td);
       tbody.append(tr);
     });
   };
   drawRows();
-  wrap.append(table);
+  wrap.append(table, undoBar);
   if (field.allowAddRows !== false) {
     const add = el("button", "btn-ghost sm", "+ صف جديد");
     add.type = "button";
@@ -400,14 +521,18 @@ function richCell(field, state, key) {
   return d;
 }
 
-/** أي حقول تستحقّ التنسيق: بنود الأعمال والتوصيات والمناقشات */
-const RICH_HINT = /بند|المناقشة|مناقشة|التوصي|توصي|القرار|قرار|ما لم يُنَفَّذ|لم ينفذ|أسباب|الموضوع/;
-const isRich = (c) => (c.type === "TEXTAREA" || c.type === "TEXT") &&
-  RICH_HINT.test(String(c.label ?? "") + " " + String(c.key ?? ""));
+/* كل نصّ حرّ يحمل شريط تنسيق فوقه — كما في المنصّات. كان الشريط يظهر على
+   «البنود والتوصيات» وحدها، فبقيت بقيّة النصوص بلا أي تنسيق. تُستثنى أعمدة
+   المسلسل والحقول التي لها نوع خاص (تاريخ/رقم/اختيار) لأنها ليست نصًّا حرًّا. */
+const isRich = (c) => (c.type === "TEXTAREA" || c.type === "TEXT" || c.type == null) &&
+  !isSerialCol(c) && c.autoFill !== "ROW_NUMBER";
 
 /** عناصر التحكم داخل خلايا الجدول — نفس الأنواع لكن بلا عنوان */
 function columnControl(col, row, ctx, parent) {
-  const f = { ...col, key: col.key };
+  /* ⚠️ `readOnly: true` في القوالب معناه «يُجلَب من جدارة»، ونحن منفصلون عنها.
+     فكان المستخدم يرى خلايا مبذورة لا يستطيع تصحيح حرف فيها — والنصّ فوق الجدول
+     يقول «راجعه وعدّله كما تريد». تُفتَح للتحرير، ويبقى المسلسل وحده محسوبًا. */
+  const f = { ...col, key: col.key, readOnly: false };
   switch (col.type) {
     case "TEXTAREA": {
       if (isRich(col)) return richCell(f, row, col.key);
@@ -417,12 +542,12 @@ function columnControl(col, row, ctx, parent) {
     }
     case "SELECT": return selectInput(f, row, col.key);
     case "MULTI_SELECT": return selectInput(f, row, col.key);
-    case "DATE": return textInput("date", f, row, col.key);
-    case "TIME": return textInput("time", f, row, col.key);
-    case "NUMBER": return textInput("number", f, row, col.key);
-    case "PHONE": return textInput("tel", f, row, col.key);
-    case "EMAIL": return textInput("email", f, row, col.key);
-    case "BOOLEAN": return textInput("checkbox", f, row, col.key);
+    case "DATE": return textInput("date", f, row, col.key, { inTable: true });
+    case "TIME": return textInput("time", f, row, col.key, { inTable: true });
+    case "NUMBER": return textInput("number", f, row, col.key, { inTable: true });
+    case "PHONE": return textInput("tel", f, row, col.key, { inTable: true });
+    case "EMAIL": return textInput("email", f, row, col.key, { inTable: true });
+    case "BOOLEAN": return textInput("checkbox", f, row, col.key, { inTable: true });
     case "TEACHER_PICKER":
       return selectInput(f, row, col.key, (ctx.support?.teachers ?? []).map((t) => t.fullName));
     case "LOOKUP":
@@ -431,7 +556,7 @@ function columnControl(col, row, ctx, parent) {
       return signaturePad(f, row, col.key);
     case "FILE": return filesInput(f, row, ctx, col.key, false);
     case "FILES": return filesInput(f, row, ctx, col.key, true);
-    default: return isRich(col) ? richCell(f, row, col.key) : textInput("text", f, row, col.key);
+    default: return isRich(col) ? richCell(f, row, col.key) : textInput("text", f, row, col.key, { inTable: true });
   }
 }
 
@@ -472,28 +597,27 @@ function seedLinkedRows(field, ctx) {
                  ?? (ctx.support?.committees ?? [])[0];
   const members = committee?.members ?? [];
   const nameC = pickCol(cols, /name|الاسم|العضو/i);
-  const roleC = pickCol(cols, /role|الصفة|المنصب|الوظيفة/i);
+  /* ⚠️ عمودان مختلفان كانا يُلتَقطان بتعبير واحد: «الدَور الإداري» (وظيفته في
+     المدرسة) و«المَنصب في اللجنة» (رئيس/مُقَرِّر/عُضو). البيانات تحمل
+     `roleInCommittee` وكان مهمَلًا تمامًا، فبقي عمود المنصب بلا بذر. */
+  const posC = pickCol(cols, /^position$|المنصب في اللجنة|الصفة في اللجنة|صفة العضو/i);
+  const roleC = pickCol(cols.filter((c) => c !== posC), /^role$|الدور الإداري|الوظيفة|الصفة/i);
+  const seatOf = (m) => committeePositionAr(m.roleInCommittee);
+  const memberRow = (m) => ({
+    [nameC?.key ?? "name"]: m.fullName || "",
+    ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
+    ...(posC ? { [posC.key]: seatOf(m) } : {}),
+  });
 
-  if (src === "SchoolCommittee.members") {
-    return members.map((m) => ({
-      [nameC?.key ?? "name"]: m.fullName || "",
-      ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
-    }));
-  }
+  if (src === "SchoolCommittee.members") return members.map(memberRow);
   if (src === "CommitteeMeeting.attendances") {
     const statusC = pickCol(cols, /status|الحضور|حالة/i);
     return members.map((m) => ({
-      [nameC?.key ?? "name"]: m.fullName || "",
-      ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
+      ...memberRow(m),
       ...(statusC ? { [statusC.key]: "حاضر" } : {}),
     }));
   }
-  if (src === "MeetingSignature") {
-    return members.map((m) => ({
-      [nameC?.key ?? "name"]: m.fullName || "",
-      ...(roleC ? { [roleC.key]: ctx.roleArFn(m.role) } : {}),
-    }));
-  }
+  if (src === "MeetingSignature") return members.map(memberRow);
   if (src === "CommitteeMeeting.agendaItems") {
     const textC = pickCol(cols, /text|البند|الموضوع|المناقشة/i) ?? cols[1] ?? cols[0];
     const numC = pickCol(cols, /^n$|num|م$|رقم/i);

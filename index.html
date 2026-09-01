@@ -223,30 +223,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=57a8e1e6";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=63240f1e";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=57a8e1e6";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=57a8e1e6";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=57a8e1e6";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=57a8e1e6";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=57a8e1e6";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=63240f1e";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=63240f1e";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=63240f1e";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=63240f1e";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=63240f1e";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=57a8e1e6";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=57a8e1e6";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=63240f1e";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=63240f1e";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=57a8e1e6";
-import { surveyLink, extractCodes } from "./survey.js?v=57a8e1e6";
+         fullBackup } from "./vault.js?v=63240f1e";
+import { surveyLink, extractCodes } from "./survey.js?v=63240f1e";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=57a8e1e6";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=63240f1e";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=57a8e1e6";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=63240f1e";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=57a8e1e6";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=57a8e1e6";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=63240f1e";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=63240f1e";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -880,6 +880,7 @@ $("toolBack").onclick = openTools;
 $("toolPrev").onclick = () => toolIndex > 0 && openTool(myTools[toolIndex - 1].tool.key);
 $("toolNext").onclick = () => toolIndex < myTools.length - 1 && openTool(myTools[toolIndex + 1].tool.key);
 $("toolSave").onclick = async () => {
+  if (!curTool || !toolState) { setStatus("لم تُفتح أداة بعد", "warn"); return; }
   const answered = Object.keys(toolState.answers).length, total = flattenTool(curTool).length;
   $("toolStatus").textContent = "جارٍ الحفظ…";
   try {
@@ -1018,6 +1019,9 @@ $("impPrint").onclick = async () => {
   await printDocument(doc, { store, school: bundle.school, person: me, roleAr: roleAr(me.role) });
 };
 
+/* منفذ فحص: يكشف ما قرّرت المنظومة كتابته (مساراته ومحتواه) دون تنفيذ الكتابة.
+   يُستعمل في probe-save-chain للتحقّق من سلسلة الحفظ بلا تدخّل بشري. */
+window.__written = () => (S.store && S.store.written ? [...S.store.written] : []);
 window.__preparePrint = () => preparePrint(recTemplate, recState, {
   store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId });
 

@@ -25,7 +25,14 @@ const has = (hay, ...needles) => needles.some((n) => norm(hay).includes(n));
  * يُعيد القيمة المشتقّة لحقل، أو undefined إن لم تُعرَف.
  * المطابقة على المفتاح الإنجليزي أو العنوان العربي معًا.
  */
-export function derive(field, ctx) {
+/* ⚠️ قواعد هوية الشخص (وظيفته، رقمه، بريده) تخصّ **الحقل المفرد** لا خلايا
+   الجدول: عمود «المَنصب في اللجنة» مفتاحه `position` فكان يطابق /position/i
+   ويُنسخ فيه «مدير المدرسة» — وظيفة من يفتح السجل — في كل صف من صفوف اللجنة.
+   داخل الجداول تُعطَّل هذه القواعد، ويُبذَر العمود من عضوية اللجنة نفسها. */
+const PERSON_SCOPED = /jobTitle|position|roleName|employeeNo|empNumber|email|preparedBy|recordedBy|writerName|ownerName/i;
+
+export function derive(field, ctx, opts = {}) {
+  if (opts.inTable && PERSON_SCOPED.test(String(field.key ?? field.id ?? ""))) return undefined;
   const k = String(field.key ?? field.id ?? "");
   const l = String(field.label ?? "");
   const S = ctx.school, W = ctx.week;
@@ -65,6 +72,19 @@ export function derive(field, ctx) {
 }
 
 /** صفوف جاهزة لجداول يعرف النظام محتواها — أكبر موفّر للوقت */
+/** منصب العضو في اللجنة كما في بيانات التشكيل — لا كوظيفته الإدارية */
+export const COMMITTEE_POSITION_AR = {
+  CHAIR: "رئيس اللجنة",
+  VICE_CHAIR: "نائب رئيس اللجنة",
+  DEPUTY: "نائب رئيس اللجنة",
+  SECRETARY: "مُقَرِّر اللجنة",
+  RAPPORTEUR: "مُقَرِّر اللجنة",
+  COORDINATOR: "مُنسِّق اللجنة",
+  MEMBER: "عُضو",
+};
+export const committeePositionAr = (v) =>
+  COMMITTEE_POSITION_AR[String(v ?? "").toUpperCase()] ?? (v ? String(v) : "عُضو");
+
 export function seedRows(field, ctx) {
   const cols = field.columns || [];
   const colKey = (re) => cols.find((c) => re.test(String(c.key ?? "")) || re.test(String(c.label ?? "")));

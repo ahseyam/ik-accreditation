@@ -460,3 +460,10 @@
 .connbar .cb-b{border:1px solid var(--line);background:var(--card);color:var(--ink-2);
   border-radius:var(--r-sm);padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer}
 .connbar .cb-b:hover{border-color:var(--brand);color:var(--brand)}
+
+/* شريط التراجع عن حذف صف — الحذف كان نهائيًا بلا رجعة */
+.undo-bar{display:flex;align-items:center;gap:10px;margin-top:9px;padding:8px 12px;
+  border:1px solid var(--gold);border-radius:var(--r-sm);background:#fdf7e8;
+  font-size:12.5px;color:var(--ink-2)}
+.undo-bar button{border-color:var(--gold);color:var(--brand);font-weight:700}
+.rec-table td.num{text-align:center;color:var(--ink-2);font-variant-numeric:tabular-nums}
