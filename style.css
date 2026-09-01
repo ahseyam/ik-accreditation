@@ -8,6 +8,7 @@
   @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;
              src:url("AlJazeera-Bold.v2.woff2") format("woff2")}
   :root{
+  --head-ink:#8c1c13;--head-soft:#fbf1ef;--head-line:#e3bdb6;
     --ink:#122a25; --ink-2:#43616a; --line:#e2eae9; --line-2:#cddedb;
     --bg:#f2f6f5; --panel:#fff;
     --brand:#155e4e; --brand-2:#1d7a63; --brand-soft:#e9f3f0; --brand-ink:#0d443a;
@@ -29,6 +30,7 @@
   }
   /* الوضع الليلي — تُبدَّل الرموز وحدها فتبقى القواعد كما هي */
   html[data-theme="dark"]{
+    --head-ink:#f0a79c;--head-soft:#2b1a18;--head-line:#4a2b26;
     --ink:#e6f0ee; --ink-2:#9fb8b3; --line:#22403a; --line-2:#2e544c;
     --bg:#0d1f1c; --panel:#132a26;
     --brand:#4fbf9c; --brand-2:#63d2ae; --brand-soft:#17332d; --brand-ink:#0a1815;
@@ -246,8 +248,16 @@
   .primary{display:flex;flex-wrap:wrap;gap:9px 26px;background:var(--brand-soft);
            border:1px solid var(--line-2);border-radius:var(--r-sm);padding:14px 17px;margin-bottom:22px;font-size:14px}
   .primary-cell .k{color:var(--ink-2);margin-inline-end:6px}
-  .repeat-item{border:1px solid var(--line);border-radius:var(--r-sm);padding:15px;margin-bottom:13px}
-  .repeat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .repeat-item{border:1px solid var(--line);border-radius:var(--r-sm);padding:0 0 15px;
+               margin-bottom:16px;overflow:hidden}
+  /* ترويسة المحضر: عنوان موسَّط بأحمر غامق على خلفية مميّزة، وزرّ الحذف
+     مُزاح إلى الحافّة كي لا يزحزح مركز العنوان. */
+  .repeat-head{position:relative;display:flex;align-items:center;justify-content:center;
+               background:var(--head-soft);border-bottom:2px solid var(--head-line);
+               padding:11px 56px;margin-bottom:15px;min-height:44px}
+  .repeat-head .repeat-t{color:var(--head-ink);font-size:15px;font-weight:800;
+                         text-align:center;line-height:1.5}
+  .repeat-head>button{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%)}
   .legend,.multi{display:flex;flex-wrap:wrap;gap:8px}
   .chip{font-size:12.5px;border-radius:99px;padding:3px 12px;background:#eef2f2}
   .chk{display:flex;align-items:center;gap:7px;font-size:14px;border:1px solid var(--line-2);

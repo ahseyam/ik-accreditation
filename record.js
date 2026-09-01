@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=d8bc5fff";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=d8bc5fff";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=cde37496";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=cde37496";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -62,8 +62,11 @@ export function interpScope(index, item) {
     week: W?.weekNumber,
     meetingNum: n, meetingNumber: n, programNumber: n,
   };
+  /* ⚠️ كان الشرط `typeof v === "string"` فتُتجاهل القيم الرقمية: رقم الاجتماع
+     والأسبوع مبذوران أرقامًا، فيغلبهما الأسبوع الجاري ويتكرّر في كل محضر. */
   for (const [k, v] of Object.entries(item || {})) {
-    if (typeof v === "string" && v.trim()) base[k] = v;
+    if (typeof v === "number" && Number.isFinite(v)) base[k] = v;
+    else if (typeof v === "string" && v.trim()) base[k] = v;
   }
   // أسماء شائعة تعتمد على حقل شقيق
   base.programName = base.programName || item?.programName || item?.name || "";
@@ -345,6 +348,20 @@ const isoDay = (d) => {
 const countAr = (n, one, two, few, many) =>
   n === 1 ? one : n === 2 ? two : n <= 10 ? n + " " + few : n + " " + many;
 
+/** المحاضر تحمل مواعيدها من الجدول نفسه — لا تُملأ باليد ولا تُترك خاوية */
+function seedMinutes(field, ctx) {
+  const committee = (ctx.support?.committees ?? []).find((c) => c.key === ctx.committeeKey)
+                 ?? (ctx.support?.committees ?? [])[0];
+  const weeks = ctx.support?.weeks ?? [];
+  if (!committee || !weeks.length) return null;
+  return committeeMeetings(weeks, committee.meetingFrequency).map((m) => ({
+    meetingNum: m.n,
+    semester: m.semester === 1 ? "الأول" : "الثاني",
+    week: m.weekNumber,
+    scheduledAt: isoDay(m.date),
+  }));
+}
+
 function seedSchedule(field, ctx) {
   const cols = field.columns ?? [];
   if (!isScheduleTable(cols)) return null;
@@ -438,9 +455,15 @@ function wireRowDerivations(cols, row, controls, ctx) {
   }
 }
 
+/* عمود «🏷️ ETEC» في محاضر اللجان الخمس يطلب من المُقَرِّر رمز مؤشّر أثناء
+   تدوين المحضر — لا هو يعرفه ولا هو موضعه؛ ربط السجل بالمؤشرات مذكور في
+   ترويسة السجل أصلًا. يُخفى من العرض ولا يُحذف من القالب. */
+const isNoiseCol = (c) =>
+  c.key === "linkedIndicatorCode" || /^🏷️\s*ETEC$/.test(String(c.label ?? "").trim());
+
 function recurringTable(field, state, ctx) {
   const k = field.key ?? field.id;
-  const cols = field.columns ?? [];
+  const cols = (field.columns ?? []).filter((c) => !isNoiseCol(c));
   if (!state[k]) {
     const seeded = seedSchedule(field, ctx) ?? (FILL ? seedRows(field, FILL) : null);
     if (seeded && seeded.length) state[k] = seeded;
@@ -797,8 +820,13 @@ function linkedTable(field, state, ctx) {
 function repeatingSection(field, state, ctx) {
   const k = field.key ?? field.id;
   if (!state[k]) {
-    const n = field.initialItems ?? field.defaultItems ?? 1;
-    state[k] = Array.from({ length: n }, () => ({}));
+    // ⚠️ `defaultItems` مصفوفة لا عدد: تمريرها إلى Array.from({length}) يُنتج صفرًا
+    const n = Number.isFinite(field.initialItems) ? field.initialItems
+            : Array.isArray(field.defaultItems) ? field.defaultItems.length : 1;
+    // المحاضر تُبذَر بمواعيدها من مرآة الخطة لا تُترك خاوية
+    const seeded = field.meetingSource ? seedMinutes(field, ctx) : null;
+    state[k] = seeded && seeded.length ? seeded
+             : Array.from({ length: Math.max(1, n) }, () => ({}));
   }
   const wrap = el("div", "repeat");
   const draw = () => {
@@ -807,7 +835,7 @@ function repeatingSection(field, state, ctx) {
       const card = el("div", "repeat-item");
       const head = el("div", "repeat-head");
       const lbl = interpolate(field.itemLabel ?? "", interpScope(i, item));
-      head.append(el("b", null, lbl || "عنصر " + (i + 1)));
+      head.append(el("b", "repeat-t", lbl || "عنصر " + (i + 1)));
       const rm = el("button", "btn-ghost sm", "حذف");
       rm.type = "button";
       rm.onclick = () => { state[k].splice(i, 1); draw(); };
