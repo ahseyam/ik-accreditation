@@ -340,11 +340,20 @@
   details.tree table{border-top:1px solid var(--line)}
   .sig-bar{display:flex;gap:9px;align-items:center;margin-top:9px;flex-wrap:wrap}
   /* شريط التنسيق العائم */
-  .rich-bar{position:absolute;z-index:30;display:flex;gap:4px;background:var(--brand-ink);
-            border-radius:9px;padding:5px 7px;box-shadow:0 8px 24px -10px rgba(0,0,0,.6)}
-  .rich-bar .rb{background:rgba(255,255,255,.10);color:#eaf5f1;border:0;border-radius:6px;
-                padding:5px 10px;font-size:12.5px;font-weight:700;line-height:1;cursor:pointer}
-  .rich-bar .rb:hover{background:rgba(255,255,255,.24)}
+  /* شريط تحرير فاتح فوق الخليّة مباشرة — لا لوحة داكنة تسحب العين عن النصّ */
+  .rich-bar{position:absolute;z-index:30;display:flex;flex-wrap:wrap;gap:4px;
+            background:#f2f4f3;border:1px solid var(--line);
+            border-radius:9px;padding:4px 6px;box-shadow:0 6px 18px -10px rgba(0,0,0,.35);
+            max-width:min(94vw,420px)}
+  .rich-bar .rb{background:#fff;color:var(--ink-2);border:1px solid var(--line-2);border-radius:6px;
+                padding:5px 9px;font-size:12.5px;font-weight:700;line-height:1;cursor:pointer}
+  .rich-bar .rb:hover{background:var(--brand-soft);color:var(--brand);border-color:var(--brand)}
+  html[data-theme="dark"] .rich-bar{background:#1b2b27;border-color:#2c3d38}
+  html[data-theme="dark"] .rich-bar .rb{background:#233631;color:#dcebe6;border-color:#31463f}
+  /* الشاشات الضيّقة: شريط مرصوف أسفل الشاشة بدل ملاحقة خليّة أضيق منه */
+  .rich-bar.docked{position:fixed;inset-inline:8px;bottom:calc(10px + var(--statusH));
+                   top:auto;max-width:none;justify-content:center;
+                   box-shadow:0 -6px 22px -12px rgba(0,0,0,.45)}
   .f-in.rich{min-height:38px;line-height:1.7;overflow-wrap:anywhere}
   .f-in.rich:empty::before{content:"اكتب هنا…";color:var(--ink-2)}
   /* إخراج المحضر */

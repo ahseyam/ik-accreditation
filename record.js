@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=63240f1e";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=63240f1e";
+import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=1926ab81";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=1926ab81";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -496,12 +496,34 @@ function syncRich() {
   const { state, key } = RICH_TARGET._bind || {};
   if (state) state[key] = RICH_TARGET.innerHTML;
 }
+/* ⚠️ `inset-inline-end` في صفحة RTL يعني **اليسار**، فكان الشريط يُثبَّت بحافته
+   اليسرى على مسافة حُسبت لحافته اليمنى — انعكاس كامل عبر الصفحة: خليّة في
+   يسار الشاشة وشريطها في يمينها، وأحيانًا خارج الشاشة أصلًا. تُستعمل الحافة
+   الفيزيائية صراحةً، ويُحبَس الشريط داخل الشاشة، ويهبط تحت الخليّة إن ضاق
+   ما فوقها. */
 function placeBar(elm) {
   const bar = richBar();
-  const r = elm.getBoundingClientRect();
   bar.classList.remove("hidden");
-  bar.style.top = (window.scrollY + r.top - 44) + "px";
-  bar.style.insetInlineEnd = (document.documentElement.clientWidth - r.right) + "px";
+  bar.style.insetInlineEnd = "";
+  bar.style.left = "auto";
+  const r = elm.getBoundingClientRect();
+  const vw = document.documentElement.clientWidth;
+  /* على الشاشات الضيّقة الشريط أعرض من الخليّة نفسها، فمحاذاته بها تدفعه خارج
+     الشاشة أو تزيحه بمئات البكسلات. يُرصف أسفل الشاشة كما في محرّرات الجوال —
+     ثابت المكان، تصله الإبهام، ولا يحجب سطر الكتابة. */
+  if (vw <= 620) {
+    bar.classList.add("docked");
+    bar.style.top = bar.style.right = bar.style.left = "";
+    return;
+  }
+  bar.classList.remove("docked");
+  const bw = bar.offsetWidth || 300;
+  const bh = bar.offsetHeight || 34;
+  // المحاذاة بالحافة اليمنى — بداية السطر في العربية
+  const right = Math.max(8, Math.min(vw - r.right, vw - bw - 8));
+  bar.style.right = right + "px";
+  const above = r.top - bh - 6;
+  bar.style.top = (window.scrollY + (above > 8 ? above : r.bottom + 6)) + "px";
 }
 
 /** خلية نصّية غنيّة — تحلّ محلّ TEXTAREA حيث يلزم التنسيق */
