@@ -87,10 +87,10 @@
 </div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=74af7fa7";
-import { computeReadiness, readinessLabel, countEvidence, countExecPlans, DIMENSIONS } from "./readiness.js?v=74af7fa7";
-import { countSavedRecords, loadToolResponses } from "./app.js?v=74af7fa7";
-import { summarize } from "./tools.js?v=74af7fa7";
+import { FolderStore } from "./storage.js?v=3bf23fe2";
+import { computeReadiness, readinessLabel, countEvidence, countExecPlans, DIMENSIONS } from "./readiness.js?v=3bf23fe2";
+import { countSavedRecords, loadToolResponses } from "./app.js?v=3bf23fe2";
+import { summarize } from "./tools.js?v=3bf23fe2";
 
 const $ = (i) => document.getElementById(i);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));

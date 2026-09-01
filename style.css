@@ -536,3 +536,15 @@
 .vevi ul{margin:8px 0;padding-inline-start:26px;color:var(--ink-2);line-height:1.75}
 .vevi .vsrc{padding:5px 11px 8px;color:var(--ink-2);border-top:1px dashed var(--line)}
 .vevi .vsrc b{color:var(--ink)}
+
+/* منع صريح على المتصفّحات التي لا تحفظ — بدل وضع قراءة يوهم المستخدم */
+.blockcard{text-align:center;padding:8px 4px}
+.blockcard .blockicon{font-size:44px;line-height:1;margin-bottom:10px}
+.blockcard h2{color:var(--head-ink);font-size:19px;margin:0 0 12px;
+  display:block;text-align:center}
+.card .blockcard h2::before{content:none}
+.blockcard p{color:var(--ink-2);line-height:1.85;max-width:52ch;margin:0 auto 18px}
+.blockcard .blockdo{text-align:start;background:var(--brand-soft);border:1px solid var(--line);
+  border-radius:var(--r-sm);padding:14px 16px;max-width:52ch;margin:0 auto 18px;font-size:13.5px}
+.blockcard .blockdo ol{margin:9px 0 0;padding-inline-start:22px;line-height:1.9;color:var(--ink-2)}
+.blockcard .blockdo b{color:var(--ink)}

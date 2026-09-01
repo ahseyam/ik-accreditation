@@ -52,8 +52,8 @@
     <div class="wrap">
 
       <section id="screenConnect" class="card">
-        <h1>الاتصال بمساحة مدرستك</h1>
-        <p class="sub">اختر مجلد «الاعتماد الخارجي» الذي شاركه معك مدير المدرسة على OneDrive.
+        <h1 id="connectH1">الاتصال بمساحة مدرستك</h1>
+        <p class="sub" id="connectSub">اختر مجلد «الاعتماد الخارجي» الذي شاركه معك مدير المدرسة على OneDrive.
            تختاره مرّة واحدة فقط، ثم يتذكّره المتصفّح.</p>
         <div id="connectBody"></div>
       </section>
@@ -224,30 +224,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=74af7fa7";
+import { FolderStore } from "./storage.js?v=3bf23fe2";   // ReadOnlyStore أُلغي من الواجهة
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=74af7fa7";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=74af7fa7";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=74af7fa7";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=74af7fa7";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=74af7fa7";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=3bf23fe2";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=3bf23fe2";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=3bf23fe2";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=3bf23fe2";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=3bf23fe2";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=74af7fa7";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=74af7fa7";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=3bf23fe2";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=3bf23fe2";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=74af7fa7";
-import { surveyLink, extractCodes } from "./survey.js?v=74af7fa7";
+         fullBackup } from "./vault.js?v=3bf23fe2";
+import { surveyLink, extractCodes } from "./survey.js?v=3bf23fe2";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=74af7fa7";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=3bf23fe2";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=74af7fa7";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=3bf23fe2";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=74af7fa7";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=74af7fa7";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=3bf23fe2";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=3bf23fe2";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -270,20 +270,35 @@ const dataUrl = new URLSearchParams(location.search).get("data");
 function renderConnect(state) {
   const box = $("connectBody");
   if (state === "unsupported") {
-    /* بدل الطريق المسدود: وضع قراءة يعمل على سفاري والآيباد */
+    /* ⚠️ كان هنا «وضع القراءة» على سفاري والآيباد. أُلغي بقرار مستشار
+       الاعتماد: المستخدم يعبّئ سجلًا ساعةً ثم يكتشف أن شيئًا لم يُحفظ —
+       والحرج أشدّ من المنع. المنع صريح، ومعه ما يفعله بدلًا منه. */
+    /* العنوان الأصلي يقول «اختر مجلدك» — يناقض المنع تحته. يُبدَّل معه. */
+    $("connectH1").textContent = "لا يمكن فتح المنظومة على هذا الجهاز";
+    $("connectSub").textContent = "المنظومة تحفظ في مجلد مدرستك مباشرةً، وهذا ما لا يتيحه هذا المتصفّح.";
+    const apple = /iPad|iPhone|Macintosh/.test(navigator.userAgent);
     box.innerHTML =
-      '<div class="warn"><b>هذا الجهاز لا يدعم الحفظ المباشر في المجلد.</b><br>' +
-      'للتعبئة والحفظ استخدم <b>Microsoft Edge</b> أو <b>Google Chrome</b> على حاسب ويندوز.</div>' +
-      (ReadOnlyStore.supported()
-        ? '<div style="margin-top:16px"><button class="b-main" id="roBtn">📖 فتح وضع القراءة</button>' +
-          '<div class="f-help" style="margin-top:8px">تستعرض السجلات والخطط والنتائج ' +
-          "كاملةً، ولا يمكنك الحفظ من هذا الجهاز.</div></div>"
-        : '<div class="note" style="margin-top:16px">هذا المتصفّح لا يدعم حتى فتح المجلد للقراءة.</div>') +
-      '<div id="connectErr" style="margin-top:14px"></div>';
-    const ro = $("roBtn");
-    if (ro) ro.onclick = async () => {
-      try { await start(await ReadOnlyStore.pick()); }
-      catch (e) { $("connectErr").innerHTML = '<div class="err">' + esc(e.message) + "</div>"; }
+      '<div class="blockcard">' +
+        '<div class="blockicon">🚫</div>' +
+        "<h2>هذا المتصفّح لا يصلح لمنظومة الاعتماد</h2>" +
+        "<p>سفاري ومتصفّحات الآيباد <b>لا تستطيع الحفظ في مجلد المدرسة</b>. " +
+        "لو فتحتَ المنظومة هنا لعبّأتَ سجلاتك ثم ضاعت كلها دون إنذار — " +
+        "ولذلك أُغلق الدخول من هذا الجهاز بدل أن تكتشف ذلك متأخّرًا.</p>" +
+        '<div class="blockdo"><b>ما تفعله الآن:</b><ol>' +
+          "<li>افتح الرابط نفسه على <b>حاسب</b> (ويندوز أو ماك) " +
+          "بمتصفّح <b>Google Chrome</b> أو <b>Microsoft Edge</b>.</li>" +
+          "<li>تأكّد أن مجلد «الاعتماد الخارجي» مُزامَن على ذلك الحاسب.</li>" +
+        "</ol></div>" +
+        '<button class="b-ghost" id="copyLink">📋 نسخ الرابط لإرساله إلى حاسبك</button>' +
+        '<div class="f-help" id="copyMsg" style="margin-top:10px"></div>' +
+        (apple ? '<div class="note sm" style="margin-top:16px">إن كنت على <b>ماك</b>: ' +
+          "المنظومة تعمل عليه، لكن بمتصفّح كروم أو إيدج لا سفاري.</div>" : "") +
+      "</div>";
+    const cp = $("copyLink");
+    if (cp) cp.onclick = async () => {
+      try { await navigator.clipboard.writeText(location.href.split("?")[0]);
+            $("copyMsg").textContent = "✅ نُسخ الرابط."; }
+      catch { $("copyMsg").textContent = location.href.split("?")[0]; }
     };
     return;
   }
