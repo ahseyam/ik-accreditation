@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=b226bdaf">
+<link rel="stylesheet" href="style.css?v=a2165e78">
 </head>
 <body>
 <div class="app">
@@ -70,9 +70,23 @@
         <h1>من أنت؟</h1>
         <p class="sub">اختر اسمك من منسوبي المدرسة، فتظهر لك سجلاتك وأدواتك وخطتك أنت وحدك.</p>
         <div class="connbar" id="connBar"></div>
+        <aside id="whoArt">
+          <img src="building.png" alt="مدارس ابن خلدون">
+          <div class="wa-t">مدارس ابن خلدون</div>
+          <div class="wa-s">السجلات والشواهد للتقويم الخارجي</div>
+        </aside>
         <ul class="people" id="peopleList"></ul>
       </section>
 
+      <div id="packBar" class="pack-bar hidden"></div>
+      <section id="screenGuide" class="hidden">
+        <div class="card">
+          <h1>كيف تعمل على الموقع</h1>
+          <p class="sub">ثلاث طرق. اقرأها واختر ما يناسب جهازك — فتعرف تمامًا أين تُحفظ ملفاتك وبأي اسم.</p>
+          <div id="wayNow"></div>
+          <div id="wayList"></div>
+        </div>
+      </section>
       <section id="screenDash" class="hidden">
         <div class="rowhead">
           <div class="sp"><h1 id="dashHi">لوحتي</h1><p class="sub" id="dashSub"></p></div>
@@ -207,6 +221,29 @@
             هذا الأمر ينسخ كذلك ملفات الشواهد الثنائية.</div>
           <button class="b-main" id="vaultFull">تشغيل نسخة كاملة الآن</button>
           <span class="muted" id="vaultStat" style="margin-inline-start:12px"></span></div>
+        <div class="card"><h2>حقائب العمل — لمن يعمل من الجوّال</h2>
+          <div class="muted" style="margin-bottom:12px">جهّز حقيبة باسم التنفيذي وأرسلها له بالواتساب.
+            يعمل عليها بلا حساب ولا إنترنت، ثم يعيد إليك إدخالاته.</div>
+          <div id="packMake"></div></div>
+        <div class="card"><h2>استلام إدخالات التنفيذيين</h2>
+          <div class="muted" style="margin-bottom:12px">من ملفٍّ وصلك بالواتساب، أو سحبًا من نقطة
+            الاستقبال إن فُعِّلت. تُكتب في مواضعها تمامًا كما لو عبّأها صاحبها بنفسه.</div>
+          <div class="rowhead" style="gap:10px">
+            <button class="b-main" id="impFileBtn">📥 استيراد ملف إدخالات</button>
+            <input type="file" id="impFile" accept=".json,application/json" multiple hidden>
+            <button class="b-ghost" id="cloudPull">☁️ سحب ما وصل من الجوّالات</button>
+          </div>
+          <div id="impMsg" style="margin-top:12px"></div>
+          <details class="setup-adv" style="margin-top:14px">
+            <summary>نقطة الاستقبال — ضبط لمرّة واحدة</summary>
+            <div class="blockdo">
+              <div class="muted" style="margin-bottom:10px">Worker مجاني على حسابك في Cloudflare —
+                بلا بطاقة وبلا تقنية معلومات. الخطوات في ملف <b>cloudflare-worker.js</b>.</div>
+              <input class="f-in" id="relayUrl" placeholder="https://…workers.dev" style="margin-bottom:8px">
+              <input class="f-in" id="relayKey" placeholder="مفتاح السحب (PULL_KEY)" style="margin-bottom:10px">
+              <button class="b-main" id="relaySave">حفظ</button>
+            </div>
+          </details></div>
         <div class="card"><h2>آخر ما نُسخ</h2><div class="scroll" id="vaultItems"></div></div>
       </section>
 
@@ -224,31 +261,34 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=b226bdaf";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=b226bdaf";
+import { FolderStore } from "./storage.js?v=a2165e78";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=a2165e78";
+import { WAYS, chosenWay, chooseWay, wayByKey, wayOfStore } from "./guide.js?v=a2165e78";
+import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=a2165e78";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=b226bdaf";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=b226bdaf";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=b226bdaf";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=b226bdaf";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=b226bdaf";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=a2165e78";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=a2165e78";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=a2165e78";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=a2165e78";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=a2165e78";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=b226bdaf";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=b226bdaf";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=a2165e78";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=a2165e78";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=b226bdaf";
-import { surveyLink, extractCodes } from "./survey.js?v=b226bdaf";
+         fullBackup } from "./vault.js?v=a2165e78";
+import { surveyLink, extractCodes } from "./survey.js?v=a2165e78";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=b226bdaf";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=a2165e78";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=b226bdaf";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=a2165e78";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=b226bdaf";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=b226bdaf";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=a2165e78";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=a2165e78";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -308,6 +348,10 @@ function renderConnect(state) {
             '<div class="f-help" style="margin-top:9px">للتعميم على الجميع: ضع المعرّف في ' +
             "<b>graph-config.json</b> داخل القشرة بدل تخزينه في هذا الجهاز.</div></div></details>") +
         '<div class="f-help" id="gMsg" style="margin-top:12px"></div>' +
+        '<div class="or-sep">أو بلا أي حساب</div>' +
+        '<button class="b-ghost" id="packBtn">📦 فتح حقيبة عمل وصلتني</button>' +
+        '<input type="file" id="packFile" accept=".json,application/json" hidden>' +
+        '<div class="f-help" style="margin-top:8px">يجهّزها لك مستودع المدرسة ويرسلها بالواتساب.</div>' +
 
       "</div>";
     const say = (t, cls) => { $("gMsg").innerHTML = cls ? '<div class="' + cls + '">' + esc(t) + "</div>" : esc(t); };
@@ -317,6 +361,17 @@ function renderConnect(state) {
       if (!/^[0-9a-fA-F-]{30,40}$/.test(id)) return say("المعرّف غير صالح — انسخه كما هو من Azure.", "err");
       setGraphConfig({ clientId: id });
       renderConnect("unsupported");
+    };
+    const pb = $("packBtn"), pf = $("packFile");
+    if (pb) pb.onclick = () => pf.click();
+    if (pf) pf.onchange = async () => {
+      const f = pf.files?.[0]; if (!f) return;
+      try {
+        const { obj, chk } = await readPackFile(f);
+        if (chk.kind !== "work") throw new Error("هذا ملف إدخالات لا حقيبة عمل.");
+        await start(new PackStore(obj));
+      } catch (e) { say(e.message, "err"); }
+      pf.value = "";
     };
     const gi = $("gIn");
     if (gi) gi.onclick = async () => {
@@ -477,13 +532,14 @@ async function pick(person) {
   buildNav();
   show("nav", true);
   show("searchBox", true);
-  refreshAlerts();
+  refreshAlerts(); packBar();
   show("prefsBtn", true);
   goDash();
 }
 
 /* ── التنقّل الجانبي ── */
 const NAV = [
+  { id: "guide", ic: "❓", label: "كيف تعمل على الموقع", go: () => goGuide() },
   { id: "dash", ic: "▣", label: "لوحتي", go: () => goDash() },
   { id: "records", ic: "▤", label: "سجلاتي", go: () => goRecords(), count: () => myRecords.length },
   { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(), count: () => myTools.length },
@@ -509,6 +565,73 @@ function buildNav() {
 }
 
 /* ── لوحتي ── */
+/* ── دليل الاستخدام ── */
+/* ⚠️ في وضع الحقيبة لا شيء يصل إلى المدرسة حتى يُرسِله صاحبه. الشريط
+   دائم ويعدّ ما لم يُرسَل — فلا يظنّ أحد أن الحفظ انتهى عند «حفظ». */
+function packBar() {
+  const bar = $("packBar");
+  if (!bar) return;
+  if (store?.kind !== "pack") { bar.classList.add("hidden"); return; }
+  const pend = store.pending(), ev = store.evidenceCount();
+  bar.classList.remove("hidden");
+  bar.innerHTML =
+    '<span class="pb-t">📦 حقيبة عمل — <b>' + pend.length + "</b> إدخالًا لم يصل المدرسة بعد" +
+    (ev ? " · <b>" + ev + "</b> شاهدًا تُرسَل منفصلة" : "") + "</span>" +
+    '<button class="b-main sm" id="packSend"' + (pend.length ? "" : " disabled") + ">إرسال ما عبّأت</button>";
+  const b = $("packSend");
+  if (b) b.onclick = async () => {
+    const pack = buildEntryPack(bundle.school, me, store.pending());
+    const how = await deliver(entryPackName(me), pack);
+    if (how === "cancelled") return;
+    setStatus(how === "share" ? "اختر واتساب مستودع المدرسة لإتمام الإرسال"
+                              : "نزل الملف — أرسله لمستودع المدرسة بالواتساب", "ok");
+  };
+}
+
+function goGuide() {
+  only("screenGuide"); markNav("guide");
+  const actual = wayOfStore(store), picked = chosenWay();
+  const w = wayByKey(actual) || wayByKey(picked?.key);
+  $("wayNow").innerHTML = !w ? "" :
+    '<div class="way-now"><b>' + esc(w.icon + " أنت تعمل بطريقة: " + w.name) + "</b>" +
+    "<div>ملفاتك تُحفظ <b>" + esc(w.where) + "</b>.</div>" +
+    '<table class="way-files"><tbody>' + w.files.map(([k, v]) =>
+      "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(v) + "</td></tr>").join("") +
+    "</tbody></table>" +
+    (picked?.key && actual && picked.key !== actual
+      ? '<div class="warn sm" style="margin-top:10px">اخترتَ «' + esc(wayByKey(picked.key)?.name) +
+        "» لكنك تعمل الآن بـ«" + esc(w.name) + "».</div>" : "") + "</div>";
+
+  $("wayList").innerHTML = WAYS.map((x) => {
+    const on = picked?.key === x.key, live = actual === x.key;
+    return '<details class="way' + (live ? " live" : "") + '"' + (on || live ? " open" : "") + ">" +
+      "<summary><span class='way-ic'>" + x.icon + "</span><b>" + esc(x.name) + "</b>" +
+      '<span class="tag ' + (live ? "gold" : "gray") + '">' + esc(live ? "طريقتك الحالية" : x.tag) + "</span>" +
+      "</summary>" +
+      '<div class="way-body">' +
+        '<div class="way-meta"><b>الجهاز:</b> ' + esc(x.who) + "</div>" +
+        '<div class="way-meta"><b>يحتاج:</b> ' + esc(x.needs) + "</div>" +
+        "<ol class='way-steps'>" + x.steps.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ol>" +
+        "<div class='way-where'><b>أين تجد ملفاتك:</b> " + esc(x.where) + "</div>" +
+        '<table class="way-files"><tbody>' + x.files.map(([k, v]) =>
+          "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(v) + "</td></tr>").join("") + "</tbody></table>" +
+        "<div class='way-lim'><b>ما يجب أن تعرفه:</b><ul>" +
+          x.limits.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul></div>" +
+        '<button class="' + (on ? "b-ghost" : "b-main") + '" data-way="' + esc(x.key) + '">' +
+          (on ? "✅ هذه طريقتي المعتمدة" : "أوافق — هذه طريقتي") + "</button>" +
+      "</div></details>";
+  }).join("");
+  $("wayList").querySelectorAll("button[data-way]").forEach((b) => {
+    b.onclick = () => {
+      const x = wayByKey(b.dataset.way);
+      chooseWay(x.key);
+      setStatus("اعتمدتَ «" + x.name + "» — ملفاتك " + x.where, "ok");
+      goGuide();
+    };
+  });
+  window.scrollTo(0, 0);
+}
+
 function goDash() {
   only("screenDash"); markNav("dash");
   $("dashHi").textContent = "أهلًا، " + (me.fullName || roleAr(me.role));
@@ -702,7 +825,7 @@ $("recSave").onclick = async () => {
     const bk = await backupEntry(store, { kind: "سجلات", sourcePath: entryPath(me, recTemplate.number, recEntryId),
       data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
       person: me.fullName, roleAr: roleAr(me.role) });
-    refreshAlerts();
+    refreshAlerts(); packBar(); packBar();
     $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
       (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");
   } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
@@ -965,7 +1088,7 @@ $("toolSave").onclick = async () => {
     const bk = await backupEntry(store, { kind: "تقويم", sourcePath: toolResponsePath(curTool.key, id),
       data: { toolKey: curTool.key, responseId: id, answers: toolState.answers },
       person: me.fullName, roleAr: roleAr(me.role) });
-    refreshAlerts();
+    refreshAlerts(); packBar(); packBar();
     $("toolStatus").textContent = "✅ حُفظت (" + answered + " من " + total + " فقرة)" +
       (bk.ok ? " · ونُسخت للمستودع" : "");
   } catch (e) { $("toolStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
@@ -1288,15 +1411,95 @@ $("execSave").onclick = async () => {
     });
     const bk = await backupEntry(store, { kind: "خطط تنفيذية", sourcePath: execPlanPath(me),
       data: execState, person: me.fullName, roleAr: roleAr(me.role) });
-    refreshAlerts();
+    refreshAlerts(); packBar(); packBar();
     $("execStat").textContent = "✅ حُفظت خطتك" + (bk.ok ? " · ونُسخت للمستودع" : "");
   } catch (e) { $("execStat").textContent = "❌ " + e.message; }
 };
 $("execPrint").onclick = printCurrent;
 
 /* ── مستودع المدرسة ── */
+/* ── حقائب العمل واستلام الإدخالات ──
+   ⚠️ الحقيبة تحمل سجلات صاحبها وحده وما يلزم لعرضها — لا روستر المدرسة
+   كاملًا ولا خطط غيره. أصغر حجمًا وأقلّ كشفًا. */
+function vaultBridge() {
+  const list = sortHierarchy(roster || []);
+  $("packMake").innerHTML =
+    '<div class="pack-grid">' + list.map((p, i) =>
+      '<button class="pk" data-i="' + i + '"><b>' + esc(p.fullName || "—") + "</b>" +
+      '<span class="muted">' + esc(roleAr(p.role)) + "</span></button>").join("") + "</div>" +
+    '<div class="f-help" id="pkMsg" style="margin-top:10px"></div>';
+  $("packMake").querySelectorAll("button.pk").forEach((b) => {
+    b.onclick = async () => {
+      const person = list[+b.dataset.i];
+      // ⚠️ recordsFor يعيد { owned, shared } لا مصفوفة — والحقيبة تحمل الاثنين
+      const { owned, shared } = recordsFor(bundle.records.records, person.role);
+      const recs = owned.concat(shared);
+      const pack = buildWorkPack(bundle, person, recs);
+      // أدواته وحدها بنطاق وظيفته — نفس ما يراه لو دخل من حاسب
+      pack.أدوات = scopeTools(bundle.tools.tools, person.role, bundle.support)
+        .filter((x) => x.visible).map((x) => x.tool);
+      pack.تحسين = canSeeImprovement(person.role) ? bundle.improvement : { indicatorScores: [] };
+      pack.نتائج = bundle.results || {};
+      const how = await deliver(workPackName(bundle.school, person), pack);
+      $("pkMsg").textContent = how === "cancelled" ? "" :
+        (how === "share" ? "شارك الحقيبة مع " : "نزلت حقيبة ") + (person.fullName || "") +
+        " · " + recs.length + " سجلًا";
+    };
+  });
+
+  const r0 = relay();
+  if ($("relayUrl")) { $("relayUrl").value = r0?.url || ""; $("relayKey").value = r0?.key || ""; }
+  const rs = $("relaySave");
+  if (rs) rs.onclick = () => {
+    const url = $("relayUrl").value.trim(), key = $("relayKey").value.trim();
+    if (!url) { setRelay(null); setStatus("أُلغيت نقطة الاستقبال", "warn"); return; }
+    setRelay({ url, key });
+    setStatus("حُفظت نقطة الاستقبال", "ok");
+  };
+
+  const show = (res) => {
+    $("impMsg").innerHTML =
+      '<div class="' + (res.done.length ? "ok" : "warn") + ' sm">كُتب ' + res.done.length +
+      " إدخالًا" + (res.failed.length ? " · تعذّر " + res.failed.length : "") + "</div>" +
+      (res.done.length ? '<ul class="imp-list">' + res.done.slice(0, 12).map((p) =>
+        "<li>" + esc(p) + "</li>").join("") + "</ul>" : "") +
+      (res.failed.length ? '<ul class="imp-list bad">' + res.failed.slice(0, 8).map((f) =>
+        "<li>" + esc(f.path) + " — " + esc(f.why) + "</li>").join("") + "</ul>" : "");
+    countSavedRecords(store).then(() => { refreshAlerts(); });
+  };
+
+  const fb = $("impFileBtn"), fi = $("impFile");
+  if (fb) fb.onclick = () => fi.click();
+  if (fi) fi.onchange = async () => {
+    const files = [...(fi.files || [])];
+    const all = { done: [], failed: [] };
+    for (const f of files) {
+      try {
+        const { obj, chk } = await readPackFile(f);
+        if (chk.kind !== "entries") throw new Error("ليس ملف إدخالات");
+        const res = await importEntries(store, obj);
+        all.done.push(...res.done); all.failed.push(...res.failed);
+      } catch (e) { all.failed.push({ path: f.name, why: e.message }); }
+    }
+    show(all); fi.value = "";
+  };
+
+  const cp = $("cloudPull");
+  if (cp) cp.onclick = async () => {
+    if (!relay()?.url) { $("impMsg").innerHTML = '<div class="warn sm">اضبط نقطة الاستقبال أولًا.</div>'; return; }
+    cp.disabled = true; $("impMsg").textContent = "جارٍ السحب…";
+    try {
+      const res = await syncFromCloud(store, bundle.school?.nameAr || "");
+      show(res);
+      if (!res.packs) $("impMsg").innerHTML = '<div class="note sm">لا إدخالات جديدة.</div>';
+    } catch (e) { $("impMsg").innerHTML = '<div class="err">' + esc(e.message) + "</div>"; }
+    cp.disabled = false;
+  };
+}
+
 async function goVault() {
   only("screenVault"); markNav("vault");
+  vaultBridge();
   const idx = await vaultIndex(store);
   const total = Object.values(idx.counts || {}).reduce((a, b) => a + b, 0);
   $("vaultSub").textContent = "أمين المستودع: " + (keeper?.fullName || "—") +

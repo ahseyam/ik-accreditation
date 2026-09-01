@@ -16,12 +16,12 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
   (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 export const show = (id, on) => $(id).classList.toggle("hidden", !on);
 
-export const SCREENS = ["screenConnect", "screenWho", "screenDash", "screenRecords",
+export const SCREENS = ["screenConnect", "screenWho", "screenDash", "screenGuide", "screenRecords",
   "screenRecord", "screenTools", "screenTool", "screenImp", "screenPlans",
   "screenVault", "screenExec", "screenReady"];
 
 export const SCREEN_TITLE = {
-  screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
+  screenGuide: "كيف تعمل على الموقع", screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
   screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
   screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية",
   screenWho: "منسوبو المدرسة", screenVault: "مستودع المدرسة",
