@@ -68,6 +68,7 @@
         </div>
         <h1>من أنت؟</h1>
         <p class="sub">اختر اسمك من منسوبي المدرسة، فتظهر لك سجلاتك وأدواتك وخطتك أنت وحدك.</p>
+        <div class="connbar" id="connBar"></div>
         <ul class="people" id="peopleList"></ul>
       </section>
 
@@ -222,30 +223,30 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore, ReadOnlyStore } from "./storage.js?v=8d5c3c1a";
+import { FolderStore, ReadOnlyStore } from "./storage.js?v=57a8e1e6";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=8d5c3c1a";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=8d5c3c1a";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=8d5c3c1a";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=8d5c3c1a";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=8d5c3c1a";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=57a8e1e6";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide } from "./record.js?v=57a8e1e6";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=57a8e1e6";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=57a8e1e6";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=57a8e1e6";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=8d5c3c1a";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=8d5c3c1a";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=57a8e1e6";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=57a8e1e6";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=8d5c3c1a";
-import { surveyLink, extractCodes } from "./survey.js?v=8d5c3c1a";
+         fullBackup } from "./vault.js?v=57a8e1e6";
+import { surveyLink, extractCodes } from "./survey.js?v=57a8e1e6";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=8d5c3c1a";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=57a8e1e6";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=8d5c3c1a";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=57a8e1e6";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=8d5c3c1a";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=8d5c3c1a";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=57a8e1e6";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=57a8e1e6";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -324,6 +325,18 @@ let rosterOv = null, roster = [], mySignature = null, settings = {}, keeper = nu
 
 async function renderPeople() {
   only("screenWho"); show("nav", false); show("searchBox", false); show("prefsBtn", false);
+  // شريط المجلد المتصل: أخطر خطأ صامت هو الكتابة في مجلد مدرسة أخرى
+  const cb = $("connBar");
+  if (cb) {
+    const ro = store?.readOnly;
+    cb.innerHTML =
+      '<span class="cb-ic">' + (ro ? "📖" : "📁") + "</span>" +
+      '<span class="cb-t">متصل بمجلد <b>' + esc(store?.label ? store.label() : "—") + "</b>" +
+      (ro ? " — <b>وضع قراءة فقط، لا يُحفظ شيء</b>" : "") + "</span>" +
+      '<button class="cb-b" id="connSwap">ليس هذا مجلدي</button>';
+    const sw = $("connSwap");
+    if (sw) sw.onclick = async () => { await FolderStore.forget(); location.reload(); };
+  }
   rosterOv = await loadRosterOverride(store);
   // ⚠️ الترتيب هرميّ من المدير فالوكلاء فمن دونهم — والشبكة RTL فيبدأ من اليمين
   roster = sortHierarchy(applyRosterOverride(bundle.roster.people, rosterOv));
@@ -1043,7 +1056,8 @@ $("prefsBtn").onclick = () => {
       (mySignature ? "محفوظ ✅" : "غير محفوظ") + "</b></button>" +
     '<div class="sepline"></div>' +
     '<button data-p="user"><span>تبديل المستخدم</span><b>' + esc(roleAr(me?.role)) + "</b></button>" +
-    '<button data-p="folder"><span>فصل الاتصال بالمجلد</span><b>⏏</b></button>';
+    '<button data-p="folder"><span>فصل الاتصال بالمجلد</span><b>' +
+      esc(S.store?.label ? S.store.label() : "—") + "</b></button>";
   pop.classList.remove("hidden");
   pop.querySelectorAll("button").forEach((b) => {
     b.onclick = async () => {

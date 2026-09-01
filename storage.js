@@ -43,6 +43,9 @@ export function safeName(name) {
 export class FolderStore {
   constructor(rootHandle) { this.root = rootHandle; this.kind = "folder"; }
 
+  /** اسم المجلد المتصل — ليعرف المستخدم أين يكتب */
+  label() { return this.root?.name || "—"; }
+
   static supported() {
     return typeof window !== "undefined" && "showDirectoryPicker" in window;
   }
@@ -150,6 +153,7 @@ export class HttpStore {
     this.kind = "http";
     this.written = new Map();
   }
+  label() { return this.base.split("/").filter(Boolean).pop() || this.base; }
   _url(relPath) { return this.base + "/" + segments(relPath).map(encodeURIComponent).join("/"); }
   async exists(relPath) {
     if (this.written.has(relPath)) return true;
@@ -217,7 +221,10 @@ export class ReadOnlyStore {
       const rel = String(f.webkitRelativePath || f.name).split("/").slice(1).join("/");
       if (rel) this.map.set(rel, f);
     }
+    const first = files[0];
+    this.rootName = String(first?.webkitRelativePath || "").split("/")[0] || "—";
   }
+  label() { return this.rootName; }
 
   static supported() {
     const i = document.createElement("input");

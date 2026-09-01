@@ -449,3 +449,14 @@
   .f-in,input[type=text],input[type=date],input[type=number],input[type=email],
   input[type=tel],textarea,select{font-size:16px}
 }
+
+/* شريط المجلد المتصل في شاشة «من أنت؟» — يمنع الكتابة في مجلد مدرسة أخرى */
+.connbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;
+  padding:11px 14px;border:1px solid var(--line);border-radius:var(--r-sm);
+  background:var(--brand-soft);font-size:13px;color:var(--ink-2)}
+.connbar .cb-ic{font-size:16px;line-height:1}
+.connbar .cb-t{flex:1;min-width:180px}
+.connbar .cb-t b{color:var(--brand);font-weight:700}
+.connbar .cb-b{border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+  border-radius:var(--r-sm);padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer}
+.connbar .cb-b:hover{border-color:var(--brand);color:var(--brand)}
