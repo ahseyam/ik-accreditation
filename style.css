@@ -476,3 +476,10 @@
   font-size:12.5px;color:var(--ink-2)}
 .undo-bar button{border-color:var(--gold);color:var(--brand);font-weight:700}
 .rec-table td.num{text-align:center;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* زرّ طيّ الأعمدة في الجداول العريضة جدًا */
+.fold-btn{margin-top:9px;border-color:var(--brand);color:var(--brand);font-weight:700}
+
+/* صفّ الاجتماع الواقع في الأسبوع الجاري */
+.rec-table tr.row-now>td{background:var(--gold-soft)}
+.rec-table tr.row-now>td:first-child{box-shadow:inset 3px 0 0 var(--gold)}

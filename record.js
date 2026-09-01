@@ -1,5 +1,5 @@
-import { agendaForMeeting, meetingTitle, meetingScope } from "./meetings.js?v=1926ab81";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=1926ab81";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=88fcafeb";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=88fcafeb";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -298,6 +298,46 @@ function filesInput(field, state, ctx, key, multiple) {
 const isSerialCol = (c) =>
   c.autoFill === "ROW_NUMBER" || /^(م|#|مسلسل|الرقم)$/.test(String(c.label ?? "").trim());
 
+/* ── جدول الاجتماعات السنوي ──
+   خمس لجان فيها جدول «الاجتِماعات المُجَدوَلة» بـ`autoLoad: null` — أي بلا أي
+   بذر، فيظهر ثمانية صفوف خاوية والمستخدم يخمّن التواريخ. والمواعيد معلومة:
+   ثلاثاء كل دورة حسب أسابيع المرآة وتواتر اللجنة، والبنود تُبنى من مهامّها
+   الرسمية موزّعةً على الاجتماعات. */
+// selectInput يضيف «— اختر —» من عنده، فلا يُكرَّر خيار فارغ
+const SCHEDULE_STATUS = [
+  { v: "DONE", l: "✅ نُفِّذ" },
+  { v: "NOT_DONE", l: "✖ لم يُنفَّذ" },
+];
+const isScheduleTable = (cols) =>
+  cols.some((c) => c.key === "meetingNum") && cols.some((c) => c.key === "scheduledAt");
+
+const isoDay = (d) => {
+  if (!(d instanceof Date) || !Number.isFinite(d.getTime())) return "";
+  const p = (n) => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+};
+
+function seedSchedule(field, ctx) {
+  const cols = field.columns ?? [];
+  if (!isScheduleTable(cols)) return null;
+  const committee = (ctx.support?.committees ?? []).find((c) => c.key === ctx.committeeKey)
+                 ?? (ctx.support?.committees ?? [])[0];
+  const weeks = ctx.support?.weeks ?? [];
+  if (!committee || !weeks.length) return null;
+  const meetings = committeeMeetings(weeks, committee.meetingFrequency);
+  if (!meetings.length) return null;
+  return meetings.map((m) => ({
+    num: m.n,
+    meetingNum: m.n,
+    semester: m.semester === 1 ? "الأول" : "الثاني",
+    week: m.weekNumber,
+    scheduledAt: isoDay(m.date),
+    itemsCount: agendaForMeeting(committee, m, meetings.length)
+      .map((it) => it.n + ". " + it.text).join(" • "),
+    status: "",
+  }));
+}
+
 /* ── اشتقاق داخل الصف ──
    عناوين تَعِد بالتلقائية ولا شيء يُنفّذها: «التَخصُّص (تلقائي)» في 21 جدولًا،
    و«اليَوم» مقرونًا بـ«التاريخ» في 20 جدولًا، و«الأُسبوع» في 12. كان المستخدم
@@ -373,7 +413,7 @@ function recurringTable(field, state, ctx) {
   const k = field.key ?? field.id;
   const cols = field.columns ?? [];
   if (!state[k]) {
-    const seeded = FILL ? seedRows(field, FILL) : null;
+    const seeded = seedSchedule(field, ctx) ?? (FILL ? seedRows(field, FILL) : null);
     if (seeded && seeded.length) state[k] = seeded;
     else {
       const n = field.initialRows ?? field.defaultRows ?? 3;
@@ -381,21 +421,31 @@ function recurringTable(field, state, ctx) {
     }
   }
   const serialCol = cols.find(isSerialCol);
+  /* ⚠️ جدولان لا يُقرآن على شاشة: سجل 96 بـ42 عمودًا (4342px في 1072px = 405%)
+     وسجل 165 بـ27. لا تُحذَف أعمدة من قالب اعتماد، لكن لا تُعرض دفعةً واحدة:
+     تُعرض الأساسية ويُطوى الباقي خلف زرّ. القيم المطويّة محفوظة في الصف كما هي. */
+  const PRIMARY = 8;
+  const foldable = cols.length > 12;
+  let showAll = !foldable;
+  const shownCols = () => (showAll ? cols : cols.slice(0, PRIMARY));
   const wrap = el("div", "table-wrap");
   const table = el("table", "rec-table");
   const thead = el("thead");
-  const htr = el("tr");
-  if (!serialCol) htr.append(el("th", "num", "#"));
-  for (const c of cols) {
-    const th = el("th", isSerialCol(c) ? "num" : null,
-      interpolate(c.label ?? c.key ?? "", interpScope(0)));
-    if (c.width) th.style.width = c.width;
-    htr.append(th);
-  }
-  htr.append(el("th", "num", ""));
-  thead.append(htr);
   const tbody = el("tbody");
   table.append(thead, tbody);
+  const drawHead = () => {
+    thead.innerHTML = "";
+    const htr = el("tr");
+    if (!serialCol) htr.append(el("th", "num", "#"));
+    for (const c of shownCols()) {
+      const th = el("th", isSerialCol(c) ? "num" : null,
+        interpolate(c.label ?? c.key ?? "", interpScope(0)));
+      if (c.width) th.style.width = c.width;
+      htr.append(th);
+    }
+    htr.append(el("th", "num", ""));
+    thead.append(htr);
+  };
 
   // شريط التراجع: الحذف كان نهائيًا بلا رجعة — صفٌّ مبذور يُحذف بالخطأ فلا يعود
   const undoBar = el("div", "undo-bar hidden");
@@ -419,11 +469,15 @@ function recurringTable(field, state, ctx) {
 
   const drawRows = () => {
     tbody.innerHTML = "";
+    const thisWeek = FILL?.week?.weekNumber;
     state[k].forEach((row, i) => {
       const tr = el("tr");
+      // اجتماع هذا الأسبوع يُميَّز ليعرف المستخدم ما عليه الآن
+      if (thisWeek != null && isScheduleTable(cols) && String(row.week) === String(thisWeek))
+        tr.className = "row-now";
       if (!serialCol) tr.append(el("td", "num", String(i + 1)));
       const controls = {};
-      for (const c of cols) {
+      for (const c of shownCols()) {
         const td = el("td");
         if (isSerialCol(c)) {
           td.className = "num";
@@ -437,7 +491,7 @@ function recurringTable(field, state, ctx) {
         }
         tr.append(td);
       }
-      wireRowDerivations(cols, row, controls, ctx);
+      wireRowDerivations(shownCols(), row, controls, ctx);
       const td = el("td", "num");
       const rm = el("button", "btn-ghost sm", "✕");
       rm.type = "button";
@@ -452,8 +506,21 @@ function recurringTable(field, state, ctx) {
       tbody.append(tr);
     });
   };
-  drawRows();
+  const drawTable = () => { drawHead(); drawRows(); };
+  drawTable();
   wrap.append(table, undoBar);
+  if (foldable) {
+    const more = el("button", "btn-ghost sm fold-btn");
+    more.type = "button";
+    const label = () => {
+      more.textContent = showAll
+        ? "▲ الاكتفاء بالأعمدة الأساسية (" + PRIMARY + " من " + cols.length + ")"
+        : "▼ عرض كل الأعمدة (" + cols.length + ")";
+    };
+    label();
+    more.onclick = () => { showAll = !showAll; label(); drawTable(); };
+    wrap.append(more);
+  }
   if (field.allowAddRows !== false) {
     const add = el("button", "btn-ghost sm", "+ صف جديد");
     add.type = "button";
@@ -551,6 +618,12 @@ const isRich = (c) => (c.type === "TEXTAREA" || c.type === "TEXT" || c.type == n
 
 /** عناصر التحكم داخل خلايا الجدول — نفس الأنواع لكن بلا عنوان */
 function columnControl(col, row, ctx, parent) {
+  /* «الحالة» في جداول الاجتماعات وحدها تُصبح قائمة نُفِّذ/لم يُنفَّذ. أعمدة
+     «الحالة» الأخرى لها خياراتها المعرّفة ومعانيها المختلفة (شراكة، طالب،
+     تجهيزة، توصية) فلا تُمَسّ. */
+  if (col.key === "status" && !col.options && isScheduleTable(parent?.columns ?? []))
+    return selectInput({ ...col, key: col.key, readOnly: false }, row, col.key,
+      SCHEDULE_STATUS.map((o) => ({ v: o.v, l: o.l })));
   /* ⚠️ `readOnly: true` في القوالب معناه «يُجلَب من جدارة»، ونحن منفصلون عنها.
      فكان المستخدم يرى خلايا مبذورة لا يستطيع تصحيح حرف فيها — والنصّ فوق الجدول
      يقول «راجعه وعدّله كما تريد». تُفتَح للتحرير، ويبقى المسلسل وحده محسوبًا. */
