@@ -1,17 +1,26 @@
 /* ── شاشة السجل ──
    أُخرجت من index.html **بحالتها معها**: القالب الجاري وإدخاله ومعرّفه
    وأسبوعه ملكُ هذه الشاشة. لا تُقرأ من الخارج إلا بالسؤال.
-   ctx = { store, bundle, me, myRecords, CTX.mySignature, roleAr, CTX.afterSave, CTX.goList } */
-import { $, esc, only, markNav, setStatus } from "./ui-state.js";
-import { renderRecordForm, buildGuide, setFillContext } from "./record.js";
-import { entryPath, evidenceDir, newEntryId, freqAr, roleAr } from "./app.js";
-import { currentWeek, semesterLabel, fillContext } from "./autofill.js";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js";
-import { backupEntry } from "./vault.js";
-import { printRecord } from "./print.js";
+   ctx = { store, bundle, me, myRecords, mySignature, roleAr, afterSave, goList } */
+import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=61dde03b";
+import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=61dde03b";
+import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=61dde03b";
+import { printRecord } from "./print.js?v=61dde03b";
+import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=61dde03b";
+import { $, esc, markNav, only } from "./ui-state.js?v=61dde03b";
+import { backupEntry } from "./vault.js?v=61dde03b";
 
 let recState = null, recTemplate = null, recEntryId = null, recIndex = -1, fillWeek = null;
 let CTX = null;
+
+/* إدخالات السجل المحفوظة — جزء من الشاشة لا من الملفّ العامّ */
+async function listSaved(number) {
+  try {
+    const items = await CTX.store.list(entryDir(CTX.me, number));
+    return items.filter((f) => f.kind !== "directory" && f.name.endsWith(".json"))
+                .map((f) => f.name.replace(/\.json$/, ""));
+  } catch { return []; }
+}
 
 export const currentRecord = () => ({ template: recTemplate, state: recState, entryId: recEntryId });
 
@@ -97,10 +106,10 @@ export function bindRecordScreen(ctx) {
         school: CTX.bundle.school.nameAr, academicYear: CTX.bundle.school.academicYear.greg,
         etecIndicators: recTemplate.etecIndicators, data: recState,
       });
-      const bk = await backupEntry(store, { kind: "سجلات", sourcePath: entryPath(CTX.me, recTemplate.number, recEntryId),
+      const bk = await backupEntry(CTX.store, { kind: "سجلات", sourcePath: entryPath(CTX.me, recTemplate.number, recEntryId),
         data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
         person: CTX.me.fullName, roleAr: roleAr(CTX.me.role) });
-      CTX.afterSave && CTX.afterSave(); packBar();
+      CTX.afterSave && CTX.afterSave();
       $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
         (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");
     } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
@@ -109,7 +118,7 @@ export function bindRecordScreen(ctx) {
     $("recStatus").textContent = "جارٍ تجهيز المطبوع…";
     try {
       await printRecord(recTemplate, recState, {
-        store, school: CTX.bundle.school, person: me, roleAr: roleAr(CTX.me.role), entryId: recEntryId });
+        store: CTX.store, school: CTX.bundle.school, person: CTX.me, roleAr: roleAr(CTX.me.role), entryId: recEntryId });
       $("recStatus").textContent = "";
     } catch (e) { $("recStatus").textContent = "❌ تعذّرت الطباعة: " + e.message; }
   };

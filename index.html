@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=4ea9a90e">
+<link rel="stylesheet" href="style.css?v=61dde03b">
 </head>
 <body>
 <div class="app">
@@ -262,42 +262,43 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=4ea9a90e";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=4ea9a90e";
-import { renderGuide } from "./guide.js?v=4ea9a90e";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=4ea9a90e";
-import { setupMissing, editPerson } from "./roster-edit.js?v=4ea9a90e";
-import { vaultBridge } from "./vault-bridge.js?v=4ea9a90e";
-import { renderPublish } from "./publish.js?v=4ea9a90e";
-import { globalSearch } from "./search.js?v=4ea9a90e";
-import { renderConnect } from "./connect.js?v=4ea9a90e";
-import { openImprovement } from "./screen-improve.js?v=4ea9a90e";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=4ea9a90e";
+import { FolderStore } from "./storage.js?v=61dde03b";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=61dde03b";
+import { renderGuide } from "./guide.js?v=61dde03b";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=61dde03b";
+import { setupMissing, editPerson } from "./roster-edit.js?v=61dde03b";
+import { vaultBridge } from "./vault-bridge.js?v=61dde03b";
+import { renderPublish } from "./publish.js?v=61dde03b";
+import { globalSearch } from "./search.js?v=61dde03b";
+import { renderConnect } from "./connect.js?v=61dde03b";
+import { openImprovement } from "./screen-improve.js?v=61dde03b";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=61dde03b";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=61dde03b";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=4ea9a90e";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=61dde03b";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=4ea9a90e";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=4ea9a90e";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=4ea9a90e";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=4ea9a90e";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=4ea9a90e";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=61dde03b";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=61dde03b";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=61dde03b";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=61dde03b";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=61dde03b";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=4ea9a90e";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=4ea9a90e";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=61dde03b";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=61dde03b";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=4ea9a90e";
-import { surveyLink, extractCodes } from "./survey.js?v=4ea9a90e";
+         fullBackup } from "./vault.js?v=61dde03b";
+import { surveyLink, extractCodes } from "./survey.js?v=61dde03b";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=4ea9a90e";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=61dde03b";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=4ea9a90e";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=61dde03b";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=4ea9a90e";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=4ea9a90e";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=61dde03b";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=61dde03b";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -313,7 +314,7 @@ async function printCurrent() {
 }
 
 let store = null, bundle = null, me = null;
-let myRecords = [], myTools = [], recIndex = -1;
+let myRecords = [], myTools = [];   // حالة السجل والأداة انتقلت مع شاشتيهما
 const dataUrl = new URLSearchParams(location.search).get("data");
 
 /* شاشة الاتصال في connect.js — وهنا تسليم المحوّل الذي تصنعه */
@@ -509,7 +510,7 @@ function goDash() {
         esc(r.nameAr) + '</td><td style="width:110px"><span class="tag gray">' +
         esc(freqAr(r.fillFrequency)) + "</span></td></tr>").join("") + "</tbody></table>";
   $("dashSoon").querySelectorAll("tr.click").forEach((tr) => {
-    tr.onclick = () => openRecord(Number(tr.dataset.num));
+    tr.onclick = () => goRecord(Number(tr.dataset.num));
   });
 }
 
@@ -561,7 +562,7 @@ function drawRecords() {
     $("myRecords").innerHTML = rows.length ? drawTree(rows)
       : '<div class="warn" style="margin:0">لا سجلات مطابقة.</div>';
     $("myRecords").querySelectorAll("tr.click").forEach((tr) => {
-      tr.onclick = () => openRecord(Number(tr.dataset.num));
+      tr.onclick = () => goRecord(Number(tr.dataset.num));
     });
     return;
   }
@@ -576,7 +577,7 @@ function drawRecords() {
         '<td>' + (r._shared ? '<span class="tag">مشاركة</span>' : "") + "</td></tr>").join("") +
       "</tbody></table>";
   $("myRecords").querySelectorAll("tr.click").forEach((tr) => {
-    tr.onclick = () => openRecord(Number(tr.dataset.num));
+    tr.onclick = () => goRecord(Number(tr.dataset.num));
   });
 }
 $("recView").onclick = () => {
@@ -589,107 +590,7 @@ $("recSearch").oninput = drawRecords;
 $("recFilter").onchange = drawRecords;
 
 /* ── السجل ── */
-let recState = null, recTemplate = null, recEntryId = null;
-async function listSaved(number) {
-  try {
-    const items = await store.list(entryDir(me, number));
-    return items.filter((f) => f.kind !== "directory" && f.name.endsWith(".json"))
-                .map((f) => f.name.replace(/\.json$/, ""));
-  } catch { return []; }
-}
-let fillWeek = null;
-async function openRecord(number, entryId) {
-  fillWeek = currentWeek(bundle.support?.weeks);
-  recIndex = myRecords.findIndex((r) => r.number === number);
-  recTemplate = myRecords[recIndex];
-  if (!recTemplate) return;
-  recEntryId = entryId || newEntryId();
-  recState = {};
-  if (entryId) {
-    try { recState = (await store.readJson(entryPath(me, number, entryId))).data || {}; } catch {}
-  }
-  only("screenRecord"); markNav("records");
-  $("recTitle").textContent = recTemplate.seq + ". " + recTemplate.nameAr;
-  $("recMeta").textContent =
-    "التعبئة: " + freqAr(recTemplate.fillFrequency) +
-    (recTemplate.etecIndicators.length ? " · مؤشرات ETEC: " + recTemplate.etecIndicators.join("، ") : "") +
-    " · الإدخال: " + recEntryId +
-    (fillWeek ? " · " + semesterLabel(fillWeek) + " الأسبوع " + fillWeek.weekNumber : "");
-  $("recPos").textContent = recTemplate.seq + " من " + myRecords.length;
-  $("recPrev").disabled = recIndex <= 0;
-  $("recNext").disabled = recIndex >= myRecords.length - 1;
-  $("recStatus").textContent = "";
-
-  const saved = await listSaved(number);
-  $("recSaved").innerHTML = saved.length
-    ? '<div class="note sm">إدخالات محفوظة: ' +
-      saved.map((id) => '<a href="#" data-id="' + esc(id) + '">' + esc(id) + "</a>").join(" · ") + "</div>"
-    : "";
-  $("recSaved").querySelectorAll("a").forEach((a) => {
-    a.onclick = (e) => { e.preventDefault(); openRecord(number, a.dataset.id); };
-  });
-
-  // سياق التعبئة التلقائية + لوحة «كيف يعمل هذا السجل»
-  const fill = fillContext(bundle, me, roleAr, STAGE_AR[bundle.school.stage]);
-  fill.mySignature = mySignature;
-  setFillContext(fill);
-  // توحيد صيغ المسمّيات المكرّرة — يُبنى من الحزمة مرّة واحدة
-  buildLabelCanon(bundle.records.records || bundle.records);
-  $("recGuide").innerHTML = "";
-  $("recGuide").append(buildGuide(recTemplate, { roleArFn: roleAr,
-    verifyTool: bundle.tools.tools.find((t) => t.key === "EVIDENCE_VERIFICATION") }));
-
-  const before = UNSUPPORTED.length;
-  // سياق اللجان: مفتاح اللجنة من القالب، وجدول اجتماعاتها بالثلاثاءات
-  const cKey = recTemplate.formFields?.committeeKey ||
-    (recTemplate.formFields?.fields || []).map((f) => f.autoLoad?.whereKey).find(Boolean) || null;
-  const committee = (bundle.support?.committees || []).find((c) => c.key === cKey);
-  const meetings = committee ? committeeMeetings(bundle.support.weeks, committee.meetingFrequency) : [];
-  const meeting = meetings.length ? nextMeeting(meetings) : null;
-  if (committee && meeting) {
-    $("recMeta").textContent += " · " + meetingTitle(meeting, committee.nameAr);
-    $("recGuide").insertAdjacentHTML("beforeend",
-      '<div class="note sm meeting-scope"><b>نطاق هذا الاجتماع:</b> ' + esc(meetingScope(meeting)) + "</div>");
-  }
-  renderRecordForm($("recForm"), recTemplate, recState, {
-    store, support: bundle.support, school: bundle.school, person: me,
-    roleAr: roleAr(me.role), roleArFn: roleAr, savedEntries: {},
-    committeeKey: cKey, committee, meetings, meeting,
-    evidenceDir: evidenceDir(me, number, recEntryId),
-  });
-  if (UNSUPPORTED.length > before)
-    $("recStatus").textContent = "⚠️ " + (UNSUPPORTED.length - before) + " حقلًا بلا معالج";
-  window.scrollTo(0, 0);
-}
 $("recBack").onclick = goRecords;
-$("recPrev").onclick = () => recIndex > 0 && openRecord(myRecords[recIndex - 1].number);
-$("recNext").onclick = () => recIndex < myRecords.length - 1 && openRecord(myRecords[recIndex + 1].number);
-$("recSave").onclick = async () => {
-  $("recStatus").textContent = "جارٍ الحفظ…";
-  try {
-    await store.writeJson(entryPath(me, recTemplate.number, recEntryId), {
-      recordNumber: recTemplate.number, displaySeq: recTemplate.seq, recordName: recTemplate.nameAr,
-      entryId: recEntryId, savedAt: new Date().toISOString(),
-      person: me.fullName, role: me.role, roleAr: roleAr(me.role),
-      school: bundle.school.nameAr, academicYear: bundle.school.academicYear.greg,
-      etecIndicators: recTemplate.etecIndicators, data: recState,
-    });
-    const bk = await backupEntry(store, { kind: "سجلات", sourcePath: entryPath(me, recTemplate.number, recEntryId),
-      data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
-      person: me.fullName, roleAr: roleAr(me.role) });
-    refreshAlerts(); packBar(); packBar();
-    $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
-      (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");
-  } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
-};
-$("recPrint").onclick = async () => {
-  $("recStatus").textContent = "جارٍ تجهيز المطبوع…";
-  try {
-    await printRecord(recTemplate, recState, {
-      store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId });
-    $("recStatus").textContent = "";
-  } catch (e) { $("recStatus").textContent = "❌ تعذّرت الطباعة: " + e.message; }
-};
 
 /* ── الخطط المرجعية ── */
 async function goPlans() {
@@ -763,6 +664,14 @@ async function openTools() {
 
 
 
+/* شاشة السجل في screen-record.js — وهنا سياقها الجاري */
+const recCtx = () => ({
+  store, bundle, me, myRecords, mySignature, roleAr,
+  afterSave: () => { refreshAlerts(); packBar(); },
+  goList: goRecords,
+});
+const goRecord = (number, entryId) => openRecord(number, entryId, recCtx());
+
 /* شاشة الأداة في screen-tool.js — وهنا سياقها الجاري */
 const toolCtx = () => ({
   store, bundle, me, myTools, recordCounts, settings, roleAr,
@@ -790,8 +699,11 @@ $("impPrint").onclick = async () => {
 /* منفذ فحص: يكشف ما قرّرت المنظومة كتابته (مساراته ومحتواه) دون تنفيذ الكتابة.
    يُستعمل في probe-save-chain للتحقّق من سلسلة الحفظ بلا تدخّل بشري. */
 window.__written = () => (S.store && S.store.written ? [...S.store.written] : []);
-window.__preparePrint = () => preparePrint(recTemplate, recState, {
-  store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId });
+window.__preparePrint = () => {
+  const r = currentRecord();
+  return preparePrint(r.template, r.state, {
+    store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: r.entryId });
+};
 
 $("prefsBtn").onclick = () => {
   const pop = $("prefsPop");
@@ -1128,7 +1040,7 @@ $("bellBtn").onclick = () => {
 function goAlert(a) {
   if (!a) return;
   const g = a.go || {};
-  if (g.screen === "record" && g.number != null) openRecord(g.number);
+  if (g.screen === "record" && g.number != null) goRecord(g.number);
   else if (g.screen === "tool" && g.key) goTool(g.key);
   else if (g.screen === "exec") goExec();
   else if (g.screen === "records") goRecords();
@@ -1142,6 +1054,7 @@ $("switchUser").onclick = () => renderPeople();
 
 initPrefs();
 bindToolScreen(toolCtx());   // أزرار شاشة الأداة تُربَط مرّة واحدة
+bindRecordScreen(recCtx());
 
 (async function boot() {
   await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد
