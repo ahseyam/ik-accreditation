@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=6b81856e">
+<link rel="stylesheet" href="style.css?v=d4f59295">
 </head>
 <body>
 <div class="app">
@@ -262,36 +262,37 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=6b81856e";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=6b81856e";
-import { renderGuide } from "./guide.js?v=6b81856e";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=6b81856e";
-import { setupMissing, editPerson } from "./roster-edit.js?v=6b81856e";
+import { FolderStore } from "./storage.js?v=d4f59295";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=d4f59295";
+import { renderGuide } from "./guide.js?v=d4f59295";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=d4f59295";
+import { setupMissing, editPerson } from "./roster-edit.js?v=d4f59295";
+import { vaultBridge } from "./vault-bridge.js?v=d4f59295";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=6b81856e";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=d4f59295";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=6b81856e";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=6b81856e";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=6b81856e";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=6b81856e";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=6b81856e";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=d4f59295";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=d4f59295";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=d4f59295";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=d4f59295";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=d4f59295";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=6b81856e";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=6b81856e";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=d4f59295";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=d4f59295";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=6b81856e";
-import { surveyLink, extractCodes } from "./survey.js?v=6b81856e";
+         fullBackup } from "./vault.js?v=d4f59295";
+import { surveyLink, extractCodes } from "./survey.js?v=d4f59295";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=6b81856e";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=d4f59295";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=6b81856e";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=d4f59295";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=6b81856e";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=6b81856e";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=d4f59295";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=d4f59295";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -1342,88 +1343,9 @@ $("execSave").onclick = async () => {
 $("execPrint").onclick = printCurrent;
 
 /* ── مستودع المدرسة ── */
-/* ── حقائب العمل واستلام الإدخالات ──
-   ⚠️ الحقيبة تحمل سجلات صاحبها وحده وما يلزم لعرضها — لا روستر المدرسة
-   كاملًا ولا خطط غيره. أصغر حجمًا وأقلّ كشفًا. */
-function vaultBridge() {
-  const list = sortHierarchy(roster || []);
-  $("packMake").innerHTML =
-    '<div class="pack-grid">' + list.map((p, i) =>
-      '<button class="pk" data-i="' + i + '"><b>' + esc(p.fullName || "—") + "</b>" +
-      '<span class="muted">' + esc(roleAr(p.role)) + "</span></button>").join("") + "</div>" +
-    '<div class="f-help" id="pkMsg" style="margin-top:10px"></div>';
-  $("packMake").querySelectorAll("button.pk").forEach((b) => {
-    b.onclick = async () => {
-      const person = list[+b.dataset.i];
-      // ⚠️ recordsFor يعيد { owned, shared } لا مصفوفة — والحقيبة تحمل الاثنين
-      const { owned, shared } = recordsFor(bundle.records.records, person.role);
-      const recs = owned.concat(shared);
-      const pack = buildWorkPack(bundle, person, recs);
-      // أدواته وحدها بنطاق وظيفته — نفس ما يراه لو دخل من حاسب
-      pack.أدوات = scopeTools(bundle.tools.tools, person.role, bundle.support)
-        .filter((x) => x.visible).map((x) => x.tool);
-      pack.تحسين = canSeeImprovement(person.role) ? bundle.improvement : { indicatorScores: [] };
-      pack.نتائج = bundle.results || {};
-      const how = await deliver(workPackName(bundle.school, person), pack);
-      $("pkMsg").textContent = how === "cancelled" ? "" :
-        (how === "share" ? "شارك الحقيبة مع " : "نزلت حقيبة ") + (person.fullName || "") +
-        " · " + recs.length + " سجلًا";
-    };
-  });
-
-  const r0 = relay();
-  if ($("relayUrl")) { $("relayUrl").value = r0?.url || ""; $("relayKey").value = r0?.key || ""; }
-  const rs = $("relaySave");
-  if (rs) rs.onclick = () => {
-    const url = $("relayUrl").value.trim(), key = $("relayKey").value.trim();
-    if (!url) { setRelay(null); setStatus("أُلغيت نقطة الاستقبال", "warn"); return; }
-    setRelay({ url, key });
-    setStatus("حُفظت نقطة الاستقبال", "ok");
-  };
-
-  const show = (res) => {
-    $("impMsg").innerHTML =
-      '<div class="' + (res.done.length ? "ok" : "warn") + ' sm">كُتب ' + res.done.length +
-      " إدخالًا" + (res.failed.length ? " · تعذّر " + res.failed.length : "") + "</div>" +
-      (res.done.length ? '<ul class="imp-list">' + res.done.slice(0, 12).map((p) =>
-        "<li>" + esc(p) + "</li>").join("") + "</ul>" : "") +
-      (res.failed.length ? '<ul class="imp-list bad">' + res.failed.slice(0, 8).map((f) =>
-        "<li>" + esc(f.path) + " — " + esc(f.why) + "</li>").join("") + "</ul>" : "");
-    countSavedRecords(store).then(() => { refreshAlerts(); });
-  };
-
-  const fb = $("impFileBtn"), fi = $("impFile");
-  if (fb) fb.onclick = () => fi.click();
-  if (fi) fi.onchange = async () => {
-    const files = [...(fi.files || [])];
-    const all = { done: [], failed: [] };
-    for (const f of files) {
-      try {
-        const { obj, chk } = await readPackFile(f);
-        if (chk.kind !== "entries") throw new Error("ليس ملف إدخالات");
-        const res = await importEntries(store, obj);
-        all.done.push(...res.done); all.failed.push(...res.failed);
-      } catch (e) { all.failed.push({ path: f.name, why: e.message }); }
-    }
-    show(all); fi.value = "";
-  };
-
-  const cp = $("cloudPull");
-  if (cp) cp.onclick = async () => {
-    if (!relay()?.url) { $("impMsg").innerHTML = '<div class="warn sm">اضبط نقطة الاستقبال أولًا.</div>'; return; }
-    cp.disabled = true; $("impMsg").textContent = "جارٍ السحب…";
-    try {
-      const res = await syncFromCloud(store, bundle.school?.nameAr || "");
-      show(res);
-      if (!res.packs) $("impMsg").innerHTML = '<div class="note sm">لا إدخالات جديدة.</div>';
-    } catch (e) { $("impMsg").innerHTML = '<div class="err">' + esc(e.message) + "</div>"; }
-    cp.disabled = false;
-  };
-}
-
 async function goVault() {
   only("screenVault"); markNav("vault");
-  vaultBridge();
+  vaultBridge({ store, bundle, roster, onImported: refreshAlerts });
   const idx = await vaultIndex(store);
   const total = Object.values(idx.counts || {}).reduce((a, b) => a + b, 0);
   $("vaultSub").textContent = "أمين المستودع: " + (keeper?.fullName || "—") +
