@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=d4f59295">
+<link rel="stylesheet" href="style.css?v=be6160b6">
 </head>
 <body>
 <div class="app">
@@ -262,37 +262,39 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=d4f59295";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=d4f59295";
-import { renderGuide } from "./guide.js?v=d4f59295";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=d4f59295";
-import { setupMissing, editPerson } from "./roster-edit.js?v=d4f59295";
-import { vaultBridge } from "./vault-bridge.js?v=d4f59295";
+import { FolderStore } from "./storage.js?v=be6160b6";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=be6160b6";
+import { renderGuide } from "./guide.js?v=be6160b6";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=be6160b6";
+import { setupMissing, editPerson } from "./roster-edit.js?v=be6160b6";
+import { vaultBridge } from "./vault-bridge.js?v=be6160b6";
+import { renderPublish } from "./publish.js?v=be6160b6";
+import { globalSearch } from "./search.js?v=be6160b6";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=d4f59295";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=be6160b6";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=d4f59295";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=d4f59295";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=d4f59295";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=d4f59295";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=d4f59295";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=be6160b6";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=be6160b6";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=be6160b6";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=be6160b6";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=be6160b6";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=d4f59295";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=d4f59295";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=be6160b6";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=be6160b6";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=d4f59295";
-import { surveyLink, extractCodes } from "./survey.js?v=d4f59295";
+         fullBackup } from "./vault.js?v=be6160b6";
+import { surveyLink, extractCodes } from "./survey.js?v=be6160b6";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=d4f59295";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=be6160b6";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=d4f59295";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=be6160b6";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=d4f59295";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=d4f59295";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=be6160b6";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=be6160b6";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -868,7 +870,7 @@ function openTool(key) {
   $("toolPrev").disabled = toolIndex <= 0;
   $("toolNext").disabled = toolIndex >= myTools.length - 1;
 
-  renderPublish();
+  publishBox();
   $("respondentBox").innerHTML =
     '<div class="f-label">وصف المستجيب (بلا أسماء)</div>' +
     '<input class="f-in" id="respondent" placeholder="' +
@@ -944,75 +946,12 @@ function openTool(key) {
   $("toolStatus").textContent = "";
   window.scrollTo(0, 0);
 }
-/* ── نشر الاستبانة للجمهور: مساران معًا والمدرسة تختار ── */
-const SURVEY_BASE = location.origin + location.pathname.replace(/[^/]*$/, "") + "استبانة.html";
-
-function renderPublish() {
+/* نشر الاستبانة — الدالة في publish.js، وهنا وصلها بالحالة الجارية */
+function publishBox() {
   const box = $("publishBox");
-  if (curTool.type !== "SURVEY") { box.classList.add("hidden"); return; }
-  box.classList.remove("hidden");
-  const wa = settings.waNumber || "", api = settings.surveyApi || "";
-  const link = surveyLink(SURVEY_BASE, { tool: curTool.key, school: bundle.school.nameAr, wa, api });
-  box.innerHTML =
-    "<h2>نشر الاستبانة للجمهور</h2>" +
-    '<div class="muted" style="margin-bottom:14px">أرسل الرابط لأولياء الأمور أو الطلاب أو المعلمين. ' +
-    "الاستجابة <b>لا تحمل اسمًا</b>. ⚠️ وإن اعتمدت مسار الواتساب فسيظهر لك " +
-    "<b>رقم جوّال المرسِل</b> — أعلِمهم بذلك، والمسار السحابي وحده مجهول تمامًا.</div>" +
-    '<div class="grid c2">' +
-      '<div class="field"><div class="f-label">رقم واتساب المدرسة (يستقبل الردود)</div>' +
-      '<input class="f-in" id="waNum" placeholder="9665XXXXXXXX" value="' + esc(wa) + '">' +
-      '<div class="f-help">يفتح لولي الأمر رسالة جاهزة يرسلها بنقرة — بلا خادم إطلاقًا.</div></div>' +
-      '<div class="field"><div class="f-label">نقطة الاستقبال السحابية (اختيارية)</div>' +
-      '<input class="f-in" id="apiUrl" placeholder="https://…workers.dev/collect" value="' + esc(api) + '">' +
-      '<div class="f-help">إن ضُبطت وصلت الاستجابة مباشرة كما في المنصة، وإلا سقط للواتساب.</div></div>' +
-    "</div>" +
-    '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">' +
-      '<button class="b-main" id="saveChan">حفظ القنوات</button>' +
-      '<button class="b-ghost" id="copyLink">📋 نسخ رابط الاستبانة</button>' +
-      '<a class="b-ghost" style="padding:10px 18px;border-radius:9px;border:1px solid var(--line-2);text-decoration:none" href="' +
-        esc(link) + '" target="_blank">فتح الاستبانة</a>' +
-      '<span class="muted" id="chanStat"></span></div>' +
-    '<div class="note sm" style="word-break:break-all">' + esc(link) + "</div>" +
-    '<h3 style="margin-top:20px">استقبال الردود الواردة بالواتساب</h3>' +
-    '<div class="muted" style="margin-bottom:9px">الصق الرسائل هنا كما وصلتك — ولو مجتمعة — ' +
-    "ويستخرج النظام كل رمز ويحفظه استجابةً.</div>" +
-    '<textarea class="f-in" id="waPaste" rows="4" placeholder="الصق رسائل الواتساب هنا…"></textarea>' +
-    '<div style="display:flex;gap:10px;align-items:center;margin-top:11px">' +
-      '<button class="b-main" id="waImport">استخراج وحفظ</button>' +
-      '<span class="muted" id="waStat"></span></div>';
-
-  $("saveChan").onclick = async () => {
-    settings = await saveSettings(store, { waNumber: $("waNum").value.trim(),
-                                           surveyApi: $("apiUrl").value.trim() });
-    renderPublish();
-    $("chanStat").textContent = "✅ حُفظت القنوات";
-  };
-  $("copyLink").onclick = async () => {
-    try { await navigator.clipboard.writeText(link); $("chanStat").textContent = "📋 نُسخ الرابط"; }
-    catch { $("chanStat").textContent = "انسخه من الصندوق أدناه"; }
-  };
-  $("waImport").onclick = async () => {
-    const codes = extractCodes($("waPaste").value);
-    if (!codes.length) { $("waStat").textContent = "لم يُعثر على أي رمز صالح"; return; }
-    $("waStat").textContent = "جارٍ الحفظ…";
-    let ok = 0;
-    for (const c of codes) {
-      if (c.toolKey !== curTool.key) continue;
-      try {
-        const id = newEntryId() + "-" + Math.random().toString(36).slice(2, 6);
-        await store.writeJson(toolResponsePath(curTool.key, id), {
-          toolKey: curTool.key, toolName: curTool.nameAr, type: curTool.type,
-          scaleType: curTool.scaleType, scaleMax: scaleMax(curTool),
-          responseId: id, savedAt: new Date().toISOString(),
-          respondentLabel: "وارد بالواتساب", channel: "whatsapp",
-          school: bundle.school.nameAr, answers: c.answers, evidenceCounts: {},
-        });
-        ok++;
-      } catch { /* يُتجاوز */ }
-    }
-    $("waStat").textContent = "✅ حُفظت " + ok + " استجابة من " + codes.length + " رمزًا";
-    $("waPaste").value = "";
-  };
+  if (!curTool || curTool.type !== "SURVEY") { box.classList.add("hidden"); return; }
+  renderPublish({ tool: curTool, store, school: bundle.school, settings,
+                  onSettings: (next) => { settings = next; } });
 }
 
 $("toolBack").onclick = openTools;
@@ -1423,30 +1362,15 @@ function signatureModal() {
   };
 }
 
-/* ── بحث عام: السجلات والأدوات والمؤشرات ── */
-function globalSearch(q) {
-  const t = q.trim();
-  if (t.length < 2) return [];
-  const hits = [];
-  for (const r of myRecords) {
-    if (r.nameAr.includes(t)) hits.push({ kind: "سجل", label: r.seq + ". " + r.nameAr,
-      go: () => openRecord(r.number) });
-  }
-  for (const x of myTools) {
-    if (x.tool.nameAr.includes(t)) hits.push({ kind: "أداة", label: x.tool.nameAr,
-      go: () => openTool(x.tool.key) });
-  }
-  if (bundle.improvement && canSeeImprovement(me.role, bundle.support)) {
-    for (const i of bundle.improvement.indicatorScores) {
-      if ((i.code || "").includes(t) || (i.textAr || "").includes(t))
-        hits.push({ kind: "مؤشر", label: i.code + " · " + (i.textAr || "").slice(0, 56),
-          go: () => openImprovement() });
-    }
-  }
-  return hits.slice(0, 12);
-}
+/* البحث في search.js — وهنا وصله بما يبحث فيه وبما يفعله عند الاختيار */
+const searchHits = (q) => globalSearch(q, {
+  records: myRecords, tools: myTools,
+  indicators: (bundle.improvement && canSeeImprovement(me.role, bundle.support))
+    ? bundle.improvement.indicatorScores : [],
+  go: { record: openRecord, tool: openTool, improvement: openImprovement },
+});
 $("gsearch").oninput = () => {
-  const hits = globalSearch($("gsearch").value);
+  const hits = searchHits($("gsearch").value);
   const box = $("gresults");
   if (hits.length === 0) { box.classList.add("hidden"); return; }
   box.innerHTML = hits.map((h, i) =>
