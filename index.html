@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=3c2900a0">
+<link rel="stylesheet" href="style.css?v=4ea9a90e">
 </head>
 <body>
 <div class="app">
@@ -262,41 +262,42 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=3c2900a0";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=3c2900a0";
-import { renderGuide } from "./guide.js?v=3c2900a0";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=3c2900a0";
-import { setupMissing, editPerson } from "./roster-edit.js?v=3c2900a0";
-import { vaultBridge } from "./vault-bridge.js?v=3c2900a0";
-import { renderPublish } from "./publish.js?v=3c2900a0";
-import { globalSearch } from "./search.js?v=3c2900a0";
-import { renderConnect } from "./connect.js?v=3c2900a0";
-import { openImprovement } from "./screen-improve.js?v=3c2900a0";
+import { FolderStore } from "./storage.js?v=4ea9a90e";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=4ea9a90e";
+import { renderGuide } from "./guide.js?v=4ea9a90e";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=4ea9a90e";
+import { setupMissing, editPerson } from "./roster-edit.js?v=4ea9a90e";
+import { vaultBridge } from "./vault-bridge.js?v=4ea9a90e";
+import { renderPublish } from "./publish.js?v=4ea9a90e";
+import { globalSearch } from "./search.js?v=4ea9a90e";
+import { renderConnect } from "./connect.js?v=4ea9a90e";
+import { openImprovement } from "./screen-improve.js?v=4ea9a90e";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=4ea9a90e";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=3c2900a0";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=4ea9a90e";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=3c2900a0";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=3c2900a0";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=3c2900a0";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=3c2900a0";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=3c2900a0";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=4ea9a90e";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=4ea9a90e";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=4ea9a90e";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=4ea9a90e";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=4ea9a90e";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=3c2900a0";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=3c2900a0";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=4ea9a90e";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=4ea9a90e";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=3c2900a0";
-import { surveyLink, extractCodes } from "./survey.js?v=3c2900a0";
+         fullBackup } from "./vault.js?v=4ea9a90e";
+import { surveyLink, extractCodes } from "./survey.js?v=4ea9a90e";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=3c2900a0";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=4ea9a90e";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=3c2900a0";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=4ea9a90e";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=3c2900a0";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=3c2900a0";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=4ea9a90e";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=4ea9a90e";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -312,7 +313,7 @@ async function printCurrent() {
 }
 
 let store = null, bundle = null, me = null;
-let myRecords = [], myTools = [], recIndex = -1, toolIndex = -1;
+let myRecords = [], myTools = [], recIndex = -1;
 const dataUrl = new URLSearchParams(location.search).get("data");
 
 /* شاشة الاتصال في connect.js — وهنا تسليم المحوّل الذي تصنعه */
@@ -721,7 +722,7 @@ async function goPlans() {
 }
 
 /* ── الأدوات ── */
-let curTool = null, toolState = null, recordCounts = null;
+let recordCounts = null;   // curTool وtoolState وtoolIndex انتقلت مع شاشتها
 async function openTools() {
   only("screenTools"); markNav("tools");
   $("toolsSub").textContent = "المعروض لك " + myTools.length + " من " + bundle.tools.total +
@@ -744,7 +745,7 @@ async function openTools() {
           '<b style="min-width:46px">' + pct.toFixed(0) + "%</b>") + "</button>");
   }
   $("toolsList").innerHTML = rows.join("") || '<div class="warn">لا أدوات في نطاق وظيفتك.</div>';
-  $("toolsList").querySelectorAll("button").forEach((b) => { b.onclick = () => openTool(b.dataset.key); });
+  $("toolsList").querySelectorAll("button").forEach((b) => { b.onclick = () => goTool(b.dataset.key); });
 
   const roll = rollupByIndicator(summaries);
   $("etecRollup").innerHTML = roll.length === 0
@@ -756,131 +757,20 @@ async function openTools() {
         "</td></tr>").join("") + "</tbody></table>";
 }
 
-function openTool(key) {
-  toolIndex = myTools.findIndex((x) => x.tool.key === key);
-  curTool = myTools[toolIndex]?.tool;
-  if (!curTool) return;
-  toolState = { respondent: "", answers: {}, evidence: {}, notes: {} };
-  only("screenTool"); markNav("tools");
-  const items = flattenTool(curTool), max = scaleMax(curTool), ev = isEvidenceBased(curTool);
-  $("toolTitle").textContent = curTool.nameAr;
-  $("toolMeta").textContent = items.length + (isVerification(curTool) ? " دلالة تحقّق" : " فقرة") +
-    " · مقياس من " + max +
-    (ev ? " · الدرجة تُشتقّ من عدد الشواهد لا تُختار" : "") +
-    (curTool.credit ? " · " + curTool.credit : "");
-  $("toolPos").textContent = (toolIndex + 1) + " من " + myTools.length;
-  $("toolPrev").disabled = toolIndex <= 0;
-  $("toolNext").disabled = toolIndex >= myTools.length - 1;
 
-  publishBox();
-  $("respondentBox").innerHTML =
-    '<div class="f-label">وصف المستجيب (بلا أسماء)</div>' +
-    '<input class="f-in" id="respondent" placeholder="' +
-    (curTool.type === "SURVEY" ? "الطالب الأول / المعلمة الثانية…" : "المُقيِّم أو الفصل المُلاحَظ") + '">';
-  $("respondent").oninput = (e) => { toolState.respondent = e.target.value; };
-
-  const html = []; let lastGroup = null;
-  for (const it of items) {
-    if (it.group && it.group !== lastGroup) {
-      html.push('<div class="grp">' + esc(it.group) +
-        (it.indicatorAr ? '<div class="muted" style="font-weight:400;margin-top:5px">' +
-          esc(it.indicatorAr) + "</div>" : "") + "</div>");
-      lastGroup = it.group;
-    }
-    html.push('<div class="item-card" data-n="' + esc(it.uid) + '">');
-    html.push('<div class="item-txt"><span class="item-n">' + it.n + ".</span>" + esc(it.text) + "</div>");
-    if (it.etec.length) html.push('<div class="muted" style="margin-bottom:9px">مؤشرات: ' + esc(it.etec.join("، ")) + "</div>");
-    /* شواهد الروبرك المتوقّعة: ما الذي يبحث عنه المقيّم بالضبط، وفي أي سجل،
-       وممّن يُطلب. كانت في البيانات ولا تُعرض، فيحكم المستخدم بلا معيار. */
-    if (it.evidences && it.evidences.length) {
-      html.push('<details class="vevi"><summary>ما الذي يُتحقَّق منه؟ · ' +
-        it.evidences.length + " شاهدًا</summary><ul>" +
-        it.evidences.map((e) => "<li>" + esc(e) + "</li>").join("") + "</ul>" +
-        (it.documents && it.documents.length
-          ? '<div class="vsrc"><b>السجل:</b> ' + esc(it.documents.join(" · ")) + "</div>" : "") +
-        (it.source ? '<div class="vsrc"><b>يقدّمه:</b> ' + esc(it.source) + "</div>" : "") +
-        "</details>");
-    }
-    if (ev && it.observations && it.observations.length) {
-      html.push('<div class="obs">' + it.observations.map((o, i) =>
-        '<label><input type="checkbox" data-obs="' + esc(it.uid) + '" data-i="' + i + '"><span>' + esc(o) + "</span></label>").join("") + "</div>");
-      html.push('<div class="derived" data-derived="' + esc(it.uid) + '">الشواهد: 0 ← ' + esc(curTool.scaleLabels[0]) + "</div>");
-    } else if (ev) {
-      const auto = evidenceFromRecords(it, recordCounts);
-      html.push('<div class="scale"><span class="muted">عدد الشواهد المتوافرة:</span>' +
-        '<input class="f-in sm" style="width:92px" type="number" min="0" data-count="' + esc(it.uid) + '" value="' + (auto ?? 0) + '">' +
-        (it.records ? '<span class="muted">السجلات المرتبطة: ' + it.records.join("، ") +
-          (auto != null ? " · محسوبة تلقائيًا من إدخالاتكم: " + auto : "") + "</span>" : "") + "</div>");
-      html.push('<div class="derived" data-derived="' + esc(it.uid) + '"></div>');
-    } else {
-      html.push('<div class="scale">' + curTool.scaleLabels.map((lab, i) =>
-        '<label><input type="radio" name="q' + esc(it.uid) + '" data-q="' + esc(it.uid) + '" value="' + (i + 1) +
-        '"><span>' + esc(lab) + "</span></label>").join("") + "</div>");
-    }
-    if (curTool.hasNote)
-      html.push('<div style="margin-top:9px"><input class="f-in sm" data-note="' + esc(it.uid) +
-        '" placeholder="' + esc(curTool.noteLabel || "ملاحظة") + '"></div>');
-    html.push("</div>");
-  }
-  $("toolItems").innerHTML = html.join("");
-  $("toolItems").querySelectorAll("input[data-note]").forEach((i) => {
-    i.oninput = () => { (toolState.notes ||= {})[i.dataset.note] = i.value; };
-  });
-
-  const thr = (uid) => (items.find((x) => x.uid === uid) || {}).thresholds;
-  const setLvl = (uid, cnt) => {
-    const lvl = levelFromEvidence(cnt, thr(uid), curTool);
-    toolState.answers[uid] = lvl; toolState.evidence[uid] = cnt;
-    const d = $("toolItems").querySelector('[data-derived="' + CSS.escape(uid) + '"]');
-    if (d) d.textContent = "الشواهد: " + cnt + " ← " + curTool.scaleLabels[lvl - 1];
-  };
-  $("toolItems").querySelectorAll("input[data-obs]").forEach((cb) => {
-    cb.onchange = () => setLvl(cb.dataset.obs,
-      $("toolItems").querySelectorAll('input[data-obs="' + CSS.escape(cb.dataset.obs) + '"]:checked').length);
-  });
-  $("toolItems").querySelectorAll("input[data-count]").forEach((inp) => {
-    const apply = () => setLvl(inp.dataset.count, Number(inp.value) || 0);
-    inp.oninput = apply; apply();
-  });
-  $("toolItems").querySelectorAll("input[data-q]").forEach((r) => {
-    r.onchange = () => { toolState.answers[r.dataset.q] = Number(r.value); };
-  });
-  $("toolStatus").textContent = "";
-  window.scrollTo(0, 0);
-}
 /* نشر الاستبانة — الدالة في publish.js، وهنا وصلها بالحالة الجارية */
-function publishBox() {
-  const box = $("publishBox");
-  if (!curTool || curTool.type !== "SURVEY") { box.classList.add("hidden"); return; }
-  renderPublish({ tool: curTool, store, school: bundle.school, settings,
-                  onSettings: (next) => { settings = next; } });
-}
 
-$("toolBack").onclick = openTools;
-$("toolPrev").onclick = () => toolIndex > 0 && openTool(myTools[toolIndex - 1].tool.key);
-$("toolNext").onclick = () => toolIndex < myTools.length - 1 && openTool(myTools[toolIndex + 1].tool.key);
-$("toolSave").onclick = async () => {
-  if (!curTool || !toolState) { setStatus("لم تُفتح أداة بعد", "warn"); return; }
-  const answered = Object.keys(toolState.answers).length, total = flattenTool(curTool).length;
-  $("toolStatus").textContent = "جارٍ الحفظ…";
-  try {
-    const id = newEntryId();
-    await store.writeJson(toolResponsePath(curTool.key, id), {
-      toolKey: curTool.key, toolName: curTool.nameAr, type: curTool.type,
-      scaleType: curTool.scaleType, scaleMax: scaleMax(curTool),
-      responseId: id, savedAt: new Date().toISOString(),
-      respondentLabel: toolState.respondent || null,
-      conductedBy: me.fullName, conductedByRole: me.role, school: bundle.school.nameAr,
-      answers: toolState.answers, evidenceCounts: toolState.evidence, notes: toolState.notes || {},
-    });
-    const bk = await backupEntry(store, { kind: "تقويم", sourcePath: toolResponsePath(curTool.key, id),
-      data: { toolKey: curTool.key, responseId: id, answers: toolState.answers },
-      person: me.fullName, roleAr: roleAr(me.role) });
-    refreshAlerts(); packBar(); packBar();
-    $("toolStatus").textContent = "✅ حُفظت (" + answered + " من " + total + " فقرة)" +
-      (bk.ok ? " · ونُسخت للمستودع" : "");
-  } catch (e) { $("toolStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
-};
+
+
+
+/* شاشة الأداة في screen-tool.js — وهنا سياقها الجاري */
+const toolCtx = () => ({
+  store, bundle, me, myTools, recordCounts, settings, roleAr,
+  onSettings: (next) => { settings = next; },
+  afterSave: () => { refreshAlerts(); packBar(); },
+  goList: openTools,
+});
+const goTool = (key) => openTool(key, toolCtx());
 
 /* شاشة التحسين في screen-improve.js — وهنا وصلها بما تقرؤه */
 const goImprove = () => openImprovement({ store, bundle, roleAr });
@@ -1239,7 +1129,7 @@ function goAlert(a) {
   if (!a) return;
   const g = a.go || {};
   if (g.screen === "record" && g.number != null) openRecord(g.number);
-  else if (g.screen === "tool" && g.key) openTool(g.key);
+  else if (g.screen === "tool" && g.key) goTool(g.key);
   else if (g.screen === "exec") goExec();
   else if (g.screen === "records") goRecords();
   else goDash();
@@ -1251,6 +1141,7 @@ $("printPage").onclick = printCurrent;
 $("switchUser").onclick = () => renderPeople();
 
 initPrefs();
+bindToolScreen(toolCtx());   // أزرار شاشة الأداة تُربَط مرّة واحدة
 
 (async function boot() {
   await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد
