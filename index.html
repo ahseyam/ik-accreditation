@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=61dde03b">
+<link rel="stylesheet" href="style.css?v=991435d9">
 </head>
 <body>
 <div class="app">
@@ -262,43 +262,44 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=61dde03b";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=61dde03b";
-import { renderGuide } from "./guide.js?v=61dde03b";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=61dde03b";
-import { setupMissing, editPerson } from "./roster-edit.js?v=61dde03b";
-import { vaultBridge } from "./vault-bridge.js?v=61dde03b";
-import { renderPublish } from "./publish.js?v=61dde03b";
-import { globalSearch } from "./search.js?v=61dde03b";
-import { renderConnect } from "./connect.js?v=61dde03b";
-import { openImprovement } from "./screen-improve.js?v=61dde03b";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=61dde03b";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=61dde03b";
+import { FolderStore } from "./storage.js?v=991435d9";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=991435d9";
+import { renderGuide } from "./guide.js?v=991435d9";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=991435d9";
+import { setupMissing, editPerson } from "./roster-edit.js?v=991435d9";
+import { vaultBridge } from "./vault-bridge.js?v=991435d9";
+import { renderPublish } from "./publish.js?v=991435d9";
+import { globalSearch } from "./search.js?v=991435d9";
+import { renderConnect } from "./connect.js?v=991435d9";
+import { openImprovement } from "./screen-improve.js?v=991435d9";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=991435d9";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=991435d9";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=991435d9";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=61dde03b";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=991435d9";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=61dde03b";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=61dde03b";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=61dde03b";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=61dde03b";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=61dde03b";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=991435d9";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=991435d9";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=991435d9";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=991435d9";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=991435d9";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=61dde03b";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=61dde03b";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=991435d9";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=991435d9";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=61dde03b";
-import { surveyLink, extractCodes } from "./survey.js?v=61dde03b";
+         fullBackup } from "./vault.js?v=991435d9";
+import { surveyLink, extractCodes } from "./survey.js?v=991435d9";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=61dde03b";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=991435d9";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=61dde03b";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=991435d9";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=61dde03b";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=61dde03b";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=991435d9";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=991435d9";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -439,7 +440,7 @@ const NAV = [
     when: () => canSeeImprovement(me.role, bundle.support) },
   { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => goImprove(),
     when: () => canSeeImprovement(me.role, bundle.support) },
-  { id: "exec", ic: "✎", label: "خطتي التنفيذية", go: () => goExec(),
+  { id: "exec", ic: "✎", label: "خطتي التنفيذية", go: () => goExecScreen(),
     count: () => (bundle.exec?.byRole?.[me.role] || []).length,
     when: () => (bundle.exec?.byRole?.[me.role] || []).length > 0 },
   { id: "plans", ic: "▥", label: "الخطط المرجعية", go: () => goPlans() },
@@ -805,82 +806,11 @@ async function goReady() {
 }
 $("readyRefresh").onclick = goReady;
 
-/* ── خطتي التنفيذية: 38 أسبوعًا قابلة للتحرير والحفظ ── */
-let execState = null;
+/* شاشة الخطة التنفيذية في screen-exec.js — وهنا سياقها */
+const execCtx = () => ({ store, bundle, me,
+  afterSave: () => { refreshAlerts(); packBar(); } });
+const goExecScreen = () => goExec(execCtx());
 
-async function goExec() {
-  only("screenExec"); markNav("exec");
-  const mine = (bundle.exec?.byRole?.[me.role] || []);
-  if (!execState) {
-    try { execState = await store.readJson(execPlanPath(me)); }
-    catch { execState = { edits: {}, added: {}, done: {}, notes: {} }; }
-  }
-  const sem = Number($("execSem").value || 1);
-  const weeks = [...new Set(mine.filter((t) => t.semester === sem).map((t) => t.week))].sort((a, b) => a - b);
-  const cur = currentWeek(bundle.support?.weeks);
-  $("execMeta").textContent = mine.length + " مهمة عبر الفصلين · " + roleAr(me.role) +
-    (cur ? " · الأسبوع الحالي " + cur.weekNumber : "");
-
-  $("execWeeks").innerHTML = weeks.map((w) => {
-    const tasks = mine.filter((t) => t.semester === sem && t.week === w);
-    const isNow = cur && cur.semester === sem && cur.weekNumber === w;
-    const added = execState.added[sem + "-" + w] || [];
-    return '<details class="tree exec-w"' + (isNow ? " open" : "") + '><summary>' +
-      "الأسبوع " + w + (isNow ? '<span class="tag gold" style="margin-inline-start:9px">الأسبوع الحالي</span>' : "") +
-      '<span class="tag gray" style="margin-inline-start:9px">' + (tasks.length + added.length) + "</span></summary>" +
-      '<table><thead><tr><th style="width:38px">م</th><th>المهمة</th><th style="width:150px">المصدر</th>' +
-      '<th style="width:92px">التنفيذ</th><th>ملاحظات</th></tr></thead><tbody>' +
-      tasks.map((t, i) => {
-        const id = sem + "-" + w + "-" + t.order;
-        const val = execState.edits[id] ?? t.text;
-        return "<tr><td>" + (i + 1) + '</td><td><input class="f-in sm" data-edit="' + id + '" value="' +
-          esc(val) + '"></td><td class="muted">' + esc(t.rowLabel || t.source || "—") + "</td>" +
-          '<td><input type="checkbox" data-done="' + id + '"' + (execState.done[id] ? " checked" : "") + "></td>" +
-          '<td><input class="f-in sm" data-note="' + id + '" value="' + esc(execState.notes[id] ?? "") + '"></td></tr>';
-      }).join("") +
-      added.map((t, i) => {
-        const id = sem + "-" + w + "-x" + i;
-        return "<tr><td>+</td><td><input class=\"f-in sm\" data-add=\"" + sem + "|" + w + "|" + i +
-          '" value="' + esc(t) + '"></td><td class="muted">مهمة مضافة</td>' +
-          '<td><input type="checkbox" data-done="' + id + '"' + (execState.done[id] ? " checked" : "") + "></td>" +
-          '<td><input class="f-in sm" data-note="' + id + '" value="' + esc(execState.notes[id] ?? "") + '"></td></tr>';
-      }).join("") +
-      '</tbody></table><button class="b-ghost b-sm" data-addw="' + sem + "|" + w + '">+ مهمة في هذا الأسبوع</button></details>';
-  }).join("");
-
-  const bind = (attr, fn) => $("execWeeks").querySelectorAll("[data-" + attr + "]").forEach((el2) => {
-    const h = () => fn(el2.dataset[attr], el2);
-    el2.addEventListener(el2.type === "checkbox" ? "change" : "input", h);
-  });
-  bind("edit", (id, el2) => { execState.edits[id] = el2.value; });
-  bind("note", (id, el2) => { execState.notes[id] = el2.value; });
-  bind("done", (id, el2) => { execState.done[id] = el2.checked; });
-  bind("add", (k, el2) => {
-    const [sm, wk, i] = k.split("|");
-    (execState.added[sm + "-" + wk] ||= [])[+i] = el2.value;
-  });
-  $("execWeeks").querySelectorAll("[data-addw]").forEach((b) => {
-    b.onclick = () => {
-      const [sm, wk] = b.dataset.addw.split("|");
-      (execState.added[sm + "-" + wk] ||= []).push("");
-      goExec();
-    };
-  });
-}
-$("execSem").onchange = goExec;
-$("execSave").onclick = async () => {
-  $("execStat").textContent = "جارٍ الحفظ…";
-  try {
-    await store.writeJson(execPlanPath(me), {
-      ...execState, role: me.role, roleAr: roleAr(me.role), person: me.fullName,
-      school: bundle.school.nameAr, savedAt: new Date().toISOString(),
-    });
-    const bk = await backupEntry(store, { kind: "خطط تنفيذية", sourcePath: execPlanPath(me),
-      data: execState, person: me.fullName, roleAr: roleAr(me.role) });
-    refreshAlerts(); packBar(); packBar();
-    $("execStat").textContent = "✅ حُفظت خطتك" + (bk.ok ? " · ونُسخت للمستودع" : "");
-  } catch (e) { $("execStat").textContent = "❌ " + e.message; }
-};
 $("execPrint").onclick = printCurrent;
 
 /* ── مستودع المدرسة ── */
@@ -1005,7 +935,7 @@ async function refreshAlerts() {
     alerts = buildAlerts({
       myRecords, entryDates, weeks: bundle.support?.weeks,
       execTasks: bundle.exec?.byRole?.[me.role] || [],
-      execState: execState2 || execState, myTools, toolSummaries: sums,
+      execState: execState2 || currentExecState(), myTools, toolSummaries: sums,
       committees: bundle.support?.committees, role: me.role,
     });
   } catch { alerts = []; }
@@ -1042,7 +972,7 @@ function goAlert(a) {
   const g = a.go || {};
   if (g.screen === "record" && g.number != null) goRecord(g.number);
   else if (g.screen === "tool" && g.key) goTool(g.key);
-  else if (g.screen === "exec") goExec();
+  else if (g.screen === "exec") goExecScreen();
   else if (g.screen === "records") goRecords();
   else goDash();
 }
@@ -1055,6 +985,7 @@ $("switchUser").onclick = () => renderPeople();
 initPrefs();
 bindToolScreen(toolCtx());   // أزرار شاشة الأداة تُربَط مرّة واحدة
 bindRecordScreen(recCtx());
+bindExecScreen(execCtx());
 
 (async function boot() {
   await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد
