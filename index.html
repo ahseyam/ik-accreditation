@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=be6160b6">
+<link rel="stylesheet" href="style.css?v=3c2900a0">
 </head>
 <body>
 <div class="app">
@@ -262,39 +262,41 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=be6160b6";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=be6160b6";
-import { renderGuide } from "./guide.js?v=be6160b6";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=be6160b6";
-import { setupMissing, editPerson } from "./roster-edit.js?v=be6160b6";
-import { vaultBridge } from "./vault-bridge.js?v=be6160b6";
-import { renderPublish } from "./publish.js?v=be6160b6";
-import { globalSearch } from "./search.js?v=be6160b6";
+import { FolderStore } from "./storage.js?v=3c2900a0";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=3c2900a0";
+import { renderGuide } from "./guide.js?v=3c2900a0";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=3c2900a0";
+import { setupMissing, editPerson } from "./roster-edit.js?v=3c2900a0";
+import { vaultBridge } from "./vault-bridge.js?v=3c2900a0";
+import { renderPublish } from "./publish.js?v=3c2900a0";
+import { globalSearch } from "./search.js?v=3c2900a0";
+import { renderConnect } from "./connect.js?v=3c2900a0";
+import { openImprovement } from "./screen-improve.js?v=3c2900a0";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=be6160b6";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=3c2900a0";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=be6160b6";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=be6160b6";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=be6160b6";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=be6160b6";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=be6160b6";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=3c2900a0";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=3c2900a0";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=3c2900a0";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=3c2900a0";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=3c2900a0";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=be6160b6";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=be6160b6";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=3c2900a0";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=3c2900a0";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=be6160b6";
-import { surveyLink, extractCodes } from "./survey.js?v=be6160b6";
+         fullBackup } from "./vault.js?v=3c2900a0";
+import { surveyLink, extractCodes } from "./survey.js?v=3c2900a0";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=be6160b6";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=3c2900a0";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=be6160b6";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=3c2900a0";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=be6160b6";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=be6160b6";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=3c2900a0";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=3c2900a0";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -313,109 +315,9 @@ let store = null, bundle = null, me = null;
 let myRecords = [], myTools = [], recIndex = -1, toolIndex = -1;
 const dataUrl = new URLSearchParams(location.search).get("data");
 
-/* ── الاتصال ── */
-function renderConnect(state) {
-  const box = $("connectBody");
-  if (state === "unsupported") {
-    /* ⚠️ الآيفون والآيباد لا يملكان واجهة المجلدات بقرار آبل، **ومعظم
-       التنفيذيين يعملون من الآيفون**. فالمنع يعطّل المنظومة لأكثر مستخدميها.
-       الطريق الوحيد الذي يعمل هناك: Microsoft Graph — اتصال شبكي عادي
-       بحساب الشركة نفسه، بلا كلمة سرّ تمرّ بنا. */
-    const ready = GraphStore.configured();
-    // العنوان الأصلي يتحدّث عن اختيار مجلد — لا مجلد هنا، فيُبدَّل معه
-    $("connectH1").textContent = ready ? "الاتصال بمساحة مدرستك" : "ضبط الاتصال — مرّة واحدة";
-    $("connectSub").textContent = ready
-      ? "الحفظ في المجلد لا يعمل على الجوّالات وأجهزة آبل — وهذا قيد من آبل لا منّا."
-      : "الجوّالات وأجهزة آبل لا تحفظ في المجلد — وهذا قيد من آبل لا منّا.";
-    box.innerHTML =
-      '<div class="blockcard">' +
-        '<div class="blockicon">' + (ready ? "☁️" : "⚙️") + "</div>" +
-        "<h2>" + (ready ? "خياران للعمل من هذا الجهاز" : "هذا الجهاز يحتاج حاسبًا") + "</h2>" +
-        "<p><b>الأسهل والأضمن: افتح الرابط على حاسب</b> (ويندوز أو ماك) بكروم أو " +
-        "إيدج — يحفظ في مجلدك مباشرةً، بلا تسجيل دخول وبلا إنترنت، " +
-        "<b>وبلا حاجة إلى OneDrive</b>: أي مجلد على القرص يكفي.</p>" +
-        "<p>وإن لم يتوفّر حاسب، فهذا الجهاز يعمل بالاتصال بحساب " +
-        "<b>مايكروسوفت 365</b> الخاص بك — نفس البريد الذي تدخل به. " +
-        "<b>لا تمرّ كلمة السرّ بنا</b>: تسجيل الدخول في صفحة مايكروسوفت نفسها.</p>" +
-        (ready
-          ? '<button class="b-main" id="gIn">🔐 تسجيل الدخول بحساب الشركة</button>'
-          : '<div class="note" style="margin-bottom:14px">لم يُفعَّل الدخول لهذه المدرسة بعد — ' +
-            "أبلغ مستشار الاعتماد. وحتى ذلك الحين استعمل <b>حاسبًا</b> بكروم أو إيدج.</div>" +
-            '<details class="setup-adv"><summary>للمستشار — الضبط لمرّة واحدة</summary>' +
-            '<div class="blockdo"><b>خمس دقائق، مرّة واحدة:</b><ol>' +
-            "<li><b>بحسابك أنت — لا عبر تقنية المعلومات:</b> سجّل تطبيقًا في " +
-            "<b>Azure — App registrations</b> بنوع «حسابات في أي مؤسسة»، وأضف " +
-            "<b>SPA redirect URI</b> بعنوان هذه الصفحة. التسجيل مجاني ولا يمسّ " +
-            "أنظمة الشركة.</li>" +
-            "<li>انسخ <b>Application (client) ID</b> والصقه هنا:</li></ol>" +
-            '<input class="f-in" id="gCid" placeholder="00000000-0000-0000-0000-000000000000" ' +
-            'style="margin-top:10px" inputmode="latin"><button class="b-main" id="gSave" ' +
-            'style="margin-top:10px">حفظ وتفعيل</button>' +
-            '<div class="f-help" style="margin-top:9px">للتعميم على الجميع: ضع المعرّف في ' +
-            "<b>graph-config.json</b> داخل القشرة بدل تخزينه في هذا الجهاز.</div></div></details>") +
-        '<div class="f-help" id="gMsg" style="margin-top:12px"></div>' +
-        '<div class="or-sep">أو بلا أي حساب</div>' +
-        '<button class="b-ghost" id="packBtn">📦 فتح حقيبة عمل وصلتني</button>' +
-        '<input type="file" id="packFile" accept=".json,application/json" hidden>' +
-        '<div class="f-help" style="margin-top:8px">يجهّزها لك مستودع المدرسة ويرسلها بالواتساب.</div>' +
+/* شاشة الاتصال في connect.js — وهنا تسليم المحوّل الذي تصنعه */
+const connect = (state) => renderConnect(state, start);
 
-      "</div>";
-    const say = (t, cls) => { $("gMsg").innerHTML = cls ? '<div class="' + cls + '">' + esc(t) + "</div>" : esc(t); };
-    const sv = $("gSave");
-    if (sv) sv.onclick = () => {
-      const id = ($("gCid").value || "").trim();
-      if (!/^[0-9a-fA-F-]{30,40}$/.test(id)) return say("المعرّف غير صالح — انسخه كما هو من Azure.", "err");
-      setGraphConfig({ clientId: id });
-      renderConnect("unsupported");
-    };
-    const pb = $("packBtn"), pf = $("packFile");
-    if (pb) pb.onclick = () => pf.click();
-    if (pf) pf.onchange = async () => {
-      const f = pf.files?.[0]; if (!f) return;
-      try {
-        const { obj, chk } = await readPackFile(f);
-        if (chk.kind !== "work") throw new Error("هذا ملف إدخالات لا حقيبة عمل.");
-        await start(new PackStore(obj));
-      } catch (e) { say(e.message, "err"); }
-      pf.value = "";
-    };
-    const gi = $("gIn");
-    if (gi) gi.onclick = async () => {
-      say("جارٍ فتح صفحة مايكروسوفت…");
-      try {
-        await GraphStore.signIn();
-        const list = await GraphStore.candidates();
-        const folders = list.filter((x) => /اعتماد|Accred/i.test(x.name)).concat(list);
-        if (!folders.length) return say("لم أجد مجلدات في حسابك — اطلب من المدير مشاركة مجلد «الاعتماد الخارجي».", "err");
-        $("gMsg").innerHTML = "<div style='margin-top:8px'>اختر مجلد مدرستك:</div>" +
-          '<div class="folder-pick">' + folders.slice(0, 25).map((f, i) =>
-            '<button data-i="' + i + '">📁 ' + esc(f.name) +
-            '<span class="muted"> · ' + esc(f.from) + "</span></button>").join("") + "</div>";
-        $("gMsg").querySelectorAll("button").forEach((b) => {
-          b.onclick = async () => {
-            const f = folders[+b.dataset.i];
-            setGraphRoot({ driveId: f.driveId, itemId: f.itemId, name: f.name });
-            try { await start(new GraphStore(f)); }
-            catch (e) { say("تعذّر فتح المجلد: " + e.message, "err"); }
-          };
-        });
-      } catch (e) { say(e.message, "err"); }
-    };
-    return;
-  }
-  box.innerHTML =
-    '<button class="b-main" id="pickBtn">اختر مجلد الاعتماد الخارجي</button>' +
-    '<div class="note" style="margin-top:18px">لم يشارك المدير المجلد معك بعد؟ اطلب منه ' +
-    'مشاركة مجلد «الاعتماد الخارجي» من OneDrive، ثم أضِفه باختصار إلى ملفاتك ليُزامَن على جهازك.</div>' +
-    '<div id="connectErr" style="margin-top:14px"></div>';
-  $("pickBtn").onclick = async () => {
-    try { await start(await FolderStore.pick()); }
-    catch (e) {
-      if (e && e.name === "AbortError") return;
-      $("connectErr").innerHTML = '<div class="err">' + esc(e.message) + "</div>";
-    }
-  };
-}
 
 async function start(s) {
   store = s; S.store = s;
@@ -533,7 +435,7 @@ const NAV = [
   { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(), count: () => myTools.length },
   { id: "ready", ic: "◉", label: "جاهزية الزيارة", go: () => goReady(),
     when: () => canSeeImprovement(me.role, bundle.support) },
-  { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => openImprovement(),
+  { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => goImprove(),
     when: () => canSeeImprovement(me.role, bundle.support) },
   { id: "exec", ic: "✎", label: "خطتي التنفيذية", go: () => goExec(),
     count: () => (bundle.exec?.byRole?.[me.role] || []).length,
@@ -980,111 +882,9 @@ $("toolSave").onclick = async () => {
   } catch (e) { $("toolStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
 };
 
-/* ── الخطة التحسينية ── */
-async function openImprovement() {
-  only("screenImp"); markNav("imp");
-  $("impMeta").textContent = "جارٍ حساب التقويم الذاتي…";
-  const imp = bundle.improvement, ev = bundle.results.externalEvaluation, nf = bundle.results.nafis;
-  const summaries = [];
-  for (const t of bundle.tools.tools) summaries.push(summarize(t, await loadToolResponses(store, t.key)));
-  const selfByCode = new Map(rollupByIndicator(summaries).map((r) => [r.code, r]));
-  $("impMeta").textContent = imp.indicatorScores.length + " مؤشرًا · " + imp.weakCount +
-    " دون المستوى · " + imp.programs.length + " برنامجًا معتمَدًا";
+/* شاشة التحسين في screen-improve.js — وهنا وصلها بما تقرؤه */
+const goImprove = () => openImprovement({ store, bundle, roleAr });
 
-  $("impKpi").innerHTML = [
-    ["الكلي — التقويم الخارجي", ev?.extOverallScore], ["القيادة", ev?.extAdminScore],
-    ["التعليم والتعلّم", ev?.extTeachingScore], ["نواتج التعلّم", ev?.extOutcomesScore],
-    ["البيئة المدرسية", ev?.extEnvironmentScore],
-    ["نافِس " + (nf?.testYear ?? "") + " — الكلي", nf?.overallScore],
-    ["نافِس — قراءة", nf?.readingScore], ["نافِس — رياضيات", nf?.mathScore], ["نافِس — علوم", nf?.scienceScore],
-  ].map(([l, v]) => '<div class="box"><div class="v">' + (v == null ? "—" : Number(v).toFixed(1)) +
-    '</div><div class="l">' + esc(l) + "</div></div>").join("");
-
-  let qiyas = null;
-  try { qiyas = nf?.qiyasDetailsJson ? JSON.parse(nf.qiyasDetailsJson) : null; } catch { qiyas = null; }
-  $("impQiyas").innerHTML = !qiyas ? "" :
-    '<div class="card"><h2>القدرات والتحصيلي — ' + esc(qiyas.year ?? "") + "</h2>" +
-    '<div class="muted" style="margin-bottom:11px">' + esc(qiyas.source ?? "") + "</div>" +
-    '<div class="scroll"><table><thead><tr><th>المسار</th><th>الاختبار</th><th>متوسط المدرسة</th>' +
-    "<th>متوسط الإدارة</th><th>المئين على المملكة</th><th>الترتيب</th><th>الاتجاه</th></tr></thead><tbody>" +
-    Object.entries(qiyas.tracks ?? {}).flatMap(([track, tests]) =>
-      Object.entries(tests).map(([kind, v]) =>
-        "<tr><td>" + esc(track) + "</td><td>" +
-        (kind === "tahsili" ? "التحصيلي" : kind === "qudurat" ? "القدرات" : esc(kind)) + "</td>" +
-        "<td><b>" + (v.score ?? "—") + "</b></td><td>" + (v.adminAvg ?? "—") + "</td>" +
-        "<td>" + (v.kingdomPct == null ? "—" : v.kingdomPct + "%") + "</td>" +
-        "<td>" + (Array.isArray(v.kingdomRank) ? v.kingdomRank[0] + " من " + v.kingdomRank[1] : "—") + "</td>" +
-        "<td>" + (Array.isArray(v.trend) ? v.trend.map((t) => esc(t.y) + ": " + t.v).join(" · ") : "—") +
-        "</td></tr>")).join("") + "</tbody></table></div></div>";
-
-  $("impTable").innerHTML =
-    "<table><thead><tr><th>المؤشر</th><th>النص</th><th>المجال</th>" +
-    "<th>التقويم الخارجي</th><th>تقويمنا الذاتي</th><th>الفرق</th></tr></thead><tbody>" +
-    imp.indicatorScores.map((x) => {
-      const self = selfByCode.get(x.code);
-      const d = self && x.externalScore != null ? self.pct - x.externalScore : null;
-      return '<tr' + (x.isWeak ? ' class="weak"' : "") + '><td><b>' + esc(x.code ?? "—") +
-        '</b><div class="muted">' + esc(shortLabel(x.textAr)) + "</div></td>" +
-        "<td>" + esc((x.textAr ?? "").slice(0, 82)) + "</td><td>" + esc(x.domainAr ?? "—") + "</td>" +
-        "<td><b>" + (x.externalScore == null ? "—" : x.externalScore.toFixed(2)) + "</b>" +
-        (x.isWeak ? ' <span class="tag gold">دون المستوى</span>' : "") + "</td>" +
-        "<td>" + (self ? self.pct.toFixed(0) + '% <span class="muted">(' + self.samples + " فقرة)</span>" : "—") + "</td>" +
-        "<td>" + (d == null ? "—" : '<span class="' + (d >= 0 ? "delta-up" : "delta-dn") + '">' +
-          (d >= 0 ? "▲ +" : "▼ ") + d.toFixed(0) + "</span>") + "</td></tr>";
-    }).join("") + "</tbody></table>";
-
-  /* إجراءات التحسين بالأعمدة الاثني عشر */
-  const plan = buildImprovementPlan({
-    indicatorScores: imp.indicatorScores, records: bundle.records.records,
-    tools: bundle.tools.tools, central: imp.central || [],
-    approved: imp.programs || [], roleAr,
-    verify: bundle.tools.tools.find((t) => t.key === "EVIDENCE_VERIFICATION"),
-  });
-  $("procMeta").textContent = plan.groups.length + " مؤشرًا · " +
-    plan.totalProcedures + " إجراءً · " + PROC_COLUMNS.length + " عمودًا · " +
-    "يشمل البرامج العلاجية المعتمدة لنافس والتحصيل";
-  $("impProcedures").innerHTML = plan.groups.map((g) =>
-    '<div class="proc-group"><h4>' + esc(g.tag || "—") +
-    (g.indicator?.externalScore != null
-      ? '<span class="tag gold" style="margin-inline-start:9px">' + g.indicator.externalScore.toFixed(1) + "</span>"
-      : '<span class="tag gray" style="margin-inline-start:9px">برنامج معتمَد</span>') +
-    '</h4><div class="muted" style="margin:-4px 0 9px">' + esc(g.indicator?.textAr || "") + "</div>" +
-    '<div class="scroll"><table class="proc"><thead><tr>' +
-    PROC_COLUMNS.map((c) => "<th>" + esc(c.l) + "</th>").join("") + "</tr></thead><tbody>" +
-    g.procedures.map((p) => "<tr>" + PROC_COLUMNS.map((c) =>
-      "<td>" + esc(p[c.k] ?? "—") + "</td>").join("") + "</tr>").join("") +
-    "</tbody></table></div></div>").join("");
-
-  /* مرآة التحسين */
-  const mirror = buildImprovementMirror(plan.groups);
-  const head = ["<th>المؤشر</th><th>الإجراء</th><th>المسؤول</th><th>المصدر</th>"];
-  for (let w = 1; w <= TOTAL_WEEKS; w++)
-    head.push('<th class="wk' + (w === WEEKS_PER_SEMESTER + 1 ? " sem2" : "") + '">' + w + "</th>");
-  $("impMirror").innerHTML = "<table class=\"mirror\"><thead><tr>" + head.join("") +
-    "</tr></thead><tbody>" + mirror.map((r) => "<tr><td>" + esc(r.code) + "</td><td>" +
-      esc(r.name.slice(0, 60)) + "</td><td>" + esc(r.owner) + "</td>" +
-      Array.from({ length: TOTAL_WEEKS }, (_, i) => {
-        const w = i + 1;
-        return '<td class="wk' + (w === WEEKS_PER_SEMESTER + 1 ? " sem2" : "") +
-          (r.weeks.has(w) ? " on" : "") + '"></td>';
-      }).join("") + "</tr>").join("") + "</tbody></table>";
-
-  const byId = new Map(imp.indicatorScores.map((x) => [x.indicatorId, x]));
-  $("impPrograms").innerHTML = imp.programs.length === 0
-    ? '<div class="warn">لا برامج معتمَدة بعد.</div>'
-    : imp.programs.map((pr) => {
-        const ind = byId.get(pr.indicatorId);
-        const stage = (ttl, st) => !st?.text ? "" :
-          '<div class="stage"><b>' + ttl + ":</b> " + esc(st.text) +
-          (st.achievement ? '<br><span class="muted">مؤشر التحقق: ' + esc(st.achievement) + "</span>" : "") +
-          (st.roles?.length ? '<br><span class="muted">المسؤولون: ' + esc(st.roles.map(roleAr).join("، ")) + "</span>" : "") + "</div>";
-        return '<div class="prog"><h4>' + esc(pr.name) + "</h4>" +
-          '<div class="muted">' + (ind ? "المؤشر " + esc(ind.code) + " · " + esc(ind.textAr ?? "") +
-            " · الدرجة " + (ind.externalScore ?? "—") : "بلا مؤشر") + "</div>" +
-          (pr.description ? '<div style="margin-top:9px;font-size:14px">' + esc(pr.description) + "</div>" : "") +
-          stage("🚀 بَدء التطبيق", pr.start) + stage("📋 التقييم", pr.review) + "</div>";
-      }).join("");
-}
 $("impPrint").onclick = async () => {
   const doc = document.createElement("div");
   doc.className = "p-doc";
@@ -1367,7 +1167,7 @@ const searchHits = (q) => globalSearch(q, {
   records: myRecords, tools: myTools,
   indicators: (bundle.improvement && canSeeImprovement(me.role, bundle.support))
     ? bundle.improvement.indicatorScores : [],
-  go: { record: openRecord, tool: openTool, improvement: openImprovement },
+  go: { record: openRecord, tool: openTool, improvement: goImprove },
 });
 $("gsearch").oninput = () => {
   const hits = searchHits($("gsearch").value);
@@ -1459,12 +1259,12 @@ initPrefs();
   if (!dataUrl) {
     const g = await GraphStore.restore().catch(() => null);
     if (g && !FolderStore.supported()) { await start(g); return; }
-    if (!FolderStore.supported()) { renderConnect("unsupported"); return; }
+    if (!FolderStore.supported()) { connect("unsupported"); return; }
     if (g && !(await FolderStore.restore().catch(() => null))) { await start(g); return; }
   }
   const restored = await openSource({ dataUrl });
   if (restored) { await start(restored); return; }
-  renderConnect("ready");
+  connect("ready");
 })();
 </script>
 </body>
