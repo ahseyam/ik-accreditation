@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=991435d9">
+<link rel="stylesheet" href="style.css?v=a5be1bf8">
 </head>
 <body>
 <div class="app">
@@ -249,7 +249,7 @@
       </section>
 
       <section id="screenPlans" class="hidden">
-        <h1>الخطط المرجعية</h1>
+        <h1>الخطط والنتائج</h1>
         <p class="sub">الخطة التشغيلية للمدرسة وخطتك التنفيذية — نسخ PDF معتمدة.</p>
         <div class="card" id="myPlans"></div>
         <div class="card"><h2>نتائج المدرسة</h2><div id="myResults"></div></div>
@@ -262,44 +262,44 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=991435d9";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=991435d9";
-import { renderGuide } from "./guide.js?v=991435d9";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=991435d9";
-import { setupMissing, editPerson } from "./roster-edit.js?v=991435d9";
-import { vaultBridge } from "./vault-bridge.js?v=991435d9";
-import { renderPublish } from "./publish.js?v=991435d9";
-import { globalSearch } from "./search.js?v=991435d9";
-import { renderConnect } from "./connect.js?v=991435d9";
-import { openImprovement } from "./screen-improve.js?v=991435d9";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=991435d9";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=991435d9";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=991435d9";
+import { FolderStore } from "./storage.js?v=a5be1bf8";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=a5be1bf8";
+import { renderGuide } from "./guide.js?v=a5be1bf8";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=a5be1bf8";
+import { setupMissing, editPerson } from "./roster-edit.js?v=a5be1bf8";
+import { vaultBridge } from "./vault-bridge.js?v=a5be1bf8";
+import { renderPublish } from "./publish.js?v=a5be1bf8";
+import { globalSearch } from "./search.js?v=a5be1bf8";
+import { renderConnect } from "./connect.js?v=a5be1bf8";
+import { openImprovement } from "./screen-improve.js?v=a5be1bf8";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=a5be1bf8";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=a5be1bf8";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=a5be1bf8";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=991435d9";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=a5be1bf8";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=991435d9";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=991435d9";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=991435d9";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=991435d9";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=991435d9";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=a5be1bf8";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=a5be1bf8";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=a5be1bf8";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=a5be1bf8";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=a5be1bf8";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=991435d9";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=991435d9";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=a5be1bf8";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=a5be1bf8";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=991435d9";
-import { surveyLink, extractCodes } from "./survey.js?v=991435d9";
+         fullBackup } from "./vault.js?v=a5be1bf8";
+import { surveyLink, extractCodes } from "./survey.js?v=a5be1bf8";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=991435d9";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=a5be1bf8";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=991435d9";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=a5be1bf8";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=991435d9";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=991435d9";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=a5be1bf8";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=a5be1bf8";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -443,7 +443,7 @@ const NAV = [
   { id: "exec", ic: "✎", label: "خطتي التنفيذية", go: () => goExecScreen(),
     count: () => (bundle.exec?.byRole?.[me.role] || []).length,
     when: () => (bundle.exec?.byRole?.[me.role] || []).length > 0 },
-  { id: "plans", ic: "▥", label: "الخطط المرجعية", go: () => goPlans() },
+  { id: "plans", ic: "▥", label: "الخطط والنتائج", go: () => goPlans() },
   { id: "vault", ic: "🗄", label: "مستودع المدرسة", go: () => goVault(),
     when: () => me.role === "PRINCIPAL" || keeper?.id === me.id },
 ];
@@ -603,10 +603,20 @@ async function goPlans() {
     return '<div style="margin-bottom:11px">📄 <a href="' + url + '" target="_blank">' + esc(label) + "</a></div>";
   };
   const parts = [];
-  parts.push(op ? await link(op, op.replace(/\.pdf$/i, ""))
-                : '<div class="warn">لا توجد خطة تشغيلية في الحزمة.</div>');
-  parts.push(mine ? await link(mine, mine.replace(/\.pdf$/i, ""))
-                  : '<div class="warn">لا خطة تنفيذية لدور «' + esc(roleAr(me.role)) + '» — وهذا متوقّع لبعض الأدوار.</div>');
+  /* ⚠️ الخطط PDF ثقيلة (10 ملفات × ~6MB لكل مدرسة، و85% منها مكرّر بين
+     مدارس المرحلة الواحدة). حين تُستبعد من الحزمة لا يُقال «لا توجد» —
+     فذلك يُقرأ عطلًا — بل يُشرح السبب وأين تُطلب. */
+  if (!plans.length) {
+    parts.push('<div class="note">الخطط المعتمدة <b>ليست داخل هذا المجلد</b>: ملفاتها ثقيلة ' +
+      "ومكرّرة بين مدارس المرحلة الواحدة، فاستُبعدت لتخفيف المزامنة. " +
+      "اطلبها من مستشار الاعتماد وقتما احتجتها — ولا يتوقّف عليها شيء في المنظومة: " +
+      "السجلات والشواهد والأدوات والخطة التحسينية تعمل كاملةً بدونها.</div>");
+  } else {
+    parts.push(op ? await link(op, op.replace(/\.pdf$/i, ""))
+                  : '<div class="warn">لا توجد خطة تشغيلية في الحزمة.</div>');
+    parts.push(mine ? await link(mine, mine.replace(/\.pdf$/i, ""))
+                    : '<div class="warn">لا خطة تنفيذية لدور «' + esc(roleAr(me.role)) + '» — وهذا متوقّع لبعض الأدوار.</div>');
+  }
   $("myPlans").innerHTML = "<h2>خطتك</h2>" + parts.join("");
 
   const ev = bundle.results.externalEvaluation, nf = bundle.results.nafis;
