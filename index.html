@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=2bfaf183">
+<link rel="stylesheet" href="style.css?v=1369d160">
 </head>
 <body>
 <div class="app">
@@ -262,34 +262,35 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=2bfaf183";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=2bfaf183";
-import { WAYS, chosenWay, chooseWay, wayByKey, wayOfStore } from "./guide.js?v=2bfaf183";
+import { FolderStore } from "./storage.js?v=1369d160";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=1369d160";
+import { renderGuide } from "./guide.js?v=1369d160";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=1369d160";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=2bfaf183";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=1369d160";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=2bfaf183";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=2bfaf183";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=2bfaf183";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=2bfaf183";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=2bfaf183";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=1369d160";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=1369d160";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=1369d160";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=1369d160";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=1369d160";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=2bfaf183";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=2bfaf183";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=1369d160";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=1369d160";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=2bfaf183";
-import { surveyLink, extractCodes } from "./survey.js?v=2bfaf183";
+         fullBackup } from "./vault.js?v=1369d160";
+import { surveyLink, extractCodes } from "./survey.js?v=1369d160";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=2bfaf183";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=1369d160";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=2bfaf183";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=1369d160";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=2bfaf183";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=2bfaf183";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=1369d160";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=1369d160";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -630,7 +631,6 @@ function buildNav() {
 }
 
 /* ── لوحتي ── */
-/* ── دليل الاستخدام ── */
 /* ⚠️ في وضع الحقيبة لا شيء يصل إلى المدرسة حتى يُرسِله صاحبه. الشريط
    دائم ويعدّ ما لم يُرسَل — فلا يظنّ أحد أن الحفظ انتهى عند «حفظ». */
 function packBar() {
@@ -655,45 +655,7 @@ function packBar() {
 
 function goGuide() {
   only("screenGuide"); markNav("guide");
-  const actual = wayOfStore(store), picked = chosenWay();
-  const w = wayByKey(actual) || wayByKey(picked?.key);
-  $("wayNow").innerHTML = !w ? "" :
-    '<div class="way-now"><b>' + esc(w.icon + " أنت تعمل بطريقة: " + w.name) + "</b>" +
-    "<div>ملفاتك تُحفظ <b>" + esc(w.where) + "</b>.</div>" +
-    '<table class="way-files"><tbody>' + w.files.map(([k, v]) =>
-      "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(v) + "</td></tr>").join("") +
-    "</tbody></table>" +
-    (picked?.key && actual && picked.key !== actual
-      ? '<div class="warn sm" style="margin-top:10px">اخترتَ «' + esc(wayByKey(picked.key)?.name) +
-        "» لكنك تعمل الآن بـ«" + esc(w.name) + "».</div>" : "") + "</div>";
-
-  $("wayList").innerHTML = WAYS.map((x) => {
-    const on = picked?.key === x.key, live = actual === x.key;
-    return '<details class="way' + (live ? " live" : "") + '"' + (on || live ? " open" : "") + ">" +
-      "<summary><span class='way-ic'>" + x.icon + "</span><b>" + esc(x.name) + "</b>" +
-      '<span class="tag ' + (live ? "gold" : "gray") + '">' + esc(live ? "طريقتك الحالية" : x.tag) + "</span>" +
-      "</summary>" +
-      '<div class="way-body">' +
-        '<div class="way-meta"><b>الجهاز:</b> ' + esc(x.who) + "</div>" +
-        '<div class="way-meta"><b>يحتاج:</b> ' + esc(x.needs) + "</div>" +
-        "<ol class='way-steps'>" + x.steps.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ol>" +
-        "<div class='way-where'><b>أين تجد ملفاتك:</b> " + esc(x.where) + "</div>" +
-        '<table class="way-files"><tbody>' + x.files.map(([k, v]) =>
-          "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(v) + "</td></tr>").join("") + "</tbody></table>" +
-        "<div class='way-lim'><b>ما يجب أن تعرفه:</b><ul>" +
-          x.limits.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul></div>" +
-        '<button class="' + (on ? "b-ghost" : "b-main") + '" data-way="' + esc(x.key) + '">' +
-          (on ? "✅ هذه طريقتي المعتمدة" : "أوافق — هذه طريقتي") + "</button>" +
-      "</div></details>";
-  }).join("");
-  $("wayList").querySelectorAll("button[data-way]").forEach((b) => {
-    b.onclick = () => {
-      const x = wayByKey(b.dataset.way);
-      chooseWay(x.key);
-      setStatus("اعتمدتَ «" + x.name + "» — ملفاتك " + x.where, "ok");
-      goGuide();
-    };
-  });
+  renderGuide({ store, esc, setStatus, onChoose: goGuide });
   window.scrollTo(0, 0);
 }
 
@@ -1282,34 +1244,12 @@ window.__written = () => (S.store && S.store.written ? [...S.store.written] : []
 window.__preparePrint = () => preparePrint(recTemplate, recState, {
   store, school: bundle.school, person: me, roleAr: roleAr(me.role), entryId: recEntryId });
 
-/* ── تفضيلات المستخدم: الوضع الليلي وحجم الخط ── */
-const PREF = { theme: "auto", scale: 100 };
-function loadPrefs() {
-  try { Object.assign(PREF, JSON.parse(localStorage.getItem("ik-prefs") || "{}")); } catch {}
-  applyPrefs();
-}
-function savePrefs() {
-  try { localStorage.setItem("ik-prefs", JSON.stringify(PREF)); } catch {}
-  applyPrefs();
-}
-function applyPrefs() {
-  const dark = PREF.theme === "dark" ||
-    (PREF.theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
-  document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
-  document.documentElement.style.fontSize = (PREF.scale / 100 * 16).toFixed(1) + "px";
-  $("themeBtn").textContent = dark ? "☀️" : "🌙";
-  $("themeBtn").title = dark ? "الوضع النهاري" : "الوضع الليلي";
-}
-$("themeBtn").onclick = () => {
-  const dark = document.documentElement.getAttribute("data-theme") === "dark";
-  PREF.theme = dark ? "light" : "dark"; savePrefs();
-};
 $("prefsBtn").onclick = () => {
   const pop = $("prefsPop");
   if (!pop.classList.contains("hidden")) { pop.classList.add("hidden"); return; }
   pop.innerHTML =
     '<button data-p="theme"><span>سِمَة العرض</span><b>' +
-      ({ auto: "حسب النظام", light: "نهاري", dark: "ليلي" })[PREF.theme] + "</b></button>" +
+      THEME_AR[PREF.theme] + "</b></button>" +
     '<button data-p="scale-up"><span>تكبير الخط</span><b>' + PREF.scale + "%</b></button>" +
     '<button data-p="scale-dn"><span>تصغير الخط</span><b>—</b></button>' +
     '<div class="sepline"></div>' +
@@ -1323,9 +1263,9 @@ $("prefsBtn").onclick = () => {
   pop.querySelectorAll("button").forEach((b) => {
     b.onclick = async () => {
       const a = b.dataset.p;
-      if (a === "theme") PREF.theme = { auto: "light", light: "dark", dark: "auto" }[PREF.theme];
-      if (a === "scale-up") PREF.scale = Math.min(140, PREF.scale + 10);
-      if (a === "scale-dn") PREF.scale = Math.max(80, PREF.scale - 10);
+      if (a === "theme") PREF.theme = nextTheme(PREF.theme);
+      if (a === "scale-up") zoomIn();
+      if (a === "scale-dn") zoomOut();
       if (a === "sign") { pop.classList.add("hidden"); signatureModal(); return; }
       if (a === "user") { pop.classList.add("hidden"); await renderPeople(); return; }
       if (a === "folder") { await FolderStore.forget(); await GraphStore.forget(); location.reload(); return; }
@@ -1745,8 +1685,7 @@ $("dashWho").onclick = () => renderPeople();
 $("printPage").onclick = printCurrent;
 $("switchUser").onclick = () => renderPeople();
 
-loadPrefs();
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyPrefs);
+initPrefs();
 
 (async function boot() {
   await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد

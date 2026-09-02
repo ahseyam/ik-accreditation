@@ -1,3 +1,4 @@
+import { $ } from "./ui-state.js?v=1369d160";
 /* ── دليل الاستخدام: الطرق الثلاث ──
    المستخدم يختار طريقته مرّة، فيُذكَّر بها في كل جلسة ويعرف **أين** يجد
    ملفاته و**بأي اسم**. لا وعود عامة: كل طريقة بخطواتها وقيودها وثمنها. */
@@ -91,3 +92,48 @@ export const wayOfStore = (store) =>
   store?.kind === "folder" ? "folder"
   : store?.kind === "graph" ? "graph"
   : store?.kind === "pack" ? "pack" : null;
+
+
+/* ── عرض الدليل ──
+   خرجت من index.html: لا تعرف غير المحوّل، وكل ما تحتاجه من بياناتها هنا. */
+export function renderGuide({ store, esc, setStatus, onChoose }) {
+  const actual = wayOfStore(store), picked = chosenWay();
+  const w = wayByKey(actual) || wayByKey(picked?.key);
+  $("wayNow").innerHTML = !w ? "" :
+    '<div class="way-now"><b>' + esc(w.icon + " أنت تعمل بطريقة: " + w.name) + "</b>" +
+    "<div>ملفاتك تُحفظ <b>" + esc(w.where) + "</b>.</div>" +
+    '<table class="way-files"><tbody>' + w.files.map(([k, v]) =>
+      "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(v) + "</td></tr>").join("") +
+    "</tbody></table>" +
+    (picked?.key && actual && picked.key !== actual
+      ? '<div class="warn sm" style="margin-top:10px">اخترتَ «' + esc(wayByKey(picked.key)?.name) +
+        "» لكنك تعمل الآن بـ«" + esc(w.name) + "».</div>" : "") + "</div>";
+
+  $("wayList").innerHTML = WAYS.map((x) => {
+    const on = picked?.key === x.key, live = actual === x.key;
+    return '<details class="way' + (live ? " live" : "") + '"' + (on || live ? " open" : "") + ">" +
+      "<summary><span class='way-ic'>" + x.icon + "</span><b>" + esc(x.name) + "</b>" +
+      '<span class="tag ' + (live ? "gold" : "gray") + '">' + esc(live ? "طريقتك الحالية" : x.tag) + "</span>" +
+      "</summary>" +
+      '<div class="way-body">' +
+        '<div class="way-meta"><b>الجهاز:</b> ' + esc(x.who) + "</div>" +
+        '<div class="way-meta"><b>يحتاج:</b> ' + esc(x.needs) + "</div>" +
+        "<ol class='way-steps'>" + x.steps.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ol>" +
+        "<div class='way-where'><b>أين تجد ملفاتك:</b> " + esc(x.where) + "</div>" +
+        '<table class="way-files"><tbody>' + x.files.map(([k, v]) =>
+          "<tr><td>" + esc(k) + '</td><td class="mono">' + esc(v) + "</td></tr>").join("") + "</tbody></table>" +
+        "<div class='way-lim'><b>ما يجب أن تعرفه:</b><ul>" +
+          x.limits.map((t) => "<li>" + esc(t) + "</li>").join("") + "</ul></div>" +
+        '<button class="' + (on ? "b-ghost" : "b-main") + '" data-way="' + esc(x.key) + '">' +
+          (on ? "✅ هذه طريقتي المعتمدة" : "أوافق — هذه طريقتي") + "</button>" +
+      "</div></details>";
+  }).join("");
+  $("wayList").querySelectorAll("button[data-way]").forEach((b) => {
+    b.onclick = () => {
+      const x = wayByKey(b.dataset.way);
+      chooseWay(x.key);
+      setStatus("اعتمدتَ «" + x.name + "» — ملفاتك " + x.where, "ok");
+      renderGuide({ store, esc, setStatus, onChoose });
+    };
+  });
+}
