@@ -1,6 +1,6 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=2ef416d9";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=2ef416d9";
-import { shrinkImage, kb } from "./shrink.js?v=2ef416d9";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=a7aa9546";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=a7aa9546";
+import { shrinkImage, kb } from "./shrink.js?v=a7aa9546";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -394,7 +394,7 @@ function colMinWidth(c) {
   }
 }
 
-const isSerialCol = (c) =>
+export const isSerialCol = (c) =>
   c.autoFill === "ROW_NUMBER" || /^(م|#|مسلسل|الرقم)$/.test(String(c.label ?? "").trim());
 
 /* ── جدول الاجتماعات السنوي ──
@@ -529,7 +529,7 @@ function wireRowDerivations(cols, row, controls, ctx) {
 /* عمود «🏷️ ETEC» في محاضر اللجان الخمس يطلب من المُقَرِّر رمز مؤشّر أثناء
    تدوين المحضر — لا هو يعرفه ولا هو موضعه؛ ربط السجل بالمؤشرات مذكور في
    ترويسة السجل أصلًا. يُخفى من العرض ولا يُحذف من القالب. */
-const isNoiseCol = (c) =>
+export const isNoiseCol = (c) =>
   c.key === "linkedIndicatorCode" || /^🏷️\s*ETEC$/.test(String(c.label ?? "").trim());
 
 function recurringTable(field, state, ctx) {

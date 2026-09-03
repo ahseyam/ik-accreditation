@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=2ef416d9">
+<link rel="stylesheet" href="style.css?v=a7aa9546">
 </head>
 <body>
 <div class="app">
@@ -267,6 +267,12 @@
             هذا الأمر ينسخ كذلك ملفات الشواهد الثنائية.</div>
           <button class="b-main" id="vaultFull">تشغيل نسخة كاملة الآن</button>
           <span class="muted" id="vaultStat" style="margin-inline-start:12px"></span></div>
+        <div class="card"><h2>نسخة للطباعة</h2>
+          <div class="muted" style="margin-bottom:12px">الإدخالات تُحفظ ملفّات بيانات تُقرأ بالموقع.
+            هذا الأمر يُخرج منها <b>صفحات جاهزة للطباعة بالكليشة</b> في مجلد <b>للطباعة</b>،
+            تُفتح من مجلد المدرسة على حاسبك وتُطبع بـ Ctrl+P — بلا الموقع وبلا إنترنت.</div>
+          <button class="b-main" id="vaultPrintExport">تصدير نسخة للطباعة</button>
+          <span class="muted" id="vaultPrintStat" style="margin-inline-start:12px"></span></div>
         <div class="card"><h2>حقائب العمل — لمن يعمل من الجوّال</h2>
           <div class="muted" style="margin-bottom:12px">جهّز حقيبة باسم التنفيذي وأرسلها له بالواتساب.
             يعمل عليها بلا حساب ولا إنترنت، ثم يعيد إليك إدخالاته.</div>
@@ -307,48 +313,48 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=2ef416d9";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=2ef416d9";
-import { renderGuide } from "./guide.js?v=2ef416d9";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=2ef416d9";
-import { setupMissing, editPerson } from "./roster-edit.js?v=2ef416d9";
-import { vaultBridge } from "./vault-bridge.js?v=2ef416d9";
-import { renderPublish } from "./publish.js?v=2ef416d9";
-import { globalSearch } from "./search.js?v=2ef416d9";
-import { renderConnect } from "./connect.js?v=2ef416d9";
-import { openImprovement } from "./screen-improve.js?v=2ef416d9";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=2ef416d9";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=2ef416d9";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=2ef416d9";
-import { guardUnload, pendingDrafts } from "./draft.js?v=2ef416d9";
-import { openSupport, trackErrors } from "./support.js?v=2ef416d9";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=2ef416d9";
+import { FolderStore } from "./storage.js?v=a7aa9546";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=a7aa9546";
+import { renderGuide } from "./guide.js?v=a7aa9546";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=a7aa9546";
+import { setupMissing, editPerson } from "./roster-edit.js?v=a7aa9546";
+import { vaultBridge } from "./vault-bridge.js?v=a7aa9546";
+import { renderPublish } from "./publish.js?v=a7aa9546";
+import { globalSearch } from "./search.js?v=a7aa9546";
+import { renderConnect } from "./connect.js?v=a7aa9546";
+import { openImprovement } from "./screen-improve.js?v=a7aa9546";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=a7aa9546";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=a7aa9546";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=a7aa9546";
+import { guardUnload, pendingDrafts } from "./draft.js?v=a7aa9546";
+import { openSupport, trackErrors } from "./support.js?v=a7aa9546";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=a7aa9546";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=2ef416d9";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=a7aa9546";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=2ef416d9";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=2ef416d9";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=2ef416d9";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=2ef416d9";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=2ef416d9";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=a7aa9546";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=a7aa9546";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=a7aa9546";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=a7aa9546";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=a7aa9546";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=2ef416d9";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=2ef416d9";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=a7aa9546";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=a7aa9546";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=2ef416d9";
-import { surveyLink, extractCodes } from "./survey.js?v=2ef416d9";
+         fullBackup } from "./vault.js?v=a7aa9546";
+import { surveyLink, extractCodes } from "./survey.js?v=a7aa9546";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=2ef416d9";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=a7aa9546";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=2ef416d9";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=a7aa9546";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=2ef416d9";
-import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=2ef416d9";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=2ef416d9";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=a7aa9546";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=a7aa9546";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=a7aa9546";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -957,6 +963,23 @@ $("vaultFull").onclick = async () => {
       (r.errors ? " · تعذّر " + r.errors : "");
     goVault();
   } catch (e) { $("vaultStat").textContent = "❌ " + e.message; }
+};
+
+/* ⚠️ يدويٌّ بقرار: التصدير يعيد كتابة عشرات الملفات، وجعلُه بعد كل حفظ
+   يُشغِّل مزامنة OneDrive بلا انقطاع. فيُشغَّل حين يُراد الورق. */
+$("vaultPrintExport").onclick = async () => {
+  const st = $("vaultPrintStat");
+  if (store?.readOnly) { st.textContent = "⚠️ وضع القراءة — لا يمكن الكتابة في المجلد"; return; }
+  st.textContent = "جارٍ التصدير…";
+  try {
+    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=a7aa9546");
+    const r = await exportPrintable(store, bundle, me,
+      (n, name) => { st.textContent = "صُدِّر " + n + " سجلًّا… (" + name + ")"; });
+    st.textContent = r.records === 0
+      ? "لا إدخالات محفوظة بعد — لا شيء يُطبع."
+      : "✅ " + r.records + " سجلًّا · " + r.entries + " إدخالًا في مجلد «" + OUT_DIR +
+        "» — افتح «الفهرس.html»" + (r.skipped ? " · تُخطّي " + r.skipped + " بلا قالب" : "");
+  } catch (e) { st.textContent = "❌ " + e.message; }
 };
 
 /* ── توقيعي: يُرسم مرّة ويُستدعى في كل موضع ── */

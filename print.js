@@ -1,4 +1,4 @@
-import { interpolate, interpScope, arabizeText, stripDecor, headingLevel } from "./record.js?v=2ef416d9";
+import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=a7aa9546";
 /* طبقة الطباعة — كليشة ابن خلدون تتكرّر على كل ورقة.
    التقنية مقيسة سلفًا في محرّر الخطط القائم بذاته، ولا تُعاد من الصفر:
      ① @page margin:0  ⇒ الورقة 297mm بالضبط
@@ -36,7 +36,12 @@ function valueNode(field, value) {
 
 /** جدول من صفوف RECURRING_LOG */
 function printTable(field, rows) {
-  const cols = field.columns ?? [];
+  /* ⚠️ عمودان كانا يتضاعفان في الورق دون الشاشة:
+     ① «م» — يضيفه محرّك الطباعة، وهو أصلًا في القالب، فيخرج مرّتين.
+     ② «🏷️ ETEC» — أُخفي من الشاشة بطلب المستشار وبقي يُطبع.
+     والعلاج مُميِّزان **مستوردان من محرّك السجلات نفسه** لا منسوخان هنا،
+     وإلّا انحرف الورق عن الشاشة كلّما تغيّر أحدهما. */
+  const cols = (field.columns ?? []).filter((c) => !isSerialCol(c) && !isNoiseCol(c));
   const filled = rows.filter((r) => cols.some((c) => !isBlank(r[c.key])));
   if (filled.length === 0) return null;
   const t = el("table", "p-table");
@@ -191,12 +196,17 @@ export async function printRecord(template, state, ctx) {
   return info;
 }
 
-function printCss(o) {
+/* ⚠️ محرّك واحد للطباعة والتصدير. لو بُني للتصدير محرّكٌ ثانٍ لانحرف عن هذا
+   بصمتٍ، وكل درسٍ في هذه الأنماط دُفع ثمنُه مرّة: الخلفية على html وbody معًا،
+   والتحميل المسبق للصور والخطّ، والجداول ثابتة التخطيط كي لا تفيض على الكليشة.
+   فالتصدير يستدعي `printCss` نفسها بـ`standalone` فتُرفع عنها لفّة @media
+   وحدها — لا سطر نمطٍ يُنسخ. */
+export function printCss(o, { standalone = false } = {}) {
   const headH = o.geom.headerCm + "cm";
   const footH = o.geom.footerCm + "cm";
   return [
-    ".print-root{display:none}",
-    "@media print{",
+    standalone ? "" : ".print-root{display:none}",
+    standalone ? "@page{size:A4 portrait;margin:0}" : "@media print{",
     "  @page{size:A4 portrait;margin:0}",
     /* ⚠️ يجب أن يطابق هذا المُحدِّد بنية الصفحة الحالية. بعد إعادة البناء صار
        المتن داخل «.app > main > .wrap» فلم يعد «body>.wrap» يطابق شيئًا،
@@ -277,8 +287,8 @@ function printCss(o) {
     "  .p-doc h1{font-size:15pt}.p-doc h2{font-size:12pt;color:#155e4e;margin:9pt 0 5pt}",
     "  .p-etec{margin-top:14px;font-size:9.5pt;color:#5b7185;",
     "       border-top:0.75pt solid #cfe3dd;padding-top:6px}",
-    "}",
-  ].join("\n");
+    standalone ? "" : "}",
+  ].filter(Boolean).join("\n");
 }
 
 /** يطبع مستندًا حرًّا بنفس كليشة السجلات */
