@@ -37,6 +37,9 @@ export function only(id) {
   const ready = !!(S.store && S.bundle && S.me);
   show("printPage", ready && !!SCREEN_TITLE[id]);
   show("homeBtn", ready && id !== "screenDash");
+  /* «خروج» يظهر متى وُجد مستخدم — بما في ذلك شاشة اللوحة نفسها، فهي أوّل
+     موضعٍ يريد المستخدم الخروج منه. ويختفي في «من أنت» لأنه لا جلسة بعد. */
+  show("logoutBtn", !!(S.store && S.bundle && S.me) && id !== "screenWho");
   show("navToggle", ready);
 }
 

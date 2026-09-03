@@ -1,11 +1,11 @@
 /* ── نشر الاستبانة للجمهور: مساران معًا والمدرسة تختار ──
    أُخرجت من index.html. الإعدادات تُمرَّر ويُعاد الجديد عبر `onSettings`
    بدل الكتابة في متغيّر عامّ بعيد. */
-import { $, esc } from "./ui-state.js?v=a7aa9546";
-import { surveyLink, extractCodes } from "./survey.js?v=a7aa9546";
-import { newEntryId } from "./app.js?v=a7aa9546";
-import { saveSettings } from "./vault.js?v=a7aa9546";
-import { toolResponsePath, scaleMax } from "./tools.js?v=a7aa9546";
+import { $, esc } from "./ui-state.js?v=4f2d8248";
+import { surveyLink, extractCodes } from "./survey.js?v=4f2d8248";
+import { newEntryId } from "./app.js?v=4f2d8248";
+import { saveSettings } from "./vault.js?v=4f2d8248";
+import { toolResponsePath, scaleMax } from "./tools.js?v=4f2d8248";
 
 export const SURVEY_BASE = () =>
   location.origin + location.pathname.replace(/[^/]*$/, "") + "استبانة.html";
