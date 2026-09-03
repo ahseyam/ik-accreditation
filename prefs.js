@@ -2,7 +2,7 @@
    حالة صغيرة مستقلّة تمامًا: لا تعرف المدرسة ولا المستخدم ولا المجلد.
    أُخرجت من index.html أوّلًا لأنها الأقلّ ارتباطًا — التفكيك يبدأ من
    الأطراف لا من القلب. */
-import { $ } from "./ui-state.js?v=4dd3cd8b";
+import { $ } from "./ui-state.js?v=2ef416d9";
 
 const KEY = "ik-prefs";
 export const PREF = { theme: "auto", scale: 100 };

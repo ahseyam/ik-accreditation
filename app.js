@@ -1,11 +1,11 @@
-import { FolderStore, HttpStore, safeName } from "./storage.js?v=4dd3cd8b";
+import { FolderStore, HttpStore, safeName } from "./storage.js?v=2ef416d9";
 
 export const ROLE_AR = {
   PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",
   SCHOOL_AFFAIRS_VP: "وكيل الشؤون المدرسية", STUDENT_AFFAIRS_VP: "وكيل شؤون الطلاب",
   ACTIVITIES_LEADER: "رائد النشاط", STUDENT_COUNSELOR: "الموجه الطلابي",
   HEALTH_COUNSELOR: "الموجه الصحي", SAFETY_COORDINATOR: "منسق الأمن والسلامة",
-  GIFTED_COORDINATOR: "منسق الموهوبين", MONITOR: "المراقب",
+  GIFTED_COORDINATOR: "منسق الموهوبين", QUALITY_COORDINATOR: "منسق الجودة", MONITOR: "المراقب",
   ADMIN_ASSISTANT: "المساعد الإداري", DATA_ENTRY: "مُدخل البيانات",
   RECEPTIONIST: "موظف الاستقبال", RESOURCES_LIBRARIAN: "أمين مصادر التعلم",
   LAB_TECHNICIAN: "محضّر المختبر", SUBJECT_SUPERVISOR: "مشرف المادة",
@@ -22,8 +22,12 @@ export const roleAr = (r) => ROLE_AR[r] || r || "—";
 export const freqAr = (f) => FREQ_AR[f] || "—";
 
 /** الترتيب الهرمي للأدوار — من أعلى المدرسة إلى أدناها */
+/* ⚠️ الرتبة تحكم **ترتيب العرض** فقط، أمّا اسم مجلد المنسوب فمن `orderNum`
+   في الروستر. فمنسق الجودة يأخذ 2.5 فيظهر تحت الوكيل التعليمي مباشرةً بحكم
+   موقعه، بلا أن يزحزح رقم مجلد أحد — والإزاحة كانت لتُيتِم ملفات من عمل قبله. */
 export const ROLE_RANK = {
-  PRINCIPAL: 1, EDUCATIONAL_VP: 2, SCHOOL_AFFAIRS_VP: 3, STUDENT_AFFAIRS_VP: 4,
+  PRINCIPAL: 1, EDUCATIONAL_VP: 2, QUALITY_COORDINATOR: 2.5,
+  SCHOOL_AFFAIRS_VP: 3, STUDENT_AFFAIRS_VP: 4,
   STUDENT_COUNSELOR: 5, ACTIVITIES_LEADER: 6, HEALTH_COUNSELOR: 7,
   GIFTED_COORDINATOR: 8, SAFETY_COORDINATOR: 9, SUBJECT_SUPERVISOR: 10,
   MONITOR: 11, ADMIN_ASSISTANT: 12, DATA_ENTRY: 13,
@@ -70,10 +74,17 @@ export const PLAN_MATCH = {
   GIFTED_COORDINATOR: ["منسق الموهوبين"],
 };
 
-/** أدوار لا خطة تنفيذية لها بالتصميم — لا تُعدّ نقصًا */
+/** أدوار لا **خطة مرجعية** لها بالتصميم — لا تُعدّ نقصًا.
+ *
+ * ⚠️ الاسم يخصّ الخطط المرجعية (ملفات PDF العشرة التي تُشحن مع الحزمة)، لا
+ * الخطة التنفيذية الأسبوعية. والفرق يظهر في **منسق الجودة**: لا خطةَ مرجعية
+ * له — إذ ليس من الأدوار العشرة في المرجع — ومع ذلك له 19–37 مهمّة أسبوعية
+ * مشتقّة من أدوات التقويم الذاتي وبرامج الخطة التحسينية ومؤشرات الجاهزية.
+ * فإدراجه هنا إقرارٌ بغياب مرجعٍ ورقي، لا بغياب عمل. */
 export const ROLES_WITHOUT_PLAN = new Set([
   "MONITOR", "ADMIN_ASSISTANT", "DATA_ENTRY", "RECEPTIONIST",
   "RESOURCES_LIBRARIAN", "LAB_TECHNICIAN", "SUBJECT_SUPERVISOR",
+  "QUALITY_COORDINATOR",
 ]);
 
 /** يزيل التشكيل والتطويل ويوحّد الألف والياء — قبل أي مقارنة نصّية عربية */
