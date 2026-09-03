@@ -18,8 +18,14 @@ export const TOOL_OWNER = {
   EVIDENCE_VERIFICATION: ["PRINCIPAL", "EDUCATIONAL_VP"],
 };
 
-/** الأدوار التي ترى كل شيء */
-export const OVERSEER_ROLES = new Set(["PRINCIPAL"]);
+/** الأدوار التي ترى كل الأدوات.
+ *
+ * ⚠️ **منسق الجودة كان يُؤمَر بما لا يستطيع فتحه.** له 29 مهمّة نصُّها «تنسيق
+ * تطبيق استبانة المتعلم» و«متابعة شواهد البرنامج» و«جرد شواهد المؤشرات الـ47»،
+ * وكانت شاشة الأدوات تعرض له **صفرًا**، ولا خطة تحسينية، ولا جاهزية. أي أن
+ * ثلثي مهامّه تشير إلى أبوابٍ مغلقة. وهو منسّق دورة التقويم الذاتي بحكم اسمه
+ * ومهامّه، فيرى الأدوات كلها كما يراها المدير. */
+export const OVERSEER_ROLES = new Set(["PRINCIPAL", "QUALITY_COORDINATOR"]);
 
 /** أعضاء لجنة التميّز في هذه المدرسة — من بيانات الحزمة لا من فرض */
 export function excellenceRoles(support) {
@@ -46,9 +52,11 @@ export function scopeTools(tools, role, support) {
   });
 }
 
-/** ⚠️ الخطة التحسينية **لمدير المدرسة ووكلائه** حصرًا — قرار المستشار */
+/** ⚠️ الخطة التحسينية **لمدير المدرسة ووكلائه** حصرًا — قرار المستشار.
+    ومنسق الجودة معهم: مهامّه تتبع برامج هذه الخطة بالاسم. */
 export const IMPROVEMENT_ROLES = new Set([
   "PRINCIPAL", "EDUCATIONAL_VP", "SCHOOL_AFFAIRS_VP", "STUDENT_AFFAIRS_VP",
+  "QUALITY_COORDINATOR",
 ]);
 export function canSeeImprovement(role) {
   return IMPROVEMENT_ROLES.has(role);

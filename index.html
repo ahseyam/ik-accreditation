@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=cca7ee86">
+<link rel="stylesheet" href="style.css?v=9bc00542">
 </head>
 <body>
 <div class="app">
@@ -321,48 +321,48 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=cca7ee86";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=cca7ee86";
-import { renderGuide } from "./guide.js?v=cca7ee86";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=cca7ee86";
-import { setupMissing, editPerson } from "./roster-edit.js?v=cca7ee86";
-import { vaultBridge } from "./vault-bridge.js?v=cca7ee86";
-import { renderPublish } from "./publish.js?v=cca7ee86";
-import { globalSearch } from "./search.js?v=cca7ee86";
-import { renderConnect } from "./connect.js?v=cca7ee86";
-import { openImprovement } from "./screen-improve.js?v=cca7ee86";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=cca7ee86";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=cca7ee86";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=cca7ee86";
-import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=cca7ee86";
-import { openSupport, trackErrors } from "./support.js?v=cca7ee86";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=cca7ee86";
+import { FolderStore } from "./storage.js?v=9bc00542";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=9bc00542";
+import { renderGuide } from "./guide.js?v=9bc00542";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=9bc00542";
+import { setupMissing, editPerson } from "./roster-edit.js?v=9bc00542";
+import { vaultBridge } from "./vault-bridge.js?v=9bc00542";
+import { renderPublish } from "./publish.js?v=9bc00542";
+import { globalSearch } from "./search.js?v=9bc00542";
+import { renderConnect } from "./connect.js?v=9bc00542";
+import { openImprovement } from "./screen-improve.js?v=9bc00542";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=9bc00542";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=9bc00542";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=9bc00542";
+import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=9bc00542";
+import { openSupport, trackErrors } from "./support.js?v=9bc00542";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=9bc00542";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=cca7ee86";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=9bc00542";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=cca7ee86";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=cca7ee86";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=cca7ee86";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=cca7ee86";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=cca7ee86";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=9bc00542";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=9bc00542";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=9bc00542";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=9bc00542";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=9bc00542";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=cca7ee86";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=cca7ee86";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=9bc00542";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=9bc00542";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=cca7ee86";
-import { surveyLink, extractCodes } from "./survey.js?v=cca7ee86";
+         fullBackup } from "./vault.js?v=9bc00542";
+import { surveyLink, extractCodes } from "./survey.js?v=9bc00542";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=cca7ee86";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=9bc00542";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=cca7ee86";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=9bc00542";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=cca7ee86";
-import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=cca7ee86";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=cca7ee86";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=9bc00542";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=9bc00542";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=9bc00542";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -540,7 +540,10 @@ const NAV = [
   { id: "guide", ic: "❓", label: "كيف تعمل على الموقع", go: () => goGuide() },
   { id: "dash", ic: "▣", label: "لوحتي", go: () => goDash() },
   { id: "records", ic: "▤", label: "سجلاتي", go: () => goRecords(), count: () => myRecords.length },
-  { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(), count: () => myTools.length },
+  /* ⚠️ خمسة أدوار كانت ترى هذا البند وشاشتُه **فارغة أبدًا** — بندٌ يفتح على
+     لا شيء في كل مرّة يجعل المستخدم يظنّ العطل في الموقع أو في نفسه. */
+  { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(),
+    count: () => myTools.length, when: () => myTools.length > 0 },
   { id: "ready", ic: "◉", label: "جاهزية الزيارة", go: () => goReady(),
     when: () => canSeeImprovement(me.role, bundle.support) },
   { id: "imp", ic: "◈", label: "الخطة التحسينية", go: () => goImprove(),
@@ -984,7 +987,7 @@ $("vaultPrintExport").onclick = async () => {
   if (store?.readOnly) { st.textContent = "⚠️ وضع القراءة — لا يمكن الكتابة في المجلد"; return; }
   st.textContent = "جارٍ التصدير…";
   try {
-    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=cca7ee86");
+    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=9bc00542");
     const r = await exportPrintable(store, bundle, me,
       (n, name) => { st.textContent = "صُدِّر " + n + " سجلًّا… (" + name + ")"; });
     st.textContent = r.records === 0
@@ -1082,24 +1085,44 @@ async function refreshAlerts() {
   show("bellBtn", true);
 }
 
+const BELL_TOP = 7;          // ما يُعرض قبل «عرض الباقي» — سبعةٌ تُقرأ بنظرة
+let bellAll = false;
 $("bellBtn").onclick = () => {
   const pop = $("bellPop");
   if (!pop.classList.contains("hidden")) { pop.classList.add("hidden"); return; }
+  bellAll = false;
+  renderBell();
+};
+
+function renderBell() {
+  const pop = $("bellPop");
   const n = urgentCount(alerts);
   pop.innerHTML =
     '<div class="ah">🔔 المطلوب منك الآن' +
     '<span class="sub">' + (alerts.length === 0 ? "لا شيء مستحقّ"
-      : alerts.length + " بند · " + n + " عاجل") + "</span></div>" +
+      : n > 0 ? n + " عاجل من " + alerts.length + " بندًا"
+              : alerts.length + " بندًا · لا عاجل") + "</span></div>" +
     (alerts.length === 0
       ? '<div class="alerts-empty">لا مطلوب عليك الآن.<br>يُحدَّث تلقائيًا مع تقدّم الأسابيع.</div>'
-      : alerts.map((a, i) =>
-          '<button class="alert" data-i="' + i + '">' +
+      /* ⚠️ **جرسٌ بـ59 بندًا جرسٌ لا يقرؤه أحد.** مدير المدرسة كان يفتح فيجد 59،
+         ووكيل شؤون الطلاب 30 — والتنبيه الذي لا يُميَّز عن غيره يُتجاهَل كلُّه
+         فيضيع العاجل مع غيره. تُعرض الأعجل سبعةً، والباقي خلف زرٍّ صريح. */
+      : (bellAll ? alerts : alerts.slice(0, BELL_TOP)).map((a) =>
+          '<button class="alert" data-i="' + alerts.indexOf(a) + '">' +
           '<span class="lv lv-' + a.level + '">' + esc(levelAr(a.level)) + "</span>" +
           '<span class="t">' + esc(a.title) + "</span>" +
-          '<span class="w">' + esc(a.why) + (a.when ? " · " + esc(a.when) : "") + "</span></button>").join(""));
+          '<span class="w">' + esc(a.why) + (a.when ? " · " + esc(a.when) : "") + "</span></button>").join("") +
+        (!bellAll && alerts.length > BELL_TOP
+          ? '<button class="alert-more" id="bellMore">عرض الباقي (' +
+            (alerts.length - BELL_TOP) + ") ↓</button>"
+          : ""));
   pop.querySelectorAll("button.alert").forEach((btn) => {
     btn.onclick = () => { pop.classList.add("hidden"); goAlert(alerts[+btn.dataset.i]); };
   });
+  /* ⚠️ كان يُخفي القائمة ثم يُحاكي ضغط الجرس — ومعالج الجرس يُعيد `bellAll`
+     إلى false أوّل سطر، فيُلغي الكشف قبل أن يحدث. تُعاد الكتابة مباشرةً. */
+  const more = $("bellMore");
+  if (more) more.onclick = () => { bellAll = true; renderBell(); };
   pop.classList.remove("hidden");
 };
 

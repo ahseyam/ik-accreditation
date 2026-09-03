@@ -126,14 +126,25 @@ export class FolderStore {
      المستودع). والكتابة من نسخة محمَّلة في الذاكرة منذ بداية الجلسة **تمحو عمل
      من كتب بعدك** بلا إنذار. تُعاد القراءة **لحظة الكتابة** ويُطبَّق التغيير على
      الأحدث، فيضيق التعارض إلى أجزاء الثانية بدل ساعات. */
+  /* ⚠️ إعادة القراءة وحدها لا تكفي: بين القراءة والكتابة نافذةٌ يكتب فيها
+     غيرُك فتُمحى كتابته بلا أثر. فيُقرأ الملف **بعد** الكتابة ويُقارَن ختمُه
+     بما كُتب؛ فإن اختلف فقد سبقنا أحدٌ، فيُعاد تطبيق التغيير على الأحدث.
+     ثلاث محاولات، ثم يُرمى خطأٌ صريح — والصمت أسوأ من الإخفاق. */
   async mutateJson(relPath, mutate, fallback = {}) {
-    let current = fallback;
-    try { if (await this.exists(relPath)) current = await this.readJson(relPath); } catch { /* تالف */ }
-    const next = await mutate(structuredClone(current));
-    next._rev = (current._rev ?? 0) + 1;
-    next._revAt = new Date().toISOString();
-    await this.writeJson(relPath, next);
-    return next;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      let current = fallback;
+      try { if (await this.exists(relPath)) current = await this.readJson(relPath); } catch { /* تالف */ }
+      const next = await mutate(structuredClone(current));
+      next._rev = (current._rev ?? 0) + 1;
+      next._revAt = new Date().toISOString();
+      await this.writeJson(relPath, next);
+      let after = null;
+      try { after = await this.readJson(relPath); } catch { return next; }   // لا يُقرأ ⇐ لا يُدّعى تعارض
+      if (after && after._rev === next._rev && after._revAt === next._revAt) return next;
+      // سبقنا غيرُنا — نُمهل لحظة ثم نُعيد التطبيق على ما صار عليه الملف
+      await new Promise((r) => setTimeout(r, 90 * attempt));
+    }
+    throw new Error("تعارض في «" + relPath + "»: يكتب فيه شخصٌ آخر الآن. أعد المحاولة بعد لحظات.");
   }
 
   /** كتابة ملف ثنائي (شاهد: صورة أو PDF) */
