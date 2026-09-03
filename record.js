@@ -1,5 +1,6 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=a5be1bf8";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=a5be1bf8";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=8501d2bd";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=8501d2bd";
+import { shrinkImage, kb } from "./shrink.js?v=8501d2bd";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير
@@ -321,6 +322,11 @@ function filesInput(field, state, ctx, key, multiple) {
     for (const f of state[k] ?? []) {
       const row = el("div", "file-row");
       row.append(el("span", null, "📎 " + f.name));
+      /* يُعرض الوفر صراحةً: المستخدم يرى أن الضغط حدث ولا يُفاجَأ بحجم مختلف */
+      if (f.shrunk) row.append(el("span", "file-note",
+        "ضُغطت " + kb(f.shrunk.before) + " ⇐ " + kb(f.size) +
+        (f.shrunk.note ? " · " + f.shrunk.note : "")));
+      else if (f.size) row.append(el("span", "file-note", kb(f.size)));
       const rm = el("button", "btn-ghost sm", "حذف");
       rm.type = "button";
       rm.onclick = () => { state[k] = (state[k] ?? []).filter((x) => x !== f); render(); };
@@ -337,11 +343,16 @@ function filesInput(field, state, ctx, key, multiple) {
     // نفسه فلا يُضاف، وإلا صار المسار …/شواهد/<الإدخال>/شواهد/
     const sub = field.key && field.key !== "شواهد" ? "/" + field.key : "";
     const dir = ctx.evidenceDir + sub;
+    /* ⚠️ الهاتف يُخرج صورة 3–5 ميجابايت، والشاهد لا يحتاجها. تُضغط قبل
+       الكتابة فيهبط التخزين إلى السُّدس — وما لا يُجدي ضغطُه يُرفع كما هو. */
     for (const file of Array.from(input.files ?? [])) {
-      const path = dir + "/" + file.name;
       try {
-        await ctx.store.writeBinary(path, await file.arrayBuffer());
-        state[k] = (state[k] ?? []).concat([{ name: file.name, path, size: file.size, type: file.type }]);
+        const r = await shrinkImage(file);
+        const path = dir + "/" + r.name;
+        await ctx.store.writeBinary(path, await r.blob.arrayBuffer());
+        state[k] = (state[k] ?? []).concat([{ name: r.name, path, size: r.after,
+          type: r.blob.type || file.type,
+          shrunk: r.after < r.before ? { before: r.before, note: r.note } : null }]);
       } catch (e) {
         state[k] = (state[k] ?? []).concat([{ name: file.name, path: null, error: e.message }]);
       }

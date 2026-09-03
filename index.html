@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=a5be1bf8">
+<link rel="stylesheet" href="style.css?v=8501d2bd">
 </head>
 <body>
 <div class="app">
@@ -41,6 +41,7 @@
       <button class="h-btn nav-toggle hidden" id="navToggle" title="القائمة" aria-label="القائمة">☰</button>
       <button class="h-btn hidden" id="bellBtn" title="المطلوب منك الآن" aria-label="التنبيهات">
         🔔<span class="badge hidden" id="bellCount">0</span></button>
+      <button class="h-btn" id="supBtn" title="طلب دعم من مدير الجودة والتخطيط" aria-label="طلب دعم">🆘 <span class="lbl">دعم</span></button>
       <button class="h-btn hidden" id="homeBtn" title="العودة إلى لوحتي وتبديل المستخدم">🏠 <span class="lbl">اللوحة</span></button>
       <button class="h-btn hidden" id="printPage" title="طباعة هذه الصفحة بالكليشة">🖨️ <span class="lbl">طباعة</span></button>
       <button class="h-btn" id="themeBtn" title="الوضع الليلي">🌙</button>
@@ -56,6 +57,35 @@
         <p class="sub" id="connectSub">اختر مجلد «الاعتماد الخارجي» الذي شاركه معك مدير المدرسة على OneDrive.
            تختاره مرّة واحدة فقط، ثم يتذكّره المتصفّح.</p>
         <div id="connectBody"></div>
+        <!-- ⚠️ يُقرأ قبل المحاولة لا بعد الإخفاق: أكثر بلاغات الدعم سببها
+             فتح الرابط على جهاز لا يحفظ. -->
+        <div class="devices">
+          <h2>الأجهزة المدعومة</h2>
+          <div class="dev-grid">
+            <div class="dev ok">
+              <div class="dev-h">✅ يحفظ في مجلد مدرستك</div>
+              <ul>
+                <li><b>حاسب ويندوز</b> — Google Chrome أو Microsoft Edge</li>
+                <li><b>حاسب ماك</b> — Google Chrome أو Microsoft Edge</li>
+              </ul>
+              <div class="dev-n">بلا حساب ولا تسجيل دخول، ويعمل <b>بلا إنترنت</b>،
+                ولا يحتاج OneDrive — أي مجلد على القرص يكفي.</div>
+            </div>
+            <div class="dev no">
+              <div class="dev-h">⛔ لا يحفظ — قيدٌ من الشركات المصنّعة</div>
+              <ul>
+                <li><b>آيفون وآيباد</b> — كل المتصفّحات، ومنها كروم<br>
+                  <span class="dev-s">متصفّحات iOS كلها تعمل بمحرّك سفاري نفسه</span></li>
+                <li><b>سفاري على الماك</b></li>
+                <li><b>جوّالات أندرويد</b></li>
+              </ul>
+              <div class="dev-n">البديل: <b>حقيبة عمل</b> — يجهّزها لك مستودع المدرسة
+                فتعمل عليها بلا حساب ثم تُعيد إدخالاتك. اقرأ «كيف تعمل على الموقع» بعد الدخول.</div>
+            </div>
+          </div>
+          <div class="dev-warn">⚠️ حين يسأل المتصفّح <b>«Edit files?»</b> اختر
+            <b>«Save changes»</b> — و«View only» يجعل كل شيء يبدو عاملًا ولا يُحفظ حرف.</div>
+        </div>
       </section>
 
       <section id="screenWho" class="card hidden">
@@ -262,44 +292,47 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=a5be1bf8";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=a5be1bf8";
-import { renderGuide } from "./guide.js?v=a5be1bf8";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=a5be1bf8";
-import { setupMissing, editPerson } from "./roster-edit.js?v=a5be1bf8";
-import { vaultBridge } from "./vault-bridge.js?v=a5be1bf8";
-import { renderPublish } from "./publish.js?v=a5be1bf8";
-import { globalSearch } from "./search.js?v=a5be1bf8";
-import { renderConnect } from "./connect.js?v=a5be1bf8";
-import { openImprovement } from "./screen-improve.js?v=a5be1bf8";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=a5be1bf8";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=a5be1bf8";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=a5be1bf8";
+import { FolderStore } from "./storage.js?v=8501d2bd";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=8501d2bd";
+import { renderGuide } from "./guide.js?v=8501d2bd";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=8501d2bd";
+import { setupMissing, editPerson } from "./roster-edit.js?v=8501d2bd";
+import { vaultBridge } from "./vault-bridge.js?v=8501d2bd";
+import { renderPublish } from "./publish.js?v=8501d2bd";
+import { globalSearch } from "./search.js?v=8501d2bd";
+import { renderConnect } from "./connect.js?v=8501d2bd";
+import { openImprovement } from "./screen-improve.js?v=8501d2bd";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=8501d2bd";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=8501d2bd";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=8501d2bd";
+import { guardUnload, pendingDrafts } from "./draft.js?v=8501d2bd";
+import { openSupport, trackErrors } from "./support.js?v=8501d2bd";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=8501d2bd";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=a5be1bf8";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=8501d2bd";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=a5be1bf8";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=a5be1bf8";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=a5be1bf8";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=a5be1bf8";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=a5be1bf8";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=8501d2bd";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=8501d2bd";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=8501d2bd";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=8501d2bd";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=8501d2bd";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=a5be1bf8";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=a5be1bf8";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=8501d2bd";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=8501d2bd";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=a5be1bf8";
-import { surveyLink, extractCodes } from "./survey.js?v=a5be1bf8";
+         fullBackup } from "./vault.js?v=8501d2bd";
+import { surveyLink, extractCodes } from "./survey.js?v=8501d2bd";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=a5be1bf8";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=8501d2bd";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=a5be1bf8";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=8501d2bd";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=a5be1bf8";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=a5be1bf8";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=8501d2bd";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=8501d2bd";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -340,7 +373,24 @@ async function start(s) {
     ? "📖 وضع القراءة — الاستعراض متاح والحفظ غير متاح على هذا الجهاز"
     : "متصل — " + (store.kind === "folder" ? "الحفظ مباشر إلى مجلد OneDrive" : "وضع القراءة (تطوير)"));
   document.body.classList.toggle("ro", !!store.readOnly);
-  await renderPeople();
+  await (async () => {
+    S.onScreen = rememberScreen;
+    /* استعادة الجلسة: الوظيفة نفسها والشاشة نفسها — لا يُعاد الاختيار كل تحديث */
+    const sess = loadSession(bundle.school?.nameAr);
+    const who = sess && (bundle.roster?.people || []).find((x) => x.role === sess.role);
+    if (who) {
+      await pick(applyRosterOverride([who], rosterOv || {})[0] || who);
+      if (sess.screen && canResume(sess.screen) && sess.screen !== "screenDash") {
+        const nav = { screenRecords: "records", screenTools: "tools", screenImp: "imp",
+                      screenReady: "ready", screenPlans: "plans", screenVault: "vault",
+                      screenExec: "exec", screenGuide: "guide" }[sess.screen];
+        const a = nav && document.querySelector('#navMenu a[data-nav="' + nav + '"]');
+        if (a) a.click();
+      }
+      return;
+    }
+    return renderPeople();
+  })();
 }
 
 let rosterOv = null, roster = [], mySignature = null, settings = {}, keeper = null;
@@ -399,6 +449,12 @@ const rosterCtx = () => ({
   onSaved: async (ov) => { rosterOv = ov; await renderPeople(); },
 });
 const isPlaceholder = (p) => /^\s*\[.*\]\s*$/.test(String(p?.fullName || ""));
+
+/* تُحفظ الجلسة بعد كل انتقال — فالتحديث يعيدك إلى مكانك لا إلى البداية */
+function rememberScreen() {
+  if (!me || !bundle?.school?.nameAr) return;
+  saveSession(bundle.school.nameAr, me.role, S.activeScreen);
+}
 
 async function pick(person) {
   me = person; S.me = person;
@@ -739,7 +795,7 @@ $("prefsBtn").onclick = () => {
       if (a === "scale-up") zoomIn();
       if (a === "scale-dn") zoomOut();
       if (a === "sign") { pop.classList.add("hidden"); signatureModal(); return; }
-      if (a === "user") { pop.classList.add("hidden"); await renderPeople(); return; }
+      if (a === "user") { pop.classList.add("hidden"); clearSession(); await renderPeople(); return; }
       if (a === "folder") { await FolderStore.forget(); await GraphStore.forget(); location.reload(); return; }
       savePrefs(); pop.classList.add("hidden"); $("prefsBtn").click();
     };
@@ -996,6 +1052,18 @@ initPrefs();
 bindToolScreen(toolCtx());   // أزرار شاشة الأداة تُربَط مرّة واحدة
 bindRecordScreen(recCtx());
 bindExecScreen(execCtx());
+guardUnload();   // يسأل قبل مغادرة صفحة فيها عمل غير محفوظ
+trackErrors();   // يلتقط آخر خطأ ليصل مع طلب الدعم
+$("supBtn").onclick = () => openSupport({
+  store, bundle, me, roleAr,
+  counts: recordCounts
+    ? { records: Object.values(recordCounts).filter((n) => n > 0).length,
+        evidence: Object.keys(recordCounts).length }
+    : null,
+  drafts: pendingDrafts(),
+  pending: store?.kind === "pack" ? store.pending().length : null,
+  version: document.querySelector('link[href*="style.css?v="]')?.href.split("v=")[1] || "",
+});
 
 (async function boot() {
   await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد

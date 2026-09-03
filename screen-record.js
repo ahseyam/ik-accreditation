@@ -2,13 +2,14 @@
    أُخرجت من index.html **بحالتها معها**: القالب الجاري وإدخاله ومعرّفه
    وأسبوعه ملكُ هذه الشاشة. لا تُقرأ من الخارج إلا بالسؤال.
    ctx = { store, bundle, me, myRecords, mySignature, roleAr, afterSave, goList } */
-import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=a5be1bf8";
-import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=a5be1bf8";
-import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=a5be1bf8";
-import { printRecord } from "./print.js?v=a5be1bf8";
-import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=a5be1bf8";
-import { $, esc, markNav, only } from "./ui-state.js?v=a5be1bf8";
-import { backupEntry } from "./vault.js?v=a5be1bf8";
+import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=8501d2bd";
+import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=8501d2bd";
+import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=8501d2bd";
+import { printRecord } from "./print.js?v=8501d2bd";
+import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=8501d2bd";
+import { $, esc, markNav, only } from "./ui-state.js?v=8501d2bd";
+import { backupEntry } from "./vault.js?v=8501d2bd";
+import { draftId, saveDraft, loadDraft, clearDraft, markSaved } from "./draft.js?v=8501d2bd";
 
 let recState = null, recTemplate = null, recEntryId = null, recIndex = -1, fillWeek = null;
 let CTX = null;
@@ -79,12 +80,30 @@ export async function openRecord(number, entryId, ctx) {
     $("recGuide").insertAdjacentHTML("beforeend",
       '<div class="note sm meeting-scope"><b>نطاق هذا الاجتماع:</b> ' + esc(meetingScope(meeting)) + "</div>");
   }
+  /* ⚠️ مسوّدة محفوظة على الجهاز: إن أُغلق التبويب قبل الحفظ تُستعاد هنا.
+     لا تحلّ محلّ الحفظ في المجلد — بل تمنع الضياع بين ضغطتين. */
+  const dId = draftId(bundle.school?.nameAr, me.role, number, recEntryId);
+  const draft = loadDraft(dId);
+  if (draft && Object.keys(draft.data || {}).length) {
+    Object.assign(recState, draft.data);
+    const mins = Math.round((Date.now() - draft.at) / 60000);
+    $("recStatus").innerHTML = '<span style="color:var(--gold)">↺ استُعيدت مسوّدة لم تُحفظ' +
+      (mins < 60 ? " قبل " + mins + " دقيقة" : "") + " — راجعها ثم احفظ.</span>";
+  }
+
   renderRecordForm($("recForm"), recTemplate, recState, {
     store, support: bundle.support, school: bundle.school, person: me,
     roleAr: roleAr(me.role), roleArFn: roleAr, savedEntries: {},
     committeeKey: cKey, committee, meetings, meeting,
     evidenceDir: evidenceDir(me, number, recEntryId),
   });
+  /* أي تغيير في النموذج يُكتب مسوّدةً بعد لحظة سكون — لا مع كل حرف */
+  const form = $("recForm");
+  const onEdit = () => saveDraft(dId, recState,
+    { record: recTemplate.nameAr, number, roleAr: roleAr(me.role) });
+  form.addEventListener("input", onEdit);
+  form.addEventListener("change", onEdit);
+
   if (UNSUPPORTED.length > before)
     $("recStatus").textContent = "⚠️ " + (UNSUPPORTED.length - before) + " حقلًا بلا معالج";
   window.scrollTo(0, 0);
@@ -109,6 +128,8 @@ export function bindRecordScreen(ctx) {
       const bk = await backupEntry(CTX.store, { kind: "سجلات", sourcePath: entryPath(CTX.me, recTemplate.number, recEntryId),
         data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
         person: CTX.me.fullName, roleAr: roleAr(CTX.me.role) });
+      clearDraft(draftId(CTX.bundle.school?.nameAr, CTX.me.role, recTemplate.number, recEntryId));
+      markSaved();
       CTX.afterSave && CTX.afterSave();
       $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
         (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");

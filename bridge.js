@@ -119,11 +119,22 @@ export async function readPackFile(file) {
    على قرص ولا شبكة — ولذلك **لا يُخفي عجزه**: `pending()` تُظهر ما لم
    يُرسَل بعد، والواجهة تُلحّ عليه حتى يُرسله. */
 export class PackStore {
+  /* ⚠️ الإدخالات كانت تعيش في الذاكرة وحدها: إغلاق متصفّح الجوّال يمحو
+     عمل ساعة بلا إنذار. تُحفظ الآن في تخزين الجهاز وتُستعاد عند العودة —
+     ويبقى الإرسال هو ما يوصلها إلى المدرسة. */
   constructor(pack) {
     this.pack = pack;
     this.kind = "pack";
-    this.written = new Map();
+    this.key = "ik-pack|" + (pack?.مدرسة?.nameAr || "") + "|" + (pack?.شخص?.role || "");
+    this.written = new Map(PackStore._read(this.key));
     this.files = new Map();          // شواهد: اسم ← File
+  }
+  static _read(key) {
+    try { return JSON.parse(localStorage.getItem(key) || "[]"); } catch { return []; }
+  }
+  _persist() {
+    try { localStorage.setItem(this.key, JSON.stringify([...this.written])); }
+    catch { /* التخزين ممتلئ — تبقى في الذاكرة */ }
   }
   static supported() { return true; }
   label() { return "حقيبة عمل — " + (this.pack?.شخص?.fullName || ""); }
@@ -151,7 +162,7 @@ export class PackStore {
     if (v === undefined) throw new Error("غير متاح في حقيبة العمل: " + rel);
     return v;
   }
-  async writeText(rel, text) { this.written.set(rel, text); }
+  async writeText(rel, text) { this.written.set(rel, text); this._persist(); }
   async writeJson(rel, data) { await this.writeText(rel, JSON.stringify(data, null, 1)); }
   async mutateJson(rel, mutate, fallback = {}) {
     let cur = fallback;
@@ -167,6 +178,7 @@ export class PackStore {
   async writeBinary(rel, buf) {
     this.files.set(rel, buf?.byteLength ?? 0);
     this.written.set(rel, "[شاهد " + (buf?.byteLength ?? 0) + " بايت — يُرسَل منفصلًا]");
+    this._persist();
   }
   async readBinary() { throw new Error("الشواهد لا تُقرأ من حقيبة العمل."); }
   async fileUrl() { return null; }
@@ -195,6 +207,12 @@ export class PackStore {
       .map(([path, text]) => ({ path, data: safeParse(text) }));
   }
   evidenceCount() { return this.files.size; }
+  /** تُنادى بعد إرسال ناجح — لا قبله، فلا يضيع ما لم يصل */
+  clearSent() {
+    for (const k of [...this.written.keys()])
+      if (k.startsWith("مخرجات/") || k.startsWith("تقويم ذاتي/")) this.written.delete(k);
+    this._persist();
+  }
 }
 const safeParse = (t) => { try { return JSON.parse(t); } catch { return t; } };
 

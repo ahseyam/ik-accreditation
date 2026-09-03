@@ -32,6 +32,8 @@ export const SCREEN_TITLE = {
 export function only(id) {
   for (const s of SCREENS) show(s, s === id);
   S.activeScreen = id;
+  /* خُطّاف يلتقطه index.html ليحفظ الجلسة — ui-state لا تعرف المدرسة ولا الدور */
+  if (typeof S.onScreen === "function") { try { S.onScreen(id); } catch { /* لا يُعطّل التنقّل */ } }
   const ready = !!(S.store && S.bundle && S.me);
   show("printPage", ready && !!SCREEN_TITLE[id]);
   show("homeBtn", ready && id !== "screenDash");
