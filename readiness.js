@@ -9,18 +9,42 @@
    أوزان معقولة وستّة ملفّات حالة: **حكم الجاهزية لا يتبدّل في أيٍّ منها**،
    وأقصى فارق 8.4 نقطة (في حالة «سجلات ممتلئة بلا شواهد»). فالاجتهاد في
    الوزن لا يقلب القرار الذي يُبنى عليه. */
+/* ⚠️ **«47» كان مكتوبًا في النصّ** فظهر لرياض الأطفال وإطارُها 44 مؤشرًا —
+   وشاشةٌ تقول للروضة إنها تُقاس بمؤشرات مرحلةٍ أخرى تُفسد الملفّ من أساسه.
+   فالأساس يُحسب من حزمة المدرسة نفسها: كم مؤشرًا في إطارها، وكم منها تُثبته
+   سجلاتها وأدواتها فعلًا. */
 export const DIMENSIONS = [
-  { key: "records",  label: "تعبئة السجلات",       weight: 30,
-    basis: "السجلات تُثبت 46 من 47 مؤشّرًا (98%)، وهي أوّل ما يفتحه الزائر." },
+  { key: "records",  label: "تعبئة السجلات",       weight: 30 },
   { key: "evidence", label: "الشواهد المرفوعة",     weight: 25,
     basis: "السجل المُعبَّأ بلا شاهد دعوى؛ الشاهد هو ما يحوّله إلى دليل." },
-  { key: "tools",    label: "أدوات التقويم الذاتي", weight: 20,
-    basis: "الأدوات العشر تغطّي 40 من 47 مؤشّرًا (85%)، وهي مصدر التقويم الذاتي." },
+  { key: "tools",    label: "أدوات التقويم الذاتي", weight: 20 },
   { key: "improve",  label: "الخطة التحسينية",      weight: 15,
     basis: "تخصّ المؤشرات دون المستوى وحدها، فنطاقها أضيق." },
   { key: "exec",     label: "الخطط التنفيذية",      weight: 10,
     basis: "جاهزية داخلية لا يطّلع عليها الزائر مباشرة." },
 ];
+
+/** الأساس المحسوب من الحزمة — لا نصٌّ ثابت */
+export function dimensionBasis({ records = [], tools = [], indicators = [] }) {
+  const total = indicators.length;
+  const covered = (list) => {
+    const s = new Set();
+    for (const x of list) for (const c of (x || [])) if (c) s.add(String(c));
+    return [...s].filter((c) => indicators.includes(c)).length;
+  };
+  const byRec = covered(records.map((r) => r.etecIndicators));
+  const byTool = covered(tools.map((t) => (t.domains || []).map((d) => d.key)));
+  const share = (n) => (total ? " (" + Math.round((n / total) * 100) + "%)" : "");
+  return {
+    records: total
+      ? "السجلات تُثبت " + byRec + " من " + total + " مؤشّرًا" + share(byRec) + "، وهي أوّل ما يفتحه الزائر."
+      : "السجلات أوّل ما يفتحه الزائر.",
+    tools: total
+      ? "الأدوات " + tools.length + " تغطّي " + byTool + " من " + total + " مؤشّرًا" + share(byTool) +
+        "، وهي مصدر التقويم الذاتي."
+      : "أدوات التقويم الذاتي مصدر التقويم.",
+  };
+}
 
 const pct = (a, b) => (b > 0 ? Math.min(100, (a / b) * 100) : 0);
 

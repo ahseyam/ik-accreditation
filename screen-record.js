@@ -2,14 +2,14 @@
    أُخرجت من index.html **بحالتها معها**: القالب الجاري وإدخاله ومعرّفه
    وأسبوعه ملكُ هذه الشاشة. لا تُقرأ من الخارج إلا بالسؤال.
    ctx = { store, bundle, me, myRecords, mySignature, roleAr, afterSave, goList } */
-import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=9bc00542";
-import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=9bc00542";
-import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=9bc00542";
-import { printRecord } from "./print.js?v=9bc00542";
-import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=9bc00542";
-import { $, esc, markNav, only } from "./ui-state.js?v=9bc00542";
-import { backupEntry } from "./vault.js?v=9bc00542";
-import { draftId, saveDraft, loadDraft, clearDraft, markSaved, setSaver, markDirty } from "./draft.js?v=9bc00542";
+import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=461ca160";
+import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=461ca160";
+import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=461ca160";
+import { printRecord } from "./print.js?v=461ca160";
+import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=461ca160";
+import { $, esc, markNav, only } from "./ui-state.js?v=461ca160";
+import { backupEntry } from "./vault.js?v=461ca160";
+import { draftId, saveDraft, loadDraft, clearDraft, markSaved, setSaver, markDirty } from "./draft.js?v=461ca160";
 
 let recState = null, recTemplate = null, recEntryId = null, recIndex = -1, fillWeek = null;
 let CTX = null;
