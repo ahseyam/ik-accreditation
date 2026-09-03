@@ -1,4 +1,4 @@
-import { FolderStore, HttpStore, safeName } from "./storage.js?v=8501d2bd";
+import { FolderStore, HttpStore, safeName } from "./storage.js?v=4dd3cd8b";
 
 export const ROLE_AR = {
   PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",

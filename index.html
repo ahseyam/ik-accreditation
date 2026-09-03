@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=8501d2bd">
+<link rel="stylesheet" href="style.css?v=4dd3cd8b">
 </head>
 <body>
 <div class="app">
@@ -51,6 +51,21 @@
     <div class="alerts-pop hidden" id="bellPop"></div>
     <div class="nav-scrim hidden" id="navScrim"></div>
     <div class="wrap">
+
+      <section id="screenGate" class="card">
+        <div class="hero">
+          <img src="building.png" alt="مدارس ابن خلدون">
+          <div class="hero-t">
+            <b>الاعتماد الخارجي</b>
+            <span>مدارس ابن خلدون الأهلية</span>
+            <span class="kicker">شركة معارف للتعليم — رابطٌ واحد لكل المدارس</span>
+          </div>
+        </div>
+        <h1 id="gateH1">إلى أي مدرسة تنتمي؟</h1>
+        <p class="sub" id="gateSub">اختر مجمعك ثم مسارك ثم مرحلتك، فتصل إلى مساحة مدرستك.
+           تختارها مرّة واحدة فقط ثم يتذكّرها المتصفّح.</p>
+        <div id="gateBody"></div>
+      </section>
 
       <section id="screenConnect" class="card">
         <h1 id="connectH1">الاتصال بمساحة مدرستك</h1>
@@ -292,47 +307,48 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=8501d2bd";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=8501d2bd";
-import { renderGuide } from "./guide.js?v=8501d2bd";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=8501d2bd";
-import { setupMissing, editPerson } from "./roster-edit.js?v=8501d2bd";
-import { vaultBridge } from "./vault-bridge.js?v=8501d2bd";
-import { renderPublish } from "./publish.js?v=8501d2bd";
-import { globalSearch } from "./search.js?v=8501d2bd";
-import { renderConnect } from "./connect.js?v=8501d2bd";
-import { openImprovement } from "./screen-improve.js?v=8501d2bd";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=8501d2bd";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=8501d2bd";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=8501d2bd";
-import { guardUnload, pendingDrafts } from "./draft.js?v=8501d2bd";
-import { openSupport, trackErrors } from "./support.js?v=8501d2bd";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=8501d2bd";
+import { FolderStore } from "./storage.js?v=4dd3cd8b";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=4dd3cd8b";
+import { renderGuide } from "./guide.js?v=4dd3cd8b";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=4dd3cd8b";
+import { setupMissing, editPerson } from "./roster-edit.js?v=4dd3cd8b";
+import { vaultBridge } from "./vault-bridge.js?v=4dd3cd8b";
+import { renderPublish } from "./publish.js?v=4dd3cd8b";
+import { globalSearch } from "./search.js?v=4dd3cd8b";
+import { renderConnect } from "./connect.js?v=4dd3cd8b";
+import { openImprovement } from "./screen-improve.js?v=4dd3cd8b";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=4dd3cd8b";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=4dd3cd8b";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=4dd3cd8b";
+import { guardUnload, pendingDrafts } from "./draft.js?v=4dd3cd8b";
+import { openSupport, trackErrors } from "./support.js?v=4dd3cd8b";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=4dd3cd8b";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=8501d2bd";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=4dd3cd8b";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=8501d2bd";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=8501d2bd";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=8501d2bd";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=8501d2bd";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=8501d2bd";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=4dd3cd8b";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=4dd3cd8b";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=4dd3cd8b";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=4dd3cd8b";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=4dd3cd8b";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=8501d2bd";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=8501d2bd";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=4dd3cd8b";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=4dd3cd8b";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=8501d2bd";
-import { surveyLink, extractCodes } from "./survey.js?v=8501d2bd";
+         fullBackup } from "./vault.js?v=4dd3cd8b";
+import { surveyLink, extractCodes } from "./survey.js?v=4dd3cd8b";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=8501d2bd";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=4dd3cd8b";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=8501d2bd";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=4dd3cd8b";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=8501d2bd";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=8501d2bd";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=4dd3cd8b";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=4dd3cd8b";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=4dd3cd8b";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -355,6 +371,12 @@ const dataUrl = new URLSearchParams(location.search).get("data");
 const connect = (state) => renderConnect(state, start);
 
 
+/* ⚠️ أخطر خطأ صامت: أن يفتح موظّفٌ مجلد مدرسةٍ أخرى فيكتب فيه. فالمدرسة
+   مُختارةٌ في البوّابة، فتُقارَن باسم ما في المجلد قبل السماح بأي كتابة.
+   المقارنة تنزع الحركات — الأسماء تحمل «خَلدون» و«الأَهلية» و«بَنات». */
+const bareAr = (t) => String(t || "").normalize("NFC")
+  .replace(/[\u064B-\u0652\u0670]/g, "").replace(/\s+/g, " ").trim();
+
 async function start(s) {
   store = s; S.store = s;
   try { bundle = await loadBundle(store); S.bundle = bundle; }
@@ -364,6 +386,19 @@ async function start(s) {
     store = null; S.store = null; return;
   }
   const { school } = bundle;
+  const want = chosenSchool();
+  if (want && bareAr(school.nameAr) !== bareAr(want.school)) {
+    connect(FolderStore.supported() ? "ready" : "unsupported");
+    only("screenConnect");
+    const box = $("connectErr") || $("connectBody");
+    box.innerHTML = '<div class="err"><b>هذا ليس مجلد مدرستك.</b><br>' +
+      "اخترتَ <b>" + esc(want.school) + "</b> والمجلد الذي فتحتَه يخصّ <b>" +
+      esc(school.nameAr) + "</b>.<br><b>لم يُحفظ شيء.</b> اختر المجلد الصحيح." +
+      "</div>" + box.innerHTML;
+    await FolderStore.forget().catch(() => {});
+    store = null; S.store = null; bundle = null; S.bundle = null;
+    return;
+  }
   $("heroSchool").textContent = school.nameAr + " · " + STAGE_AR[school.stage] +
     " · العام " + school.academicYear.greg;
   $("ctx").innerHTML = "<b>" + esc(school.nameAr) + "</b><span>" +
@@ -1065,19 +1100,46 @@ $("supBtn").onclick = () => openSupport({
   version: document.querySelector('link[href*="style.css?v="]')?.href.split("v=")[1] || "",
 });
 
-(async function boot() {
-  await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد
-  /* الترتيب مقصود: المجلد المحلّي أسرع وأدقّ حين يتوفّر، وGraph يخدم الآيفون
-     والآيباد ومن لا يملك المجلد مزامَنًا. ولا يُعاد الاختيار في كل مرّة. */
-  if (!dataUrl) {
-    const g = await GraphStore.restore().catch(() => null);
-    if (g && !FolderStore.supported()) { await start(g); return; }
-    if (!FolderStore.supported()) { connect("unsupported"); return; }
-    if (g && !(await FolderStore.restore().catch(() => null))) { await start(g); return; }
-  }
-  const restored = await openSource({ dataUrl });
+/* يضع اسم المدرسة المختارة واسم مجلدها في شاشة الاتصال، ومعه زرّ التغيير —
+   فلا يبقى المستخدم حائرًا أيّ مجلد يختار من بين مجلداته. */
+function showChosen(row) {
+  const sub = $("connectSub");
+  if (!row || !sub) return;
+  sub.innerHTML = "مدرستك: <b>" + esc(row.school) + "</b>" +
+    '<br>اختر مجلدها على OneDrive باسم <code>' + esc(row.folder) + "</code> " +
+    '<button class="lnk-b" id="gateChg">ليست مدرستي</button>';
+  const c = $("gateChg");
+  if (c) c.onclick = async () => {
+    await FolderStore.forget().catch(() => {});
+    clearGate();
+    location.reload();
+  };
+}
+
+/* بعد اجتياز البوّابة: نفس ترتيب فتح المصدر السابق — المجلد المحلّي
+   أوّلًا حين يتوفّر، وGraph يخدم الآيفون والآيباد. ولا يُعاد الاختيار كل مرّة. */
+async function afterGate(row) {
+  only("screenConnect");
+  const g = await GraphStore.restore().catch(() => null);
+  if (g && !FolderStore.supported()) { await start(g); return; }
+  if (!FolderStore.supported()) { connect("unsupported"); showChosen(row); return; }
+  if (g && !(await FolderStore.restore().catch(() => null))) { await start(g); return; }
+  const restored = await openSource({});
   if (restored) { await start(restored); return; }
   connect("ready");
+  showChosen(row);
+}
+
+(async function boot() {
+  await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد
+  if (dataUrl) {                      // مسار التطوير والفحص الآلي — بلا بوّابة
+    const restored = await openSource({ dataUrl });
+    if (restored) { await start(restored); return; }
+    connect("ready"); return;
+  }
+  /* البوّابة أوّلًا — إلّا إن سبق اجتيازها واختيار المدرسة */
+  if (!gatePassed() || !chosenSchool()) { only("screenGate"); await renderGate(afterGate); return; }
+  await afterGate(chosenSchool());
 })();
 </script>
 </body>

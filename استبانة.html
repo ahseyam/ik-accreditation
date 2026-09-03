@@ -67,7 +67,7 @@
 </div>
 
 <script type="module">
-import { encodeAnswers } from "./survey.js?v=8501d2bd";
+import { encodeAnswers } from "./survey.js?v=4dd3cd8b";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const q = new URLSearchParams(location.search);
@@ -76,7 +76,7 @@ const school = q.get("s") || "";
 const wa = (q.get("wa") || "").replace(/\D/g, "");
 const api = q.get("api") || "";
 
-const data = await (await fetch("استبانات.json?v=8501d2bd")).json();
+const data = await (await fetch("استبانات.json?v=4dd3cd8b")).json();
 const tool = data.tools.find((t) => t.key === toolKey) || data.tools[0];
 const answers = {};
 

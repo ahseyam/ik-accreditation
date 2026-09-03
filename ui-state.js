@@ -8,7 +8,7 @@ export const S = {
   roster: [], rosterOv: null, mySignature: null,
   settings: {}, keeper: null,
   myRecords: [], myTools: [],
-  activeScreen: "screenConnect",
+  activeScreen: "screenGate",
 };
 
 export const $ = (id) => document.getElementById(id);
@@ -16,7 +16,7 @@ export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
   (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 export const show = (id, on) => $(id).classList.toggle("hidden", !on);
 
-export const SCREENS = ["screenConnect", "screenWho", "screenDash", "screenGuide", "screenRecords",
+export const SCREENS = ["screenGate", "screenConnect", "screenWho", "screenDash", "screenGuide", "screenRecords",
   "screenRecord", "screenTools", "screenTool", "screenImp", "screenPlans",
   "screenVault", "screenExec", "screenReady"];
 

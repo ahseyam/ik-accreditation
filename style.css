@@ -695,3 +695,55 @@ html[data-theme="dark"] .dev.no{background:#2b1a18;border-color:#4a2b26}
   border-top:1px dashed var(--line);padding-top:9px}
 .dev-warn{margin-top:13px;background:var(--gold-soft);border:1px solid var(--gold);
   border-radius:var(--r-sm);padding:11px 14px;font-size:13.5px;color:var(--ink)}
+
+/* ── بوّابة الدخول ومُختار المدرسة ──────────────────────────────
+   ⚠️ الخيارات أزرارٌ لا قوائم منسدلة: المستخدم على الجوّال يرى الأربعة
+   دفعةً واحدة ويلمس، والقائمة المنسدلة تُخفي العدد وتحتاج لمستين. */
+.gcode { max-width: 460px }
+.gcode label { display: block; font-weight: 700; margin-bottom: 8px }
+.gcode .f-in { text-align: left; direction: ltr; font-size: 16px; letter-spacing: 0 }
+.gcode .b-main { margin-top: 12px }
+.gnote { margin-top: 18px }
+
+.gstep { border-top: 1px solid var(--line); padding: 16px 0 4px }
+.gstep:first-child { border-top: 0; padding-top: 4px }
+.gs-h { display: flex; align-items: center; gap: 9px; font-weight: 700;
+        margin-bottom: 11px; color: var(--ink) }
+.gs-n { font-size: 19px; line-height: 1 }
+.gs-x { margin-inline-start: auto; background: none; border: 0; cursor: pointer;
+        color: var(--brand-2); font: inherit; font-size: 13px; font-weight: 600;
+        text-decoration: underline; padding: 4px 6px }
+.gs-opts { display: flex; flex-wrap: wrap; gap: 9px }
+.gs-o { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+        background: var(--card); border: 1.5px solid var(--line); border-radius: 11px;
+        padding: 11px 15px; font: inherit; font-weight: 600; color: var(--ink);
+        min-height: 44px; transition: border-color .12s, background .12s }
+.gs-o:hover { border-color: var(--brand-2) }
+.gs-o.sel { border-color: var(--brand); background: var(--brand-soft, #eef4ff); color: var(--brand) }
+.gs-c { font-size: 12px; font-weight: 700; opacity: .62;
+        background: var(--soft, #f1f3f7); border-radius: 20px; padding: 2px 8px }
+.gstep.done .gs-opts { display: none }
+.gs-v { font-weight: 700; color: var(--brand); background: var(--brand-soft, #eef4ff);
+        border-radius: 8px; padding: 3px 10px; font-size: 13.5px }
+
+.gfound { display: flex; gap: 14px; align-items: flex-start; margin-top: 20px;
+          padding: 16px 18px; border: 1.5px solid var(--brand); border-radius: 13px;
+          background: var(--brand-soft, #eef4ff) }
+.gf-ic { font-size: 26px; line-height: 1 }
+.gfound b { display: block; font-size: 16px; margin-bottom: 5px; color: var(--brand) }
+.gfound span { display: block; font-size: 13px; line-height: 1.75; opacity: .88 }
+.gfound code { display: inline-block; margin-top: 3px; font-size: 12.5px;
+               background: var(--card); border: 1px solid var(--line); border-radius: 7px;
+               padding: 4px 9px; direction: rtl; unicode-bidi: plaintext }
+.gfound + .b-main { margin-top: 14px }
+
+.lnk-b { background: none; border: 0; cursor: pointer; color: var(--brand-2);
+         font: inherit; font-size: 13px; font-weight: 600; text-decoration: underline; padding: 2px 4px }
+#connectSub code { font-size: 12.5px; background: var(--soft, #f1f3f7);
+                   border-radius: 6px; padding: 2px 7px; unicode-bidi: plaintext }
+
+@media (max-width: 560px) {
+  .gs-opts { gap: 7px }
+  .gs-o { padding: 10px 12px; flex: 1 1 42% }
+  .gfound { flex-direction: column; gap: 9px }
+}
