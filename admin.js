@@ -12,8 +12,8 @@
  * الأبناء المباشرين فيرى أربعة مجمّعات ويظنّها أربع مدارس. فالمشي هنا
  * تعاودي حتى يُعثر على `manifest.json`.
  */
-import { FolderStore } from "./storage.js?v=6371dcbc";
-import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=6371dcbc";
+import { FolderStore } from "./storage.js?v=cca7ee86";
+import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=cca7ee86";
 
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
@@ -25,19 +25,35 @@ export const EDIT_ROLES = ["EDUCATIONAL_VP", "QUALITY_COORDINATOR"];
 
 const isPlaceholder = (p) => /^\s*\[.*\]\s*$/.test(String(p?.fullName || ""));
 
-/** مشيٌ تعاودي حتى `manifest.json` — البنية أربع طبقات لا واحدة */
-export async function findSchools(root, onStep, depth = 0, trail = []) {
+/** مشيٌ تعاودي حتى `manifest.json` — البنية أربع طبقات لا واحدة.
+ *
+ * ⚠️ **يُبلّغ بما رأى.** أوّل نسخةٍ كانت تعود بقائمة فارغة فتقول «لم أجد
+ * مدارس» ولا تقول ما الذي وجدته — فلا يُشخَّص العطل لا من المستخدم ولا منّي.
+ * الآن يجمع أثر المشي: كم مجلدًا فتح، وما أسماء أوّل ما رأى، وأين تعذّرت
+ * القراءة. والرسالة تعرضها.
+ *
+ * ⚠️ ومجلدٌ واحدٌ لا يُقرأ لا يُسقط المسح كلّه: كل فرعٍ في try مستقلّ. */
+export async function findSchools(root, onStep, depth = 0, trail = [], trace = null) {
+  const T = trace || { dirs: 0, top: [], errors: [], deepest: 0, maxDepth: 6 };
   const out = [];
-  if (depth > 5) return out;
+  if (depth > T.maxDepth) return out;
+  T.dirs++; if (depth > T.deepest) T.deepest = depth;
   let hasManifest = false;
   const subs = [];
-  for await (const [name, h] of root.entries()) {
-    if (name === "manifest.json") hasManifest = true;
-    else if (h.kind === "directory" && !name.startsWith(".")) subs.push({ name, h });
+  try {
+    for await (const [name, h] of root.entries()) {
+      if (name === "manifest.json") hasManifest = true;
+      else if (h.kind === "directory" && !name.startsWith(".")) subs.push({ name, h });
+    }
+  } catch (e) {
+    T.errors.push((trail.join("/") || root.name || "الجذر") + ": " + (e.message || e.name));
+    return out;
   }
+  if (depth === 0) T.top = subs.map((s) => s.name).slice(0, 12);
   if (hasManifest) { onStep?.(trail.join(" / ")); return [{ handle: root, trail: [...trail] }]; }
   subs.sort((a, b) => a.name.localeCompare(b.name, "ar"));
-  for (const s of subs) out.push(...await findSchools(s.h, onStep, depth + 1, [...trail, s.name]));
+  for (const s of subs) out.push(...await findSchools(s.h, onStep, depth + 1, [...trail, s.name], T));
+  if (depth === 0) out.trace = T;
   return out;
 }
 

@@ -69,6 +69,24 @@ export class FolderStore {
 
   static async forget() { await idbSet("root", undefined); }
 
+  /* ⚠️ لوحة الإدارة تفتح **جذر الأربعين** لا مجلد مدرسة، فلو حُفظ بالمفتاح
+     نفسه لدَهَس أحدُهما الآخر: يفتح المستشار اللوحة فيفقد المستخدمُ مجلد
+     مدرسته. مفتاحٌ مستقلّ لكلٍّ. */
+  static async pickRoot(key = "adminRoot", id = "ik-admin") {
+    const handle = await window.showDirectoryPicker({ id, mode: "readwrite" });
+    await idbSet(key, handle);
+    return handle;
+  }
+  static async restoreRoot(key = "adminRoot") {
+    const handle = await idbGet(key).catch(() => null);
+    if (!handle) return null;
+    const opts = { mode: "readwrite" };
+    let state = await handle.queryPermission(opts);
+    if (state === "prompt") state = await handle.requestPermission(opts);
+    return state === "granted" ? handle : null;
+  }
+  static async forgetRoot(key = "adminRoot") { await idbSet(key, undefined); }
+
   async _dir(parts, create = false) {
     let dir = this.root;
     for (const part of parts) dir = await dir.getDirectoryHandle(part, { create });

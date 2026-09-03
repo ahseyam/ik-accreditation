@@ -3,8 +3,8 @@
    القاعدة: لا تنبيه بلا سبب مقيس. كل تنبيه يذكر **لماذا استُحقّ** و**متى**،
    ويفتح الشاشة التي تُغلقه. والحساب كله من مجلد المدرسة بلا خادم.        */
 
-import { currentWeek } from "./autofill.js?v=6371dcbc";
-import { committeeMeetings, tuesdayOf, fmtDate } from "./meetings.js?v=6371dcbc";
+import { currentWeek } from "./autofill.js?v=cca7ee86";
+import { committeeMeetings, tuesdayOf, fmtDate } from "./meetings.js?v=cca7ee86";
 
 export const LEVELS = { late: 0, today: 1, week: 2, soon: 3 };
 const LEVEL_AR = { late: "متأخّر", today: "اليوم", week: "هذا الأسبوع", soon: "قادم" };

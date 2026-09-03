@@ -1,4 +1,4 @@
-import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=6371dcbc";
+import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=cca7ee86";
 /* طبقة الطباعة — كليشة ابن خلدون تتكرّر على كل ورقة.
    التقنية مقيسة سلفًا في محرّر الخطط القائم بذاته، ولا تُعاد من الصفر:
      ① @page margin:0  ⇒ الورقة 297mm بالضبط

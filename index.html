@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=6371dcbc">
+<link rel="stylesheet" href="style.css?v=cca7ee86">
 </head>
 <body>
 <div class="app">
@@ -321,48 +321,48 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=6371dcbc";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=6371dcbc";
-import { renderGuide } from "./guide.js?v=6371dcbc";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=6371dcbc";
-import { setupMissing, editPerson } from "./roster-edit.js?v=6371dcbc";
-import { vaultBridge } from "./vault-bridge.js?v=6371dcbc";
-import { renderPublish } from "./publish.js?v=6371dcbc";
-import { globalSearch } from "./search.js?v=6371dcbc";
-import { renderConnect } from "./connect.js?v=6371dcbc";
-import { openImprovement } from "./screen-improve.js?v=6371dcbc";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=6371dcbc";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=6371dcbc";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=6371dcbc";
-import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=6371dcbc";
-import { openSupport, trackErrors } from "./support.js?v=6371dcbc";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=6371dcbc";
+import { FolderStore } from "./storage.js?v=cca7ee86";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=cca7ee86";
+import { renderGuide } from "./guide.js?v=cca7ee86";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=cca7ee86";
+import { setupMissing, editPerson } from "./roster-edit.js?v=cca7ee86";
+import { vaultBridge } from "./vault-bridge.js?v=cca7ee86";
+import { renderPublish } from "./publish.js?v=cca7ee86";
+import { globalSearch } from "./search.js?v=cca7ee86";
+import { renderConnect } from "./connect.js?v=cca7ee86";
+import { openImprovement } from "./screen-improve.js?v=cca7ee86";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=cca7ee86";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=cca7ee86";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=cca7ee86";
+import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=cca7ee86";
+import { openSupport, trackErrors } from "./support.js?v=cca7ee86";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=cca7ee86";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=6371dcbc";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=cca7ee86";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=6371dcbc";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=6371dcbc";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=6371dcbc";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=6371dcbc";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=6371dcbc";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=cca7ee86";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=cca7ee86";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=cca7ee86";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=cca7ee86";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=cca7ee86";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=6371dcbc";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=6371dcbc";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=cca7ee86";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=cca7ee86";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=6371dcbc";
-import { surveyLink, extractCodes } from "./survey.js?v=6371dcbc";
+         fullBackup } from "./vault.js?v=cca7ee86";
+import { surveyLink, extractCodes } from "./survey.js?v=cca7ee86";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=6371dcbc";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=cca7ee86";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=6371dcbc";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=cca7ee86";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=6371dcbc";
-import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=6371dcbc";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=6371dcbc";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=cca7ee86";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=cca7ee86";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=cca7ee86";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -984,7 +984,7 @@ $("vaultPrintExport").onclick = async () => {
   if (store?.readOnly) { st.textContent = "⚠️ وضع القراءة — لا يمكن الكتابة في المجلد"; return; }
   st.textContent = "جارٍ التصدير…";
   try {
-    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=6371dcbc");
+    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=cca7ee86");
     const r = await exportPrintable(store, bundle, me,
       (n, name) => { st.textContent = "صُدِّر " + n + " سجلًّا… (" + name + ")"; });
     st.textContent = r.records === 0

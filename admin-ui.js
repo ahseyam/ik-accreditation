@@ -1,6 +1,6 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=6371dcbc";
-import { FolderStore } from "./storage.js?v=6371dcbc";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=cca7ee86";
+import { FolderStore } from "./storage.js?v=cca7ee86";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
@@ -16,21 +16,42 @@ $("pick").onclick = async () => {
   try {
     /* ⚠️ readwrite لا read: الاعتماد يُكتب في مجلد المدرسة نفسه. ولو فُتح
        للقراءة لظهرت الأزرار وأخفقت عند أوّل ضغطة. */
-    const root = await window.showDirectoryPicker({ id: "ik-admin", mode: "readwrite" });
-    await scan(root);
+    await scan(await FolderStore.pickRoot());
   } catch (e) { if (e?.name !== "AbortError") $("status").textContent = "❌ " + e.message; }
 };
-$("rescan").onclick = () => $("pick").click();
+/* يُستعاد الجذر المحفوظ فلا يُعاد اختياره كل مرّة — بمفتاحٍ مستقلّ عن مجلد
+   المدرسة كي لا يدهس أحدهما الآخر. */
+let lastRoot = null;
+(async () => {
+  if (!FolderStore.supported()) return;
+  const h = await FolderStore.restoreRoot().catch(() => null);
+  if (h) { $("status").textContent = "يستعيد المجلد المحفوظ…"; await scan(h); }
+})();
+$("rescan").onclick = () => (lastRoot ? scan(lastRoot) : $("pick").click());
 $("print").onclick = () => window.print();
 
 async function scan(root) {
+  lastRoot = root;
   $("prog").classList.remove("hidden");
   $("status").textContent = "يبحث عن المدارس…";
   const found = await findSchools(root, (t) => { $("status").textContent = "وجد: " + t; });
   if (!found.length) {
     $("prog").classList.add("hidden");
-    $("intro").innerHTML = '<div class="err"><b>لم أجد مدارس في هذا المجلد.</b><br>' +
-      "اختر مجلد <b>مساحة الاعتماد ١٤٤٨</b> نفسه — الذي يحوي المجمعات الأربعة.</div>";
+    const T = found.trace || {};
+    /* ⚠️ رسالةٌ تقول «لم أجد» ولا تقول **ما الذي رأت** لا تُشخَّص. فتُعرض
+       أسماء ما فُتح فعلًا، وعددُ المجلدات، وأي إخفاقِ قراءة بنصّه. */
+    $("intro").innerHTML = '<div class="err"><b>لم أجد مدارس في المجلد الذي اخترتَه: «' +
+      esc(root.name || "—") + "».</b><br>" +
+      "المطلوب هو <b>مساحة الاعتماد ١٤٤٨</b> — الذي يحوي المجمعات الأربعة " +
+      "(المنار · النفل · الياسمين · عرقة).<br><br>" +
+      "<b>ما رأيتُه داخله:</b> " +
+      (T.top && T.top.length ? T.top.map(esc).join(" · ") : "<i>لا شيء — المجلد بدا فارغًا</i>") +
+      "<br><b>مجلدات فُتحت:</b> " + (T.dirs ?? 0) + " · <b>أقصى عمق:</b> " + (T.deepest ?? 0) +
+      (T.errors && T.errors.length
+        ? "<br><b>تعذّرت القراءة في:</b> " + T.errors.slice(0, 3).map(esc).join(" · ")
+        : "") +
+      "</div>";
+    $("rescan").classList.remove("hidden");
     return;
   }
   rows = [];

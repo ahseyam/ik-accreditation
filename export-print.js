@@ -15,9 +15,9 @@
  * ⚠️ **حدٌّ يجب أن يُقال للمستخدم**: OneDrive على الويب **لا يعرض HTML** بل
  * ينزّله. فالطباعة تكون من المجلد المُزامَن على الحاسب. مكتوبٌ في الفهرس نفسه.
  */
-import { buildPrintDoc, printCss } from "./print.js?v=6371dcbc";
-import { roleAr } from "./app.js?v=6371dcbc";
-import { esc } from "./ui-state.js?v=6371dcbc";
+import { buildPrintDoc, printCss } from "./print.js?v=cca7ee86";
+import { roleAr } from "./app.js?v=cca7ee86";
+import { esc } from "./ui-state.js?v=cca7ee86";
 
 export const OUT_DIR = "للطباعة";
 
