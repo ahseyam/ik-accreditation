@@ -2,12 +2,12 @@
    أُخرجت من index.html. تستورد ما تحتاجه من الوحدات مباشرةً، ولا يصلها من
    الحالة العامّة إلا المحوّل والحزمة والروستر — وتُبلّغ باستيرادها عبر
    `onImported` بدل أن تنادي دوال الشاشة من جوفها. */
-import { $, esc, setStatus } from "./ui-state.js?v=4f2d8248";
-import { sortHierarchy, recordsFor, roleAr, countSavedRecords } from "./app.js?v=4f2d8248";
-import { scopeTools } from "./scope.js?v=4f2d8248";
-import { canSeeImprovement } from "./scope.js?v=4f2d8248";
+import { $, esc, setStatus } from "./ui-state.js?v=d38c1a6a";
+import { sortHierarchy, recordsFor, roleAr, countSavedRecords } from "./app.js?v=d38c1a6a";
+import { scopeTools } from "./scope.js?v=d38c1a6a";
+import { canSeeImprovement } from "./scope.js?v=d38c1a6a";
 import { buildWorkPack, workPackName, deliver, readPackFile, importEntries,
-         relay, setRelay, syncFromCloud } from "./bridge.js?v=4f2d8248";
+         relay, setRelay, syncFromCloud } from "./bridge.js?v=d38c1a6a";
 
 export function vaultBridge({ store, bundle, roster, onImported }) {
   const list = sortHierarchy(roster || []);

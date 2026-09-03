@@ -2,17 +2,18 @@
    أُخرجت من index.html **بحالتها معها**: القالب الجاري وإدخاله ومعرّفه
    وأسبوعه ملكُ هذه الشاشة. لا تُقرأ من الخارج إلا بالسؤال.
    ctx = { store, bundle, me, myRecords, mySignature, roleAr, afterSave, goList } */
-import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=4f2d8248";
-import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=4f2d8248";
-import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=4f2d8248";
-import { printRecord } from "./print.js?v=4f2d8248";
-import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=4f2d8248";
-import { $, esc, markNav, only } from "./ui-state.js?v=4f2d8248";
-import { backupEntry } from "./vault.js?v=4f2d8248";
-import { draftId, saveDraft, loadDraft, clearDraft, markSaved } from "./draft.js?v=4f2d8248";
+import { STAGE_AR, entryDir, entryPath, evidenceDir, freqAr, newEntryId, roleAr } from "./app.js?v=d38c1a6a";
+import { currentWeek, fillContext, semesterLabel } from "./autofill.js?v=d38c1a6a";
+import { committeeMeetings, meetingScope, meetingTitle, nextMeeting } from "./meetings.js?v=d38c1a6a";
+import { printRecord } from "./print.js?v=d38c1a6a";
+import { UNSUPPORTED, buildGuide, buildLabelCanon, renderRecordForm, setFillContext } from "./record.js?v=d38c1a6a";
+import { $, esc, markNav, only } from "./ui-state.js?v=d38c1a6a";
+import { backupEntry } from "./vault.js?v=d38c1a6a";
+import { draftId, saveDraft, loadDraft, clearDraft, markSaved, setSaver, markDirty } from "./draft.js?v=d38c1a6a";
 
 let recState = null, recTemplate = null, recEntryId = null, recIndex = -1, fillWeek = null;
 let CTX = null;
+let saveRecord = null;   // تُملأ في bindRecordScreen ويستدعيها الحارس
 
 /* إدخالات السجل المحفوظة — جزء من الشاشة لا من الملفّ العامّ */
 async function listSaved(number) {
@@ -80,12 +81,18 @@ export async function openRecord(number, entryId, ctx) {
     $("recGuide").insertAdjacentHTML("beforeend",
       '<div class="note sm meeting-scope"><b>نطاق هذا الاجتماع:</b> ' + esc(meetingScope(meeting)) + "</div>");
   }
-  /* ⚠️ مسوّدة محفوظة على الجهاز: إن أُغلق التبويب قبل الحفظ تُستعاد هنا.
-     لا تحلّ محلّ الحفظ في المجلد — بل تمنع الضياع بين ضغطتين. */
-  const dId = draftId(bundle.school?.nameAr, me.role, number, recEntryId);
+  /* ⚠️ **العيب الذي كان يُيتِم كل مسوّدة إدخالٍ جديد**: المفتاح كان يحمل
+     `recEntryId`، وهو رقمٌ يُولَّد من التاريخ والساعة **في كل فتح**. فمن كتب
+     ثم انقطع، عاد فتُفتَح له الشاشة برقمٍ آخر، فلا يُعثر على مسوّدته أبدًا
+     وتبقى في التخزين إلى أن تُنسى. قِيس: القيمة تُكتب وتُحفظ ثم تختفي.
+     العلاج: الإدخال الجديد يُفتاح بـ«NEW» — فهو واحدٌ لكل سجلٍّ ودور في
+     الوقت نفسه — ويُعاد معه رقم الإدخال الأصلي كي تُطابقه مجلدات الشواهد. */
+  const dId = draftId(bundle.school?.nameAr, me.role, number, entryId || "NEW");
   const draft = loadDraft(dId);
   if (draft && Object.keys(draft.data || {}).length) {
     Object.assign(recState, draft.data);
+    if (!entryId && draft.meta?.entryId) recEntryId = draft.meta.entryId;
+    markDirty();          // المستعاد غير محفوظ — فيُسأل عنه عند المغادرة
     const mins = Math.round((Date.now() - draft.at) / 60000);
     $("recStatus").innerHTML = '<span style="color:var(--gold)">↺ استُعيدت مسوّدة لم تُحفظ' +
       (mins < 60 ? " قبل " + mins + " دقيقة" : "") + " — راجعها ثم احفظ.</span>";
@@ -97,10 +104,12 @@ export async function openRecord(number, entryId, ctx) {
     committeeKey: cKey, committee, meetings, meeting,
     evidenceDir: evidenceDir(me, number, recEntryId),
   });
+  /* الحارس يعرف كيف يحفظ هذه الشاشة — ما دام فيها سجلٌّ مفتوح */
+  setSaver(() => saveRecord && saveRecord());
   /* أي تغيير في النموذج يُكتب مسوّدةً بعد لحظة سكون — لا مع كل حرف */
   const form = $("recForm");
   const onEdit = () => saveDraft(dId, recState,
-    { record: recTemplate.nameAr, number, roleAr: roleAr(me.role) });
+    { record: recTemplate.nameAr, number, roleAr: roleAr(me.role), entryId: recEntryId });
   form.addEventListener("input", onEdit);
   form.addEventListener("change", onEdit);
 
@@ -115,7 +124,10 @@ export function bindRecordScreen(ctx) {
   
   $("recPrev").onclick = () => recIndex > 0 && openRecord(CTX.myRecords[recIndex - 1].number);
   $("recNext").onclick = () => recIndex < CTX.myRecords.length - 1 && openRecord(CTX.myRecords[recIndex + 1].number);
-  $("recSave").onclick = async () => {
+  /* ⚠️ الحفظ دالّةٌ لا معالج زرّ: نافذة «لديك عملٌ لم يُحفظ» تحتاج أن تحفظ
+     **وتنتظر النتيجة** قبل أن تغادر. ومحاكاة الضغط على الزرّ لا تُرجع وعدًا،
+     فتغادر النافذة قبل أن يصل الملف إلى القرص. */
+  saveRecord = async () => {
     $("recStatus").textContent = "جارٍ الحفظ…";
     try {
       await CTX.store.writeJson(entryPath(CTX.me, recTemplate.number, recEntryId), {
@@ -128,13 +140,20 @@ export function bindRecordScreen(ctx) {
       const bk = await backupEntry(CTX.store, { kind: "سجلات", sourcePath: entryPath(CTX.me, recTemplate.number, recEntryId),
         data: { recordNumber: recTemplate.number, recordName: recTemplate.nameAr, entryId: recEntryId, data: recState },
         person: CTX.me.fullName, roleAr: roleAr(CTX.me.role) });
+      /* يُمسح المفتاحان: مفتاح الإدخال الجديد ومفتاح هذا الإدخال بعينه —
+         وإلّا بقيت المسوّدة تُستعاد بعد الحفظ فتُربك المستخدم. */
+      clearDraft(draftId(CTX.bundle.school?.nameAr, CTX.me.role, recTemplate.number, "NEW"));
       clearDraft(draftId(CTX.bundle.school?.nameAr, CTX.me.role, recTemplate.number, recEntryId));
       markSaved();
       CTX.afterSave && CTX.afterSave();
       $("recStatus").textContent = "✅ حُفظ في مجلدك — " + new Date().toLocaleTimeString("ar-SA") +
         (bk.ok ? " · ونُسخ للمستودع" : " · ⚠️ تعذّر النسخ للمستودع");
-    } catch (e) { $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message; }
+    } catch (e) {
+      $("recStatus").textContent = "❌ تعذّر الحفظ: " + e.message;
+      throw e;                       // ليعلم الحارس أن الحفظ لم ينجح فلا يغادر
+    }
   };
+  $("recSave").onclick = () => saveRecord();
   $("recPrint").onclick = async () => {
     $("recStatus").textContent = "جارٍ تجهيز المطبوع…";
     try {

@@ -1,218 +1,100 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<title>لوحة المستشار — الاعتماد الخارجي</title>
-<link rel="icon" href="jadara.svg">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
+<link rel="stylesheet" href="style.css?v=d38c1a6a">
 <style>
-  @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;
-             src:url("AlJazeera-Regular.v2.woff2") format("woff2")}
-  @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;
-             src:url("AlJazeera-Bold.v2.woff2") format("woff2")}
-  :root{--ink:#122a25;--ink-2:#43616a;--line:#e2eae9;--line-2:#cddedb;--bg:#f2f6f5;--panel:#fff;
-        --brand:#155e4e;--brand-2:#1d7a63;--brand-soft:#e9f3f0;--brand-ink:#0d443a;
-        --gold:#a97c1f;--gold-b:#eac83c;--gold-soft:#fbf4e4;--danger:#a32b22;--ok:#1d7a52;
-        --sh:0 1px 2px rgba(18,42,37,.04),0 18px 40px -28px rgba(18,42,37,.3)}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8;
-       font-family:"Al Jazeera Arabic","Segoe UI",Tahoma,Arial,sans-serif}
-  .bar{background:var(--brand-ink);color:#eaf5f1;padding:13px 24px;display:flex;
-       align-items:center;gap:16px;flex-wrap:wrap;
-       border-bottom:3px solid transparent;
-       border-image:linear-gradient(90deg,var(--brand),var(--brand-2) 46%,var(--gold)) 1}
-  .bar img{height:34px;background:#fff;border-radius:9px;padding:4px}
-  .bar b{color:var(--gold-b);font-size:16px;display:block}
-  .bar span{font-size:12.5px;color:#a9c8c0}
-  .sp{flex:1}
-  .btn{font:inherit;font-weight:700;border:0;border-radius:9px;padding:10px 18px;cursor:pointer;
-       background:var(--brand);color:#fff}
-  .btn.ghost{background:rgba(255,255,255,.12);color:#eaf5f1;border:1px solid rgba(255,255,255,.2)}
-  .wrap{max-width:1500px;margin:0 auto;padding:24px 20px 60px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px;
-        margin-bottom:18px;box-shadow:var(--sh);position:relative;overflow:hidden}
-  .card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
-    background:linear-gradient(90deg,var(--brand),var(--brand-2) 46%,var(--gold))}
-  h1{font-size:23px;margin:0 0 6px}
-  h2{font-size:18px;margin:0 0 14px}
-  .sub{color:var(--ink-2);font-size:14.5px;margin:0 0 20px}
-  .kpi{display:grid;gap:13px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px}
-  .kpi .b{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel);
-          box-shadow:var(--sh);position:relative;overflow:hidden}
-  .kpi .b::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
-    background:linear-gradient(90deg,var(--brand),var(--gold))}
-  .kpi .v{font-size:28px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
-  .kpi .l{font-size:12.5px;color:var(--ink-2);margin-top:6px;padding-top:7px;border-top:2px solid var(--gold-soft);display:inline-block}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{text-align:right;padding:10px 11px;border-bottom:1px solid var(--line)}
-  th{background:#f8fbfa;color:var(--ink-2);font-size:12.5px;font-weight:700;
-     position:sticky;top:0;cursor:pointer;white-space:nowrap}
-  th:hover{color:var(--brand)}
-  tbody tr:hover{background:var(--brand-soft)}
-  .bar-m{height:7px;background:#eef2f2;border-radius:4px;overflow:hidden;width:78px;display:inline-block;vertical-align:middle}
-  .bar-m>i{display:block;height:100%}
-  .scroll{overflow:auto;max-height:74vh;border:1px solid var(--line);border-radius:10px}
-  .tag{display:inline-block;font-size:11.5px;border-radius:99px;padding:2px 10px;white-space:nowrap}
-  .t-ok{background:#e6f4ec;color:var(--ok)} .t-mid{background:var(--gold-soft);color:var(--gold)}
-  .t-low{background:#fbeceb;color:var(--danger)} .t-gray{background:#eef2f2;color:var(--ink-2)}
-  .note{background:var(--brand-soft);border:1px solid var(--line-2);border-radius:10px;padding:14px 17px;font-size:14.5px}
-  .err{background:#fbeceb;border:1px solid #eec9c6;border-radius:10px;padding:14px 17px;font-size:14.5px;color:var(--danger)}
-  .prog{height:6px;background:#eef2f2;border-radius:4px;overflow:hidden;margin-top:10px}
-  .prog>i{display:block;height:100%;background:var(--brand-2);transition:width .2s}
-  @media print{.bar .btn,.no-print{display:none!important}.scroll{max-height:none;overflow:visible}
-               body{background:#fff}.card{box-shadow:none}}
+  .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
+  .adm h1{font-size:23px;margin:0 0 4px}
+  .adm .sub{color:var(--ink-2);margin-bottom:18px;font-size:13.5px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+  .bar .grow{flex:1 1 210px;min-width:180px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px;margin-bottom:20px}
+  .kpi-b{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
+  .kpi-b .v{font-size:25px;font-weight:800;line-height:1.25;color:var(--brand)}
+  .kpi-b .l{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .kpi-b.warn .v{color:#a97c1f} .kpi-b.bad .v{color:#a32b22} .kpi-b.ok .v{color:#1d7a52}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);margin-bottom:16px}
+  .tab{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
+       padding:10px 15px;font:inherit;font-weight:700;color:var(--ink-2);cursor:pointer;min-height:44px}
+  .tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+  .tab .n{background:var(--brand-soft,#e9f3f0);border-radius:20px;padding:1px 8px;font-size:12px;margin-inline-start:6px}
+  .tab.alert .n{background:#fdecec;color:#a32b22}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
+  .filters select,.filters input{min-height:40px}
+  table.adm-t{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);
+              border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  table.adm-t th,table.adm-t td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:center;vertical-align:middle}
+  table.adm-t th{background:var(--brand-soft,#e9f3f0);color:var(--brand-ink,#0d443a);font-weight:700;
+                 cursor:pointer;user-select:none;white-space:nowrap}
+  table.adm-t td.r{text-align:right}
+  table.adm-t tbody tr{cursor:pointer}
+  table.adm-t tbody tr:hover{background:var(--brand-soft,#e9f3f0)}
+  .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .p-ok{background:#e6f5ee;color:#1d7a52} .p-warn{background:#fdf3e0;color:#a97c1f}
+  .p-bad{background:#fdecec;color:#a32b22} .p-gray{background:var(--soft,#eef1f3);color:var(--ink-2)}
+  .side{position:fixed;inset-block:0;inset-inline-start:0;width:min(560px,94vw);background:var(--panel);
+        border-inline-end:1px solid var(--line);box-shadow:0 0 34px #0003;z-index:40;overflow:auto;padding:20px}
+  .side.hidden{display:none}
+  .side h2{margin:0 0 3px;font-size:18px}
+  .side .close{position:absolute;inset-block-start:14px;inset-inline-end:16px;background:none;border:0;
+               font-size:22px;cursor:pointer;color:var(--ink-2);min-height:44px;min-width:44px}
+  .prow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
+        border-bottom:1px solid var(--line);padding:10px 0}
+  .prow .who b{display:block;font-size:13.5px}
+  .prow .who span{font-size:12px;color:var(--ink-2)}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .b-xs{padding:6px 11px;font-size:12px;min-height:38px;border-radius:9px}
+  .scrim{position:fixed;inset:0;background:#0006;z-index:39}.scrim.hidden{display:none}
+  .howto{background:#fff8e6;border:1px solid #e8d5a3;border-radius:11px;padding:12px 15px;
+         margin:12px 0;font-size:13px;line-height:1.8}
+  .mail{font-family:inherit;background:var(--soft,#eef1f3);border-radius:7px;padding:2px 8px;
+        font-size:12.5px;unicode-bidi:plaintext;direction:ltr;display:inline-block}
+  .empty{text-align:center;color:var(--ink-2);padding:40px 20px;font-size:14px}
+  @media(max-width:640px){ .adm{padding:12px 10px 60px} table.adm-t{font-size:12px}
+    table.adm-t th,table.adm-t td{padding:7px 6px} .hide-sm{display:none} }
+  @media print{ .bar,.tabs,.filters,.side,.scrim,.b-main,.b-ghost{display:none!important}
+    .adm{max-width:none} table.adm-t{font-size:9.5pt} }
 </style>
 </head>
 <body>
-<div class="bar">
-  <img src="jadara.svg" alt="جدارة">
-  <div><b>لوحة المستشار</b><span>الاعتماد الخارجي — مدارس ابن خلدون</span></div>
-  <div class="sp"></div>
-  <button class="btn" id="pick">اختر مجلد «الحزم»</button>
-  <button class="btn ghost hidden" id="rescan">↻ إعادة المسح</button>
-  <button class="btn ghost hidden" id="print">🖨️ طباعة</button>
-</div>
-<div class="wrap">
-  <div class="card" id="intro">
-    <h1>حال المدارس في مكان واحد</h1>
-    <p class="sub">اختر المجلد الذي يضمّ حزم المدارس، فيُقرأ كل مجلد ويُحسب حاله.
-      كل شيء يجري على جهازك ولا يُرسل شيء إلى أي جهة.</p>
-    <div class="note">إن كانت الحزم على OneDrive فاختر مجلدها المزامَن.
-      وما لم يبدأ العمل فيه من المدارس يظهر صفرًا — وهذا صحيح لا عطل.</div>
-    <div class="prog hidden" id="prog"><i style="width:0"></i></div>
-    <div id="status" style="margin-top:12px;color:var(--ink-2);font-size:14px"></div>
+<div class="adm">
+  <h1>لوحة إدارة المنصّة</h1>
+  <p class="sub" id="who">مدير الجودة والتخطيط · مدارس ابن خلدون — الاعتماد الخارجي</p>
+
+  <div class="bar">
+    <button class="b-main" id="pick">📂 اختر مجلد «مساحة الاعتماد ١٤٤٨»</button>
+    <button class="b-ghost hidden" id="rescan">↻ إعادة الفحص</button>
+    <button class="b-ghost hidden" id="print">🖨️ طباعة</button>
+    <span class="muted" id="status"></span>
   </div>
-  <div id="out"></div>
+  <div class="prog hidden" id="prog"><span></span></div>
+  <div id="intro"></div>
+
+  <div class="hidden" id="main">
+    <div class="kpis" id="kpis"></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="filters hidden" id="filters">
+      <input class="f-in grow" id="q" placeholder="ابحث باسم مدرسة أو منسوب…" autocomplete="off">
+      <select class="f-in" id="fComplex"><option value="">كل المجمعات</option></select>
+      <select class="f-in" id="fTrack"><option value="">كل المسارات</option></select>
+      <select class="f-in" id="fStage"><option value="">كل المراحل</option></select>
+      <select class="f-in" id="fState">
+        <option value="">كل الحالات</option>
+        <option value="active">بدأت العمل</option>
+        <option value="idle">لم تبدأ بعد</option>
+        <option value="missing">فيها أسماء ناقصة</option>
+      </select>
+    </div>
+    <div id="body"></div>
+  </div>
 </div>
 
-<script type="module">
-import { FolderStore } from "./storage.js?v=4f2d8248";
-import { computeReadiness, readinessLabel, countEvidence, countExecPlans, DIMENSIONS } from "./readiness.js?v=4f2d8248";
-import { countSavedRecords, loadToolResponses } from "./app.js?v=4f2d8248";
-import { summarize } from "./tools.js?v=4f2d8248";
+<div class="scrim hidden" id="scrim"></div>
+<aside class="side hidden" id="side"></aside>
 
-const $ = (i) => document.getElementById(i);
-const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
-let rows = [], sortKey = "score", sortDir = 1;
-
-if (!FolderStore.supported()) {
-  $("intro").innerHTML = '<div class="err"><b>هذا المتصفّح لا يدعم قراءة المجلدات.</b><br>' +
-    "استخدم Microsoft Edge أو Google Chrome على حاسب ويندوز.</div>";
-}
-
-$("pick").onclick = async () => {
-  try {
-    const root = await window.showDirectoryPicker({ id: "ik-consultant", mode: "read" });
-    await scan(root);
-  } catch (e) { if (e?.name !== "AbortError") $("status").textContent = "❌ " + e.message; }
-};
-$("rescan").onclick = () => $("pick").click();
-$("print").onclick = () => window.print();
-
-async function scan(root) {
-  const dirs = [];
-  for await (const [name, h] of root.entries()) if (h.kind === "directory") dirs.push({ name, h });
-  dirs.sort((a, b) => a.name.localeCompare(b.name, "ar"));
-  $("prog").classList.remove("hidden");
-  rows = [];
-  let i = 0;
-  for (const d of dirs) {
-    i++;
-    $("status").textContent = "يقرأ " + i + " من " + dirs.length + " — " + d.name;
-    $("prog").firstElementChild.style.width = ((i / dirs.length) * 100).toFixed(0) + "%";
-    try { rows.push(await readSchool(new FolderStore(d.h), d.name)); }
-    catch { rows.push({ school: d.name, error: true }); }
-  }
-  $("status").textContent = "اكتمل: " + rows.filter((r) => !r.error).length + " حزمة من " + dirs.length;
-  $("rescan").classList.remove("hidden"); $("print").classList.remove("hidden");
-  render();
-}
-
-async function readSchool(store, folderName) {
-  const [manifest, school, roster, records, tools, improvement] = await Promise.all([
-    store.readJson("manifest.json"), store.readJson("بيانات/school.json"),
-    store.readJson("بيانات/roster.json"), store.readJson("بيانات/records.json"),
-    store.readJson("بيانات/tools.json"), store.readJson("بيانات/تحسين.json"),
-  ]);
-  const counts = await countSavedRecords(store);
-  const evidence = await countEvidence(store);
-  const execPlans = await countExecPlans(store);
-  const sums = [];
-  for (const t of tools.tools) sums.push(summarize(t, await loadToolResponses(store, t.key)));
-  const R = computeReadiness({ records: records.records, recordCounts: counts, toolSummaries: sums,
-                               improvement, evidence, execPlans, rosterSize: roster.people.length });
-  const placeholders = roster.people.filter((p) => /^\[.*\]$/.test(p.fullName || "")).length;
-  return {
-    school: school.nameAr, folder: folderName, stage: school.stage, track: school.educationType,
-    score: R.score, dims: R.dims, roster: roster.people.length, placeholders,
-    weak: improvement.weakCount, ext: improvement.indicatorScores?.length ?? 0,
-    entries: Object.values(counts).reduce((a, b) => a + b, 0),
-    evidence: evidence.files, tools: sums.filter((s) => s.responses > 0).length, toolsAll: sums.length,
-    execSaved: execPlans.saved,
-  };
-}
-
-const COLS = [
-  { k: "school", l: "المدرسة", w: "26%" },
-  { k: "score", l: "الجاهزية" },
-  { k: "entries", l: "إدخالات" },
-  { k: "evidence", l: "شواهد" },
-  { k: "tools", l: "أدوات" },
-  { k: "execSaved", l: "خطط تنفيذية" },
-  { k: "weak", l: "دون المستوى" },
-  { k: "placeholders", l: "أسماء ناقصة" },
-];
-
-function render() {
-  const ok = rows.filter((r) => !r.error);
-  const avg = ok.length ? ok.reduce((a, b) => a + b.score, 0) / ok.length : 0;
-  const started = ok.filter((r) => r.entries > 0).length;
-  const totalPh = ok.reduce((a, b) => a + b.placeholders, 0);
-  const totalEv = ok.reduce((a, b) => a + b.evidence, 0);
-  const totalEn = ok.reduce((a, b) => a + b.entries, 0);
-
-  ok.sort((a, b) => (typeof a[sortKey] === "string"
-    ? String(a[sortKey]).localeCompare(String(b[sortKey]), "ar")
-    : (a[sortKey] - b[sortKey])) * sortDir);
-
-  const band = (v) => v >= 85 ? "t-ok" : v >= 50 ? "t-mid" : v > 0 ? "t-low" : "t-gray";
-  const col = (v) => v >= 85 ? "#1d7a52" : v >= 50 ? "#a97c1f" : v > 0 ? "#a32b22" : "#cddedb";
-
-  $("out").innerHTML =
-    '<div class="kpi">' + [
-      ["متوسط الجاهزية", avg.toFixed(0) + "%"], ["مدارس بدأت العمل", started + " من " + ok.length],
-      ["إجمالي الإدخالات", totalEn], ["إجمالي الشواهد", totalEv],
-      ["أسماء ناقصة", totalPh],
-    ].map(([l, v]) => '<div class="b"><div class="v">' + v + '</div><div class="l">' + esc(l) + "</div></div>").join("") +
-    "</div>" +
-    '<div class="card"><h2>المدارس</h2>' +
-    '<div class="sub no-print">اضغط رأس العمود للترتيب. المدارس التي لم تبدأ تظهر رمادية.</div>' +
-    '<div class="scroll"><table><thead><tr>' +
-    COLS.map((c) => '<th data-k="' + c.k + '"' + (c.w ? ' style="width:' + c.w + '"' : "") + ">" +
-      esc(c.l) + (sortKey === c.k ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>").join("") +
-    "</tr></thead><tbody>" +
-    ok.map((r) => "<tr><td><b>" + esc(r.school) + "</b></td>" +
-      '<td><span class="bar-m"><i style="width:' + r.score.toFixed(0) + "%;background:" + col(r.score) + '"></i></span> ' +
-      '<span class="tag ' + band(r.score) + '">' + r.score.toFixed(0) + "%</span></td>" +
-      "<td>" + r.entries + "</td><td>" + r.evidence + "</td>" +
-      "<td>" + r.tools + " / " + r.toolsAll + "</td>" +
-      "<td>" + r.execSaved + " / " + r.roster + "</td>" +
-      "<td>" + r.weak + " / " + r.ext + "</td>" +
-      "<td>" + (r.placeholders ? '<span class="tag t-low">' + r.placeholders + "</span>" : "—") + "</td></tr>").join("") +
-    "</tbody></table></div></div>" +
-    (rows.some((r) => r.error)
-      ? '<div class="card"><h2>مجلدات تعذّرت قراءتها</h2><div class="err">' +
-        rows.filter((r) => r.error).map((r) => esc(r.school)).join(" · ") +
-        "<br>تأكّد أنها حزم مدارس مكتملة." + "</div></div>" : "");
-
-  $("out").querySelectorAll("th[data-k]").forEach((th) => {
-    th.onclick = () => {
-      if (sortKey === th.dataset.k) sortDir *= -1; else { sortKey = th.dataset.k; sortDir = -1; }
-      render();
-    };
-  });
-}
-</script>
+<script type="module" src="admin-ui.js"></script>
 </body>
 </html>

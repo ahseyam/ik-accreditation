@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=4f2d8248">
+<link rel="stylesheet" href="style.css?v=d38c1a6a">
 </head>
 <body>
 <div class="app">
@@ -314,48 +314,48 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=4f2d8248";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=4f2d8248";
-import { renderGuide } from "./guide.js?v=4f2d8248";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=4f2d8248";
-import { setupMissing, editPerson } from "./roster-edit.js?v=4f2d8248";
-import { vaultBridge } from "./vault-bridge.js?v=4f2d8248";
-import { renderPublish } from "./publish.js?v=4f2d8248";
-import { globalSearch } from "./search.js?v=4f2d8248";
-import { renderConnect } from "./connect.js?v=4f2d8248";
-import { openImprovement } from "./screen-improve.js?v=4f2d8248";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=4f2d8248";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=4f2d8248";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=4f2d8248";
-import { guardUnload, pendingDrafts } from "./draft.js?v=4f2d8248";
-import { openSupport, trackErrors } from "./support.js?v=4f2d8248";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=4f2d8248";
+import { FolderStore } from "./storage.js?v=d38c1a6a";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=d38c1a6a";
+import { renderGuide } from "./guide.js?v=d38c1a6a";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=d38c1a6a";
+import { setupMissing, editPerson } from "./roster-edit.js?v=d38c1a6a";
+import { vaultBridge } from "./vault-bridge.js?v=d38c1a6a";
+import { renderPublish } from "./publish.js?v=d38c1a6a";
+import { globalSearch } from "./search.js?v=d38c1a6a";
+import { renderConnect } from "./connect.js?v=d38c1a6a";
+import { openImprovement } from "./screen-improve.js?v=d38c1a6a";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=d38c1a6a";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=d38c1a6a";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=d38c1a6a";
+import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=d38c1a6a";
+import { openSupport, trackErrors } from "./support.js?v=d38c1a6a";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=d38c1a6a";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=4f2d8248";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=d38c1a6a";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=4f2d8248";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=4f2d8248";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=4f2d8248";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=4f2d8248";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=4f2d8248";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=d38c1a6a";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=d38c1a6a";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=d38c1a6a";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=d38c1a6a";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=d38c1a6a";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=4f2d8248";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=4f2d8248";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=d38c1a6a";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=d38c1a6a";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=4f2d8248";
-import { surveyLink, extractCodes } from "./survey.js?v=4f2d8248";
+         fullBackup } from "./vault.js?v=d38c1a6a";
+import { surveyLink, extractCodes } from "./survey.js?v=d38c1a6a";
 import { DIMENSIONS, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=4f2d8248";
+         readinessLabel, indicatorStatus } from "./readiness.js?v=d38c1a6a";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=4f2d8248";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=d38c1a6a";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=4f2d8248";
-import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=4f2d8248";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=4f2d8248";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=d38c1a6a";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=d38c1a6a";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=d38c1a6a";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -550,8 +550,12 @@ function buildNav() {
   $("navMenu").innerHTML = items.map((n) =>
     '<li><a data-nav="' + n.id + '"><span class="ic">' + n.ic + "</span>" + esc(n.label) +
     (n.count ? '<span class="ct">' + n.count() + "</span>" : "") + "</a></li>").join("");
+  /* ⚠️ كل مغادرة تمرّ بالحارس. كان التنقّل يفتح الشاشة الجديدة فورًا فيضيع
+     ما كُتب بلا أثر — وbeforeunload لا يُطلَق على تنقّلٍ داخليّ إطلاقًا. */
   $("navMenu").querySelectorAll("a").forEach((a) => {
-    a.onclick = () => { drawer(false); items.find((n) => n.id === a.dataset.nav).go(); };
+    a.onclick = () => guardLeave(() => {
+      drawer(false); items.find((n) => n.id === a.dataset.nav).go();
+    });
   });
 }
 
@@ -609,7 +613,7 @@ function goDash() {
         esc(r.nameAr) + '</td><td style="width:110px"><span class="tag gray">' +
         esc(freqAr(r.fillFrequency)) + "</span></td></tr>").join("") + "</tbody></table>";
   $("dashSoon").querySelectorAll("tr.click").forEach((tr) => {
-    tr.onclick = () => goRecord(Number(tr.dataset.num));
+    tr.onclick = () => guardLeave(() => goRecord(Number(tr.dataset.num)));
   });
 }
 
@@ -661,7 +665,7 @@ function drawRecords() {
     $("myRecords").innerHTML = rows.length ? drawTree(rows)
       : '<div class="warn" style="margin:0">لا سجلات مطابقة.</div>';
     $("myRecords").querySelectorAll("tr.click").forEach((tr) => {
-      tr.onclick = () => goRecord(Number(tr.dataset.num));
+      tr.onclick = () => guardLeave(() => goRecord(Number(tr.dataset.num)));
     });
     return;
   }
@@ -676,7 +680,7 @@ function drawRecords() {
         '<td>' + (r._shared ? '<span class="tag">مشاركة</span>' : "") + "</td></tr>").join("") +
       "</tbody></table>";
   $("myRecords").querySelectorAll("tr.click").forEach((tr) => {
-    tr.onclick = () => goRecord(Number(tr.dataset.num));
+    tr.onclick = () => guardLeave(() => goRecord(Number(tr.dataset.num)));
   });
 }
 $("recView").onclick = () => {
@@ -755,7 +759,7 @@ async function openTools() {
           '<b style="min-width:46px">' + pct.toFixed(0) + "%</b>") + "</button>");
   }
   $("toolsList").innerHTML = rows.join("") || '<div class="warn">لا أدوات في نطاق وظيفتك.</div>';
-  $("toolsList").querySelectorAll("button").forEach((b) => { b.onclick = () => goTool(b.dataset.key); });
+  $("toolsList").querySelectorAll("button").forEach((b) => { b.onclick = () => guardLeave(() => goTool(b.dataset.key)); });
 
   const roll = rollupByIndicator(summaries);
   $("etecRollup").innerHTML = roll.length === 0
@@ -973,7 +977,7 @@ $("vaultPrintExport").onclick = async () => {
   if (store?.readOnly) { st.textContent = "⚠️ وضع القراءة — لا يمكن الكتابة في المجلد"; return; }
   st.textContent = "جارٍ التصدير…";
   try {
-    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=4f2d8248");
+    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=d38c1a6a");
     const r = await exportPrintable(store, bundle, me,
       (n, name) => { st.textContent = "صُدِّر " + n + " سجلًّا… (" + name + ")"; });
     st.textContent = r.records === 0
@@ -1102,24 +1106,22 @@ function goAlert(a) {
   else goDash();
 }
 
-$("homeBtn").onclick = () => (me ? goDash() : renderPeople());
+$("homeBtn").onclick = () => guardLeave(() => (me ? goDash() : renderPeople()));
 
 /* ⚠️ «خروج» هنا ليس تسجيل خروج من حساب — لا حسابات أصلًا. هو إنهاء الجلسة:
    يُنسى الدور المحفوظ فلا يعود التحديث بك إلى شاشة غيرك، وتُعاد شاشة «من
    أنت». ولا يُفصل مجلد المدرسة — فصلُه في «ليس هذا مجلدي» وحده، وخلطُهما
    يجعل كل خروجٍ يطلب اختيار المجلد من جديد. ويُسأل قبله إن كانت هناك مسوّدة
    لم تُحفظ، فالخروج بلا سؤال يُضيّع عملًا. */
-$("logoutBtn").onclick = () => {
-  const drafts = pendingDrafts();
-  if (drafts && drafts.length &&
-      !confirm("لديك " + drafts.length + " مسوّدة لم تُحفظ. الخروج الآن يتركها بلا حفظ — أتخرج؟")) return;
+$("logoutBtn").onclick = () => guardLeave(() => {
+  flushDraft();
   clearSession();
   me = null; S.me = null;
   renderPeople();
-};
+}, "ما تكتبه الآن");
 $("dashWho").onclick = () => renderPeople();
 $("printPage").onclick = printCurrent;
-$("switchUser").onclick = () => renderPeople();
+$("switchUser").onclick = () => guardLeave(() => renderPeople());
 
 initPrefs();
 bindToolScreen(toolCtx());   // أزرار شاشة الأداة تُربَط مرّة واحدة
