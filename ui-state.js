@@ -36,10 +36,13 @@ export function only(id) {
   if (typeof S.onScreen === "function") { try { S.onScreen(id); } catch { /* لا يُعطّل التنقّل */ } }
   const ready = !!(S.store && S.bundle && S.me);
   show("printPage", ready && !!SCREEN_TITLE[id]);
-  show("homeBtn", ready && id !== "screenDash");
-  /* «خروج» يظهر متى وُجد مستخدم — بما في ذلك شاشة اللوحة نفسها، فهي أوّل
-     موضعٍ يريد المستخدم الخروج منه. ويختفي في «من أنت» لأنه لا جلسة بعد. */
-  show("logoutBtn", !!(S.store && S.bundle && S.me) && id !== "screenWho");
+  /* ⚠️ كانا مخفيَّين حتى يدخل المستخدم، فمن وقف على شاشة الاتصال أو اختار
+     مدرسةً خطأً **لم يجد مخرجًا في الهيدر إطلاقًا**. الآن يظهران من بعد
+     البوّابة: «الرئيسية» تعيد إلى اللوحة إن دخل، وإلى اختيار المدرسة إن لم
+     يدخل؛ و«خروج» يفتح قائمةً بمخرجَين صريحين. ويختفيان في البوّابة نفسها
+     لأنها أوّل الطريق فلا شيء وراءها. */
+  show("homeBtn", id !== "screenGate" && !(ready && id === "screenDash"));
+  show("logoutBtn", id !== "screenGate");
   show("navToggle", ready);
 }
 

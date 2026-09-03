@@ -747,3 +747,24 @@ html[data-theme="dark"] .dev.no{background:#2b1a18;border-color:#4a2b26}
   .gs-o { padding: 10px 12px; flex: 1 1 42% }
   .gfound { flex-direction: column; gap: 9px }
 }
+
+/* ── قائمة الخروج ورابط لوحة الإدارة ───────────────────────────── */
+.exit-pop{position:absolute;inset-block-start:calc(100% + 8px);inset-inline-end:12px;z-index:30;
+          background:var(--panel);border:1px solid var(--line);border-radius:13px;
+          box-shadow:0 12px 30px #0002;min-width:min(330px,92vw);overflow:hidden}
+.exit-pop .ah{padding:12px 15px;border-bottom:1px solid var(--line);font-weight:800;
+              background:var(--brand-soft,#e9f3f0);color:var(--brand-ink,#0d443a)}
+.exit-pop .ah .sub{display:block;font-weight:500;font-size:12px;opacity:.75;margin-top:2px}
+.exit-i{display:block;width:100%;text-align:start;background:none;border:0;cursor:pointer;
+        font:inherit;padding:12px 15px;border-bottom:1px solid var(--line);min-height:52px}
+.exit-i:last-child{border-bottom:0}
+.exit-i:hover{background:var(--brand-soft,#e9f3f0)}
+.exit-i b{display:block;font-size:14px;color:var(--ink)}
+.exit-i span{display:block;font-size:12px;color:var(--ink-2);margin-top:2px;line-height:1.7}
+
+.gate-admin{margin-top:26px;padding-top:16px;border-top:1px dashed var(--line);
+            display:flex;flex-direction:column;gap:3px}
+.gate-admin a{font-weight:700;color:var(--brand-2);text-decoration:none;font-size:14px;
+              display:inline-block;padding:6px 0;min-height:38px}
+.gate-admin a:hover{text-decoration:underline}
+.gate-admin span{font-size:12.5px;color:var(--ink-2)}
