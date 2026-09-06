@@ -49,8 +49,11 @@ export function dimensionBasis({ records = [], tools = [], indicators = [] }) {
 const pct = (a, b) => (b > 0 ? Math.min(100, (a / b) * 100) : 0);
 
 /** يعدّ الشواهد المرفوعة عبر مجلدات التنفيذيين */
+/* ⚠️ كان يعدّ الإجمالي فقط. والجرد يحتاج **الشواهد لكل سجلّ** كي يُنسب
+   إلى مؤشره. المشي واحدٌ فلا كلفة إضافية — يُملأ عدّادان بدل واحد. */
 export async function countEvidence(store) {
   let files = 0, folders = 0;
+  const byRecord = {};
   let people = [];
   try { people = await store.list("مخرجات"); } catch { return { files, folders }; }
   for (const p of people) {
@@ -65,13 +68,14 @@ export async function countEvidence(store) {
         for (const e of entries) {
           if (e.kind === "directory") {
             const inner = await store.list("مخرجات/" + p.name + "/شواهد/" + r.name + "/" + e.name);
-            files += inner.filter((x) => x.kind !== "directory").length;
-          } else files++;
+            const n = inner.filter((x) => x.kind !== "directory").length;
+            files += n; byRecord[r.name] = (byRecord[r.name] ?? 0) + n;
+          } else { files++; byRecord[r.name] = (byRecord[r.name] ?? 0) + 1; }
         }
       } catch { /* فارغ */ }
     }
   }
-  return { files, folders };
+  return { files, folders, byRecord };
 }
 
 /** كم تنفيذيًا حفظ خطته التنفيذية */
@@ -152,16 +156,27 @@ export function readinessLabel(score) {
 }
 
 /** حالة كل مؤشر: الخارجي · الذاتي · سجلاته · شواهده */
-export function indicatorStatus({ improvement, records, recordCounts, selfByCode, verifyTool }) {
+/* ⚠️ مهمّة منسق الجودة نصُّها: «جردُ تراكم الشواهد على مؤشرات الاعتماد
+   وإبلاغ مدير المدرسة بما لم يُرفع له شاهد» — ثماني مرّات في العام. ولم تكن
+   الشاشة تعرض **شواهد كل مؤشر** أصلًا، بل إجماليًّا فقط. فيُضاف العدّ لكل
+   مؤشر، ويُرتَّب الأنقصُ أوّلًا لا الأدنى درجةً: من يجرد يريد ما ينقصه. */
+export function indicatorStatus({ improvement, records, recordCounts, selfByCode, verifyTool,
+                                  evidenceByRecord }) {
   const verifyCodes = new Set((verifyTool?.domains || []).map((d) => d.key));
   return (improvement?.indicatorScores || []).map((x) => {
     const recs = (records || []).filter((r) => (r.etecIndicators || []).includes(x.code));
     const filled = recs.filter((r) => (recordCounts?.[r.number] ?? 0) > 0).length;
+    const evidence = recs.reduce((a, r) => a + (evidenceByRecord?.[r.number] ?? 0), 0);
     const self = selfByCode?.get(x.code) || null;
     return {
       code: x.code, textAr: x.textAr, isWeak: x.isWeak, external: x.externalScore,
-      self: self ? self.pct : null, records: recs.length, filled,
+      self: self ? self.pct : null, records: recs.length, filled, evidence,
       hasVerify: verifyCodes.has(x.code),
+      /* بلا شاهدٍ أوّلًا، ثم بلا سجلٍّ مُعبَّأ، ثم دون المستوى */
+      gap: (evidence === 0 ? 4 : 0) + (filled === 0 ? 2 : 0) + (x.isWeak ? 1 : 0),
     };
-  }).sort((a, b) => (a.external ?? 999) - (b.external ?? 999));
+  }).sort((a, b) => b.gap - a.gap || (a.external ?? 999) - (b.external ?? 999));
 }
+
+/** المؤشرات التي لا شاهد لها — قائمة الجرد الدوري */
+export const evidenceGaps = (status) => status.filter((x) => x.evidence === 0);

@@ -774,3 +774,46 @@ html[data-theme="dark"] .dev.no{background:#2b1a18;border-color:#4a2b26}
   border:0;border-top:1px solid var(--line);cursor:pointer;font:inherit;font-size:13px;
   font-weight:700;color:var(--brand);padding:12px;min-height:46px}
 .alert-more:hover{background:var(--line)}
+
+/* ── شاشة خطط مدرستي ──────────────────────────────────────────── */
+.plans-tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);margin-bottom:12px}
+.plans-tab{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
+  padding:10px 15px;font:inherit;font-weight:700;color:var(--ink-2);cursor:pointer;min-height:44px}
+.plans-tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+.plans-tab .n{background:var(--brand-soft,#e9f3f0);border-radius:20px;padding:1px 8px;font-size:12px;margin-inline-start:6px}
+.plan-group{border:1px solid var(--line);border-radius:11px;margin-bottom:10px;background:var(--panel)}
+.plan-group>summary{cursor:pointer;padding:11px 14px;font-weight:700;min-height:44px;display:flex;
+  align-items:center;gap:9px;list-style:none}
+.plan-group>summary::-webkit-details-marker{display:none}
+.plan-group>summary::before{content:"▸";transition:transform .15s;display:inline-block}
+.plan-group[open]>summary::before{transform:rotate(-90deg)}
+.plan-bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.tbl-wrap{overflow-x:auto;padding:0 10px 10px}
+table.plan-t{font-size:12.5px;table-layout:fixed;width:100%}
+table.plan-t td,table.plan-t th{vertical-align:middle;overflow-wrap:break-word}
+.p-cell{min-height:22px;outline:0}
+.p-cell:focus{background:var(--brand-soft,#e9f3f0);border-radius:5px;box-shadow:0 0 0 2px var(--brand)}
+/* ⚠️ مبادرات «تميز معارف» صفٌّ مستقلّ أضافه المستشار — يُميَّز ولا يُخلط */
+tr.exc-row>td:first-child,tr.exc-row>td:nth-child(2){border-inline-start:3px solid var(--gold,#b8860b)}
+tr.exc-row{background:#fffaf0}
+.load-more-row{display:flex;gap:10px;align-items:center;padding:0 14px 12px}
+.swot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:13px}
+.swot-box{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--panel)}
+.swot-box h3{margin:0 0 9px;font-size:15px;display:flex;align-items:center;gap:8px}
+.swot-box ul{margin:0;padding-inline-start:18px}
+.swot-box li{font-size:13px;line-height:1.85;margin-bottom:5px}
+.swot-box.s-strength{border-top:3px solid #1d7a52}
+.swot-box.s-weakness{border-top:3px solid #a32b22}
+.swot-box.s-opportunity{border-top:3px solid #12508a}
+.swot-box.s-threat{border-top:3px solid #a97c1f}
+@media(max-width:640px){table.plan-t{font-size:11.5px}.tbl-wrap{padding:0 6px 8px}}
+
+/* شريط نطاق السجلات — «مخفيّ» يجب أن يُقال صراحةً ولا يُفهَم حذفًا */
+.rec-scope{margin:0 0 12px;font-size:13px;line-height:1.85}
+.rec-scope:empty{display:none}
+
+/* جرد الشواهد الدوري لمنسق الجودة */
+.gap-note{background:#fdf3e0;border:1px solid #e8d5a3;border-radius:11px;padding:12px 15px;
+  margin:0 0 12px;font-size:13.5px;line-height:1.9;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ok-note{background:#e6f5ee;border:1px solid #b7ddc9;border-radius:11px;padding:11px 15px;
+  margin:0 0 12px;font-size:13.5px;color:#1d7a52}

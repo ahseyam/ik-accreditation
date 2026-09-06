@@ -15,28 +15,14 @@
  * ⚠️ **حدٌّ يجب أن يُقال للمستخدم**: OneDrive على الويب **لا يعرض HTML** بل
  * ينزّله. فالطباعة تكون من المجلد المُزامَن على الحاسب. مكتوبٌ في الفهرس نفسه.
  */
-import { buildPrintDoc, printCss } from "./print.js?v=461ca160";
-import { roleAr } from "./app.js?v=461ca160";
-import { esc } from "./ui-state.js?v=461ca160";
+import { buildPrintDoc, printCss } from "./print.js?v=ea2acd0b";
+import { roleAr } from "./app.js?v=ea2acd0b";
+import { esc } from "./ui-state.js?v=ea2acd0b";
+import { standaloneAssets, page, wrap } from "./standalone.js?v=ea2acd0b";
 
 export const OUT_DIR = "للطباعة";
 
-const b64 = (buf) => {
-  const b = new Uint8Array(buf); let s = "";
-  // ⚠️ String.fromCharCode(...b) يتجاوز حدّ الوسائط على الملفات الكبيرة فيرمي
-  for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode(...b.subarray(i, i + 8192));
-  return btoa(s);
-};
-
-async function asset(store, rel, mime) {
-  const buf = await store.readBinary(rel);
-  return "data:" + mime + ";base64," + b64(buf);
-}
-async function shellAsset(url, mime) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(url);
-  return "data:" + mime + ";base64," + b64(await r.arrayBuffer());
-}
+/* اللبِنات المشتركة في standalone.js — مصدرٌ واحد للطباعة والتنزيل */
 
 /** يمشي «مخرجات/<الدور>/سجلات/<الرقم>/*.json» ويجمعها بالرقم */
 async function collectEntries(store) {
@@ -66,42 +52,12 @@ async function collectEntries(store) {
   return byRecord;
 }
 
-function page(inner, first, geom) {
-  return '<table class="p-frame"' + (first ? "" : ' style="break-before:page"') + ">" +
-    '<thead><tr><td class="p-lh-head"></td></tr></thead>' +
-    '<tbody><tr><td class="p-body">' + inner + "</td></tr></tbody>" +
-    '<tfoot><tr><td class="p-lh-foot"></td></tr></tfoot></table>';
-}
-
-function wrap(title, css, body, fonts) {
-  return "<!doctype html>\n<html dir=\"rtl\" lang=\"ar\"><head><meta charset=\"utf-8\">" +
-    "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
-    "<title>" + esc(title) + "</title><style>" + fonts + "\n" + css +
-    "\nbody{margin:0;background:#fff}" +
-    "\n.print-root{display:block}" +
-    "\n@media screen{body{background:#e9eeee;padding:10px 0}" +
-    "table.p-frame{width:210mm;margin:0 auto 14px;background:#fff;box-shadow:0 2px 12px #0002}}" +
-    "</style></head><body>" + body + "</body></html>";
-}
-
 /**
  * يكتب `للطباعة/` داخل مجلد المدرسة.
  * @returns {{files:number, entries:number, records:number, skipped:number}}
  */
 export async function exportPrintable(store, bundle, me, onProgress) {
-  const [sheet, header, footer, geom, reg, bold] = await Promise.all([
-    asset(store, "كليشة/ورقة.jpg", "image/jpeg"),
-    asset(store, "كليشة/ترويسة.png", "image/png"),
-    asset(store, "كليشة/تذييل.png", "image/png"),
-    store.readJson("كليشة/قياسات.json"),
-    shellAsset("AlJazeera-Regular.v2.woff2", "font/woff2").catch(() => null),
-    shellAsset("AlJazeera-Bold.v2.woff2", "font/woff2").catch(() => null),
-  ]);
-  /* ⚠️ اسم عائلة الخطّ يجب أن يطابق ما تستعمله أنماط الطباعة حرفًا بحرف،
-     وإلّا سقط المطبوع إلى خطّ النظام بلا أي رسالة. */
-  const fonts = [reg && '@font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;src:url("' + reg + '") format("woff2")}',
-                 bold && '@font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;src:url("' + bold + '") format("woff2")}']
-                 .filter(Boolean).join("\n");
+  const { sheet, header, footer, geom, fonts } = await standaloneAssets(store);
   const css = printCss({ sheet, header, footer, geom }, { standalone: true });
 
   const byRecord = await collectEntries(store);

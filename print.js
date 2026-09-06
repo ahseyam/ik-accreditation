@@ -1,4 +1,5 @@
-import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=461ca160";
+import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=ea2acd0b";
+import { standaloneAssets, page, wrap } from "./standalone.js?v=ea2acd0b";
 /* طبقة الطباعة — كليشة ابن خلدون تتكرّر على كل ورقة.
    التقنية مقيسة سلفًا في محرّر الخطط القائم بذاته، ولا تُعاد من الصفر:
      ① @page margin:0  ⇒ الورقة 297mm بالضبط
@@ -165,7 +166,8 @@ export async function preparePrint(template, state, ctx) {
 
   const style = document.createElement("style");
   style.id = "printStyle";
-  style.textContent = printCss({ sheet, header, footer, geom });
+  style.textContent = printCss({ sheet, header, footer, geom },
+    { orientation: ctx.orientation || "portrait" });
   document.head.append(style);
 
   /* ⚠️ **تحميل مسبق إلزامي**: الصور الثلاث مذكورة داخل «@media print» وحدها،
@@ -201,13 +203,20 @@ export async function printRecord(template, state, ctx) {
    والتحميل المسبق للصور والخطّ، والجداول ثابتة التخطيط كي لا تفيض على الكليشة.
    فالتصدير يستدعي `printCss` نفسها بـ`standalone` فتُرفع عنها لفّة @media
    وحدها — لا سطر نمطٍ يُنسخ. */
-export function printCss(o, { standalone = false } = {}) {
+/* ⚠️ الاتجاه كان مكتوبًا `portrait` في موضعين، و`كليشة/قياسات.json` يحمل حقل
+   `orient` **غير مستعمَل** — أي أن التصميم توقّع الحاجة ولم يُنفّذها. صار
+   يُمرَّر، والافتراضي `portrait` فلا يتبدّل شيءٌ لأيٍّ من نداءاته القائمة.
+   ⚠️ وتبليط الورقة يتبع الاتجاه: طول الصفحة بعد الدوران هو عرضها قبله،
+   ولولا ذلك لتكرّرت الكليشة في غير موضعها. */
+export function printCss(o, { standalone = false, orientation = "portrait" } = {}) {
+  const land = orientation === "landscape";
+  const tileH = land ? o.geom.pageWmm : o.geom.pageHmm;
   const headH = o.geom.headerCm + "cm";
   const footH = o.geom.footerCm + "cm";
   return [
     standalone ? "" : ".print-root{display:none}",
-    standalone ? "@page{size:A4 portrait;margin:0}" : "@media print{",
-    "  @page{size:A4 portrait;margin:0}",
+    standalone ? "@page{size:A4 " + orientation + ";margin:0}" : "@media print{",
+    "  @page{size:A4 " + orientation + ";margin:0}",
     /* ⚠️ يجب أن يطابق هذا المُحدِّد بنية الصفحة الحالية. بعد إعادة البناء صار
        المتن داخل «.app > main > .wrap» فلم يعد «body>.wrap» يطابق شيئًا،
        فطُبعت الواجهة كلها **فوق الكليشة**. قِيس: تطابق الترويسة 44% بدل 84%. */
@@ -219,7 +228,7 @@ export function printCss(o, { standalone = false } = {}) {
        والتبليط كل 297mm يطابق حافّة كل ورقة لأن «@page margin:0» يجعلها 297mm. */
     '  html,body{background-image:url("' + o.sheet + '")!important;',
     "       background-repeat:repeat-y!important;background-position:top center!important;",
-    "       background-size:100% " + o.geom.pageHmm + "mm!important;",
+    "       background-size:100% " + tileH + "mm!important;",
     "       background-color:transparent!important;margin:0;",
     "       -webkit-print-color-adjust:exact;print-color-adjust:exact}",
     "  .print-root{display:block}",
@@ -325,4 +334,26 @@ export function snapshotForPrint(section, title, subtitle) {
   body.querySelectorAll(".hidden").forEach((n) => n.remove());
   doc.append(body);
   return doc;
+}
+
+
+/** ينزّل مستندًا قائمًا بذاته بالكليشة — نفس عقدة الطباعة لا نسخةً منها.
+ *
+ * ⚠️ يُبنى من `docNode` الذي بُني للطباعة **لا من الشاشة الحيّة**: شاشة الخطط
+ * ترسم صفوفها تدريجيًّا لأجل الأداء، فنسخُ الـDOM يُخرج خطّةً ناقصةً بصمت.
+ */
+export async function downloadStandaloneDocument(docNode, ctx, filename) {
+  const { sheet, header, footer, geom, fonts } = await standaloneAssets(ctx.store);
+  const orientation = ctx.orientation || "portrait";
+  const css = printCss({ sheet, header, footer, geom }, { standalone: true, orientation });
+  const html = wrap(filename, css, page(docNode.outerHTML, true, geom), fonts,
+    { widthMm: orientation === "landscape" ? geom.pageHmm : geom.pageWmm });
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = String(filename).replace(/[\\/:*?"<>|]/g, "-").replace(/\.html$/, "") + ".html";
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  return { bytes: html.length };
 }

@@ -61,3 +61,8 @@ export const IMPROVEMENT_ROLES = new Set([
 export function canSeeImprovement(role) {
   return IMPROVEMENT_ROLES.has(role);
 }
+
+/** ⚠️ خطط المدرسة **وثيقةٌ واحدة** لا ملفّ شخص: لو حرّرها كلٌّ من موقعه
+    لتعارضت الكتابة على ملفٍّ واحد ولضاع عمل بعضهم. التحرير للمدير ومنسق
+    الجودة، والعرض والطباعة والتنزيل للجميع — والقراءة لا تُمنع أبدًا. */
+export const canEditPlans = (role) => OVERSEER_ROLES.has(role);

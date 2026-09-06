@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <title>الاعتماد الخارجي — مدارس ابن خلدون</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=461ca160">
+<link rel="stylesheet" href="style.css?v=ea2acd0b">
 </head>
 <body>
 <div class="app">
@@ -163,6 +163,7 @@
             <option value="PER_EVENT">عند كل حدث</option><option value="AS_NEEDED">عند الحاجة</option>
           </select>
         </div>
+        <div class="rec-scope" id="recScope"></div>
         <div class="scroll" id="myRecords"></div>
       </section>
 
@@ -242,6 +243,7 @@
           <div class="scroll" id="readyDims"></div></div>
         <div class="card"><h2>حالة المؤشرات — ما يفتحه الزائر</h2>
           <div class="muted" style="margin-bottom:11px">مرتّبة من الأدنى درجةً في التقويم الخارجي.</div>
+          <div id="readyGap"></div>
           <div class="scroll" id="readyInd"></div></div>
       </section>
 
@@ -308,10 +310,18 @@
       </section>
 
       <section id="screenPlans" class="hidden">
-        <h1>الخطط والنتائج</h1>
-        <p class="sub">الخطة التشغيلية للمدرسة وخطتك التنفيذية — نسخ PDF معتمدة.</p>
-        <div class="card" id="myPlans"></div>
-        <div class="card"><h2>نتائج المدرسة</h2><div id="myResults"></div></div>
+        <div class="rowhead">
+          <div class="sp"><h1>خطط مدرستي</h1>
+            <div class="muted">التشغيلية والتنفيذية وتحليل سوات — من بيانات مدرستك، لا ملفًّا جاهزًا.</div></div>
+          <input class="f-in" id="plansSearch" placeholder="ابحث في الخطة…" autocomplete="off" style="max-width:230px">
+          <button class="b-ghost b-sm" id="plansPrint">🖨️ طباعة</button>
+          <button class="b-ghost b-sm" id="plansDownload">⬇️ تنزيل نسخة</button>
+          <button class="b-main b-sm hidden" id="plansSave">حفظ</button>
+        </div>
+        <div class="plans-tabs" id="plansTabs"></div>
+        <div class="muted" id="plansStat" style="margin:6px 0 10px"></div>
+        <div id="plansBody"></div>
+        <div class="card" style="margin-top:22px"><h2>نتائج المدرسة</h2><div id="myResults"></div></div>
       </section>
 
     </div>
@@ -321,48 +331,49 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=461ca160";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=461ca160";
-import { renderGuide } from "./guide.js?v=461ca160";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=461ca160";
-import { setupMissing, editPerson } from "./roster-edit.js?v=461ca160";
-import { vaultBridge } from "./vault-bridge.js?v=461ca160";
-import { renderPublish } from "./publish.js?v=461ca160";
-import { globalSearch } from "./search.js?v=461ca160";
-import { renderConnect } from "./connect.js?v=461ca160";
-import { openImprovement } from "./screen-improve.js?v=461ca160";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=461ca160";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=461ca160";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=461ca160";
-import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=461ca160";
-import { openSupport, trackErrors } from "./support.js?v=461ca160";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=461ca160";
+import { FolderStore } from "./storage.js?v=ea2acd0b";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=ea2acd0b";
+import { renderGuide } from "./guide.js?v=ea2acd0b";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=ea2acd0b";
+import { setupMissing, editPerson } from "./roster-edit.js?v=ea2acd0b";
+import { vaultBridge } from "./vault-bridge.js?v=ea2acd0b";
+import { renderPublish } from "./publish.js?v=ea2acd0b";
+import { globalSearch } from "./search.js?v=ea2acd0b";
+import { renderConnect } from "./connect.js?v=ea2acd0b";
+import { openImprovement } from "./screen-improve.js?v=ea2acd0b";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=ea2acd0b";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=ea2acd0b";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=ea2acd0b";
+import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=ea2acd0b";
+import { openSupport, trackErrors } from "./support.js?v=ea2acd0b";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=ea2acd0b";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=461ca160";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=ea2acd0b";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=461ca160";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=461ca160";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=461ca160";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=461ca160";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=461ca160";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=ea2acd0b";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=ea2acd0b";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=ea2acd0b";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=ea2acd0b";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=ea2acd0b";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=461ca160";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=461ca160";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=ea2acd0b";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=ea2acd0b";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=461ca160";
-import { surveyLink, extractCodes } from "./survey.js?v=461ca160";
+         fullBackup } from "./vault.js?v=ea2acd0b";
+import { surveyLink, extractCodes } from "./survey.js?v=ea2acd0b";
 import { DIMENSIONS, dimensionBasis, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus } from "./readiness.js?v=461ca160";
+         readinessLabel, indicatorStatus, evidenceGaps } from "./readiness.js?v=ea2acd0b";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=461ca160";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=ea2acd0b";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=461ca160";
-import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=461ca160";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=461ca160";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=ea2acd0b";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=ea2acd0b";
+import { goPlansScreen, bindPlansScreen, printPlans, downloadPlans, searchPlans, saveActive as savePlans } from "./screen-plans.js?v=ea2acd0b";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=ea2acd0b";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -539,7 +550,8 @@ async function pick(person) {
 const NAV = [
   { id: "guide", ic: "❓", label: "كيف تعمل على الموقع", go: () => goGuide() },
   { id: "dash", ic: "▣", label: "لوحتي", go: () => goDash() },
-  { id: "records", ic: "▤", label: "سجلاتي", go: () => goRecords(), count: () => myRecords.length },
+  { id: "records", ic: "▤", label: "سجلاتي", go: () => goRecords(),
+    count: () => myRecords.filter(inScope).length },
   /* ⚠️ خمسة أدوار كانت ترى هذا البند وشاشتُه **فارغة أبدًا** — بندٌ يفتح على
      لا شيء في كل مرّة يجعل المستخدم يظنّ العطل في الموقع أو في نفسه. */
   { id: "tools", ic: "◎", label: "أدوات التقويم", go: () => openTools(),
@@ -630,9 +642,10 @@ function goDash() {
 /* ── سجلاتي ── */
 function goRecords() {
   only("screenRecords"); markNav("records");
+  const core = myRecords.filter(inScope);
   $("recsSub").textContent =
-    myRecords.filter((r) => !r._shared).length + " سجلًا أنت مسؤول عنه · " +
-    myRecords.filter((r) => r._shared).length + " تشارك في إدخالها · الترقيم بترتيب صفحتك";
+    core.filter((r) => !r._shared).length + " سجلًا أنت مسؤول عنه · " +
+    core.filter((r) => r._shared).length + " تشارك في إدخالها · الترقيم بترتيب صفحتك";
   drawRecords();
 }
 /* العرض الشجري: الحاويات آباء وما تحتها أبناء — 40 حاوية و161 سجلًا لها أب */
@@ -666,11 +679,37 @@ function drawTree(rows) {
   return parts.join("");
 }
 
+/* ⚠️ **إخفاءٌ لا حذف**: 212 قالبًا لكل مدرسة، و**64 أساسيًّا وحدها** تدخل في
+   حساب الجاهزية (بُعد التعبئة، وزنه 30٪). فعرضُ 148 قالبًا لا أثر لها يُغرق
+   التنفيذي ويجعله يظنّ المطلوب منه ثلاثة أضعافه. تُخفى افتراضيًّا خلف زرّ
+   صريح، ولا يُحذف قالبٌ واحد، ولا تنكسر تغطية الـ47 مؤشرًا. */
+let showAllRecords = false;
+/* ⚠️ **«الأساسية وحدها» كانت تُفرغ الشاشة على أربعة أدوار**: منسق الأمن
+   والسلامة ومنسق الموهوبين والمراقب ومشرف المادة **بلا سجلٍّ أساسيٍّ واحد**.
+   وشاشةٌ فارغة أسوأ من شاشةٍ مزدحمة — قِيس قبل النشر لا بعده.
+   فالنطاق: أساسيٌّ **أو** سجلٌّ أنت مسؤوله الأول ويحمل مؤشر اعتماد. وهذا
+   تعريف «ما يلزم الاعتماد» بعينه، لا رقمٌ اخترتُه. */
+const inScope = (r) => r.isCoreRecord || (!r._shared && (r.etecIndicators || []).length > 0);
 function drawRecords() {
   const q = ($("recSearch").value || "").trim();
   const f = $("recFilter").value;
-  const rows = myRecords.filter((r) =>
+  const base = showAllRecords ? myRecords : myRecords.filter(inScope);
+  const hidden = myRecords.length - myRecords.filter(inScope).length;
+  const rows = base.filter((r) =>
     (!q || r.nameAr.includes(q)) && (!f || r.fillFrequency === f));
+  const sc = $("recScope");
+  if (sc) {
+    sc.innerHTML = hidden === 0 ? "" :
+      (showAllRecords
+        ? '<span class="muted">تُعرض كل سجلاتك (' + myRecords.length + ").</span> " +
+          '<button class="lnk-b" id="recScopeBtn">الاقتصار على سجلات الاعتماد</button>'
+        : '<span class="muted">تُعرض <b>سجلات الاعتماد المطلوبة منك</b> — الأساسية، وما أنت ' +
+          "مسؤوله الأول ويحمل مؤشر اعتماد. و<b>" + hidden + "</b> سجلًّا إضافيًّا " +
+          "<b>مخفيّ ولم يُحذف</b>.</span> " +
+          '<button class="lnk-b" id="recScopeBtn">عرض كل السجلات</button>');
+    const b2 = $("recScopeBtn");
+    if (b2) b2.onclick = () => { showAllRecords = !showAllRecords; goRecords(); };
+  }
   if ($("recView").dataset.mode === "tree") {
     $("myRecords").innerHTML = rows.length ? drawTree(rows)
       : '<div class="warn" style="margin:0">لا سجلات مطابقة.</div>';
@@ -706,31 +745,15 @@ $("recFilter").onchange = drawRecords;
 $("recBack").onclick = goRecords;
 
 /* ── الخطط المرجعية ── */
+/* شاشة الخطط انتقلت إلى screen-plans.js — تُبنى من بيانات المدرسة لا من
+   ملفّات PDF جاهزة. وبناء «نتائج المدرسة» بقي هنا كما كان. */
 async function goPlans() {
-  only("screenPlans"); markNav("plans");
-  const plans = bundle.manifest.referencePlans || [];
-  const mine = planFileFor(plans, me.role), op = operationalPlanFile(plans);
-  const link = async (file, label) => {
-    const url = await store.fileUrl("الخطط المرجعية/" + file);
-    return '<div style="margin-bottom:11px">📄 <a href="' + url + '" target="_blank">' + esc(label) + "</a></div>";
-  };
-  const parts = [];
-  /* ⚠️ الخطط PDF ثقيلة (10 ملفات × ~6MB لكل مدرسة، و85% منها مكرّر بين
-     مدارس المرحلة الواحدة). حين تُستبعد من الحزمة لا يُقال «لا توجد» —
-     فذلك يُقرأ عطلًا — بل يُشرح السبب وأين تُطلب. */
-  if (!plans.length) {
-    parts.push('<div class="note">الخطط المعتمدة <b>ليست داخل هذا المجلد</b>: ملفاتها ثقيلة ' +
-      "ومكرّرة بين مدارس المرحلة الواحدة، فاستُبعدت لتخفيف المزامنة. " +
-      "اطلبها من مستشار الاعتماد وقتما احتجتها — ولا يتوقّف عليها شيء في المنظومة: " +
-      "السجلات والشواهد والأدوات والخطة التحسينية تعمل كاملةً بدونها.</div>");
-  } else {
-    parts.push(op ? await link(op, op.replace(/\.pdf$/i, ""))
-                  : '<div class="warn">لا توجد خطة تشغيلية في الحزمة.</div>');
-    parts.push(mine ? await link(mine, mine.replace(/\.pdf$/i, ""))
-                    : '<div class="warn">لا خطة تنفيذية لدور «' + esc(roleAr(me.role)) + '» — وهذا متوقّع لبعض الأدوار.</div>');
-  }
-  $("myPlans").innerHTML = "<h2>خطتك</h2>" + parts.join("");
+  await goPlansScreen(plansCtx());
+  renderResults();
+}
 
+/* نتائج المدرسة — بقيت كما كانت حرفًا بحرف، ونُقلت من goPlans إلى دالّتها */
+function renderResults() {
   const ev = bundle.results.externalEvaluation, nf = bundle.results.nafis;
   $("myResults").innerHTML = "<table><tbody>" +
     (ev ? "<tr><th>التقويم الخارجي — الكلي</th><td>" + (ev.extOverallScore ?? "—") + "</td></tr>" +
@@ -921,10 +944,21 @@ async function goReady() {
 
   const verifyTool = bundle.tools.tools.find((t) => t.key === "EVIDENCE_VERIFICATION");
   const st = indicatorStatus({ improvement: bundle.improvement, records: bundle.records.records,
-                               recordCounts: counts, selfByCode, verifyTool });
+                               recordCounts: counts, selfByCode, verifyTool,
+                               evidenceByRecord: evidence.byRecord });
+  const gaps = evidenceGaps(st);
+  /* ⚠️ الجرد الدوري لمنسق الجودة: ما لا شاهد له أوّلًا وبرقمٍ صريح، وزرٌّ
+     يطبعه بالكليشة — وهو نصّ مهمّته الثمانية حرفًا بحرف. */
+  $("readyGap").innerHTML = gaps.length === 0
+    ? '<div class="ok-note">✅ كل مؤشرات الاعتماد لها شاهدٌ مرفوع.</div>'
+    : '<div class="gap-note"><b>' + gaps.length + " مؤشرًا من " + st.length +
+      " بلا شاهدٍ مرفوع.</b> هذا هو جرد منسق الجودة الدوري — الأنقص أوّلًا في الجدول." +
+      ' <button class="b-ghost b-sm" id="gapPrint">🖨️ طباعة تقرير الجرد</button></div>';
+  const gp = $("gapPrint");
+  if (gp) gp.onclick = () => printGapReport(gaps, st.length);
   $("readyInd").innerHTML =
     "<table><thead><tr><th>المؤشر</th><th>التقويم الخارجي</th><th>تقويمنا الذاتي</th>" +
-    "<th>السجلات المُفعَّلة</th><th>دلالات التحقق</th></tr></thead><tbody>" +
+    "<th>السجلات المُفعَّلة</th><th>الشواهد</th><th>دلالات التحقق</th></tr></thead><tbody>" +
     st.map((x) => "<tr" + (x.isWeak ? ' class="weak"' : "") + "><td><b>" + esc(x.code) + "</b>" +
       '<div class="muted">' + esc(shortLabel(x.textAr)) + "</div></td>" +
       "<td>" + (x.external == null ? "—" : x.external.toFixed(1)) +
@@ -932,12 +966,33 @@ async function goReady() {
       "<td>" + (x.self == null ? "—" : x.self.toFixed(0) + "%") + "</td>" +
       "<td>" + (x.records === 0 ? '<span class="muted">لا سجل</span>'
         : x.filled + " من " + x.records + (x.filled === 0 ? " ⚠️" : "")) + "</td>" +
+      "<td>" + (x.evidence === 0 ? '<span class="tag gold">لا شاهد</span>' : x.evidence) + "</td>" +
       "<td>" + (x.hasVerify ? '<span class="tag">متوفرة</span>' : '<span class="muted">لم تُضَف بعد</span>') +
       "</td></tr>").join("") + "</tbody></table>";
+}
+/** تقرير الجرد الدوري — يُطبع بكليشة المدرسة كأي مستند رسمي */
+async function printGapReport(gaps, total) {
+  const d = document.createElement("div");
+  d.className = "p-doc";
+  d.innerHTML = '<div class="p-title"><h1>تقرير جرد شواهد مؤشرات الاعتماد</h1>' +
+    '<div class="p-meta">' + esc(bundle.school.nameAr) + " · العام " +
+    esc(bundle.school.academicYear.greg) + " · " + new Date().toLocaleDateString("ar-SA") +
+    " · أعدّه: " + esc(me.fullName || roleAr(me.role)) + "</div></div>" +
+    "<p>" + gaps.length + " مؤشرًا من " + total + " لم يُرفع له شاهدٌ بعد:</p>" +
+    "<table><thead><tr><th>م</th><th>المؤشر</th><th>نصّه</th><th>سجلاته</th>" +
+    "<th>المُعبَّأ منها</th></tr></thead><tbody>" +
+    gaps.map((x, i) => "<tr><td>" + (i + 1) + "</td><td>" + esc(x.code) + "</td><td>" +
+      esc(x.textAr) + "</td><td>" + x.records + "</td><td>" + x.filled + "</td></tr>").join("") +
+    "</tbody></table>";
+  try {
+    await printDocument(d, { store, school: bundle.school, person: me, roleAr: roleAr(me.role) });
+  } catch (e) { setStatus("❌ تعذّرت الطباعة: " + e.message); }
 }
 $("readyRefresh").onclick = goReady;
 
 /* شاشة الخطة التنفيذية في screen-exec.js — وهنا سياقها */
+const plansCtx = () => ({ store, bundle, me, roleAr,
+  afterSave: () => { refreshAlerts(); packBar(); } });
 const execCtx = () => ({ store, bundle, me,
   afterSave: () => { refreshAlerts(); packBar(); } });
 const goExecScreen = () => goExec(execCtx());
@@ -996,7 +1051,7 @@ $("vaultPrintExport").onclick = async () => {
   if (store?.readOnly) { st.textContent = "⚠️ وضع القراءة — لا يمكن الكتابة في المجلد"; return; }
   st.textContent = "جارٍ التصدير…";
   try {
-    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=461ca160");
+    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=ea2acd0b");
     const r = await exportPrintable(store, bundle, me,
       (n, name) => { st.textContent = "صُدِّر " + n + " سجلًّا… (" + name + ")"; });
     st.textContent = r.records === 0
@@ -1196,6 +1251,11 @@ initPrefs();
 bindToolScreen(toolCtx());   // أزرار شاشة الأداة تُربَط مرّة واحدة
 bindRecordScreen(recCtx());
 bindExecScreen(execCtx());
+bindPlansScreen(plansCtx());
+$("plansPrint").onclick = printPlans;
+$("plansDownload").onclick = downloadPlans;
+$("plansSave").onclick = savePlans;
+$("plansSearch").oninput = searchPlans;
 guardUnload();   // يسأل قبل مغادرة صفحة فيها عمل غير محفوظ
 trackErrors();   // يلتقط آخر خطأ ليصل مع طلب الدعم
 $("supBtn").onclick = () => openSupport({

@@ -1,4 +1,4 @@
-import { FolderStore, HttpStore, safeName } from "./storage.js?v=461ca160";
+import { FolderStore, HttpStore, safeName } from "./storage.js?v=ea2acd0b";
 
 export const ROLE_AR = {
   PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",
@@ -194,6 +194,53 @@ export async function loadToolResponses(store, key) {
     try { out.push(await store.readJson("تقويم ذاتي/" + key + "/" + f.name)); } catch { /* تالف */ }
   }
   return out;
+}
+
+/* ── طبقة تعديل الخطط: تُكتب في المجلد ولا تمسّ ما ولّدته جدارة ──
+ *
+ * ⚠️ نفس نمط تراكب الروستر بالضبط: المصدر المولَّد يبقى كما هو، والتعديل
+ * طبقةٌ فوقه. فإعادة التصدير من المنصّة لا تمحو ما كتبته المدرسة — وهو
+ * ما يقع حتمًا، فالحزم تُحدَّث كلّما تغيّرت الخطط في جدارة.
+ *
+ * ⚠️ وثيقةُ مدرسةٍ واحدة لا ملفَّ شخص: يحرّرها المدير ومنسق الجودة معًا،
+ * فتُكتب بـ`mutateJson` الذي يتحقّق بعد الكتابة ويعيد التطبيق على الأحدث. */
+export const OPERATIONAL_OVERRIDE = "إدارة/الخطة التشغيلية.json";
+export const EXEC_MASTER_OVERRIDE = "إدارة/الخطة التنفيذية.json";
+
+async function loadOverride(store, path) {
+  try { if (await store.exists(path)) return await store.readJson(path); } catch { /* أول مرة */ }
+  return { edits: {}, history: [] };
+}
+export const loadOperationalOverride = (store) => loadOverride(store, OPERATIONAL_OVERRIDE);
+export const loadExecMasterOverride = (store) => loadOverride(store, EXEC_MASTER_OVERRIDE);
+
+/** يحفظ تعديلات الخطة التشغيلية دفعةً واحدة — نداءٌ واحد لا نداءٌ لكل خلية */
+export async function saveOperationalEdits(store, entries, by) {
+  const now = new Date().toISOString();
+  return store.mutateJson(OPERATIONAL_OVERRIDE, (ov) => {
+    ov.edits = ov.edits || {}; ov.history = ov.history || [];
+    for (const [id, fields] of entries) {
+      ov.edits[id] = { ...(ov.edits[id] || {}), ...fields, updatedAt: now, by };
+      ov.history.push({ at: now, by, id, fields: Object.keys(fields) });
+    }
+    if (ov.history.length > 500) ov.history = ov.history.slice(-500);
+    return ov;
+  }, { edits: {}, history: [] });
+}
+
+/** يحفظ تعديلات الخطة التنفيذية لدورٍ بعينه */
+export async function saveExecMasterEdits(store, role, entries, by) {
+  const now = new Date().toISOString();
+  return store.mutateJson(EXEC_MASTER_OVERRIDE, (ov) => {
+    ov.edits = ov.edits || {}; ov.history = ov.history || [];
+    ov.edits[role] = ov.edits[role] || {};
+    for (const [key, fields] of entries) {
+      ov.edits[role][key] = { ...(ov.edits[role][key] || {}), ...fields, updatedAt: now, by };
+      ov.history.push({ at: now, by, role, key, fields: Object.keys(fields) });
+    }
+    if (ov.history.length > 500) ov.history = ov.history.slice(-500);
+    return ov;
+  }, { edits: {}, history: [] });
 }
 
 /* ── طبقة تعديل المنسوبين: تُكتب في المجلد ولا تمسّ ما ولّدته جدارة ── */
