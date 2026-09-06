@@ -23,7 +23,7 @@ export const SCREENS = ["screenGate", "screenConnect", "screenWho", "screenDash"
 export const SCREEN_TITLE = {
   screenGuide: "كيف تعمل على الموقع", screenDash: "لوحة المستخدم", screenRecords: "سجلاتي", screenRecord: "سجل",
   screenTools: "أدوات دورة التقويم الذاتي", screenTool: "أداة تقويم",
-  screenImp: "الخطة التحسينية", screenPlans: "الخطط المرجعية",
+  screenImp: "الخطة التحسينية", screenPlans: "خطط مدرستي",
   screenWho: "منسوبو المدرسة", screenVault: "مستودع المدرسة",
   screenExec: "خطتي التنفيذية", screenReady: "جاهزية الزيارة",
 };

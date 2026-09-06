@@ -1,10 +1,10 @@
 /* ── شاشة الخطة التحسينية ──
    أُخرجت من index.html: تقرأ ولا تكتب حالة مشتركة، فيصلها ما تقرؤه صراحةً. */
-import { $, esc, only, markNav } from "./ui-state.js?v=ea2acd0b";
+import { $, esc, only, markNav } from "./ui-state.js?v=2766d56f";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS, shortLabel,
-         indicatorTag, TOTAL_WEEKS, WEEKS_PER_SEMESTER } from "./improve.js?v=ea2acd0b";
-import { loadToolResponses } from "./app.js?v=ea2acd0b";
-import { summarize, rollupByIndicator } from "./tools.js?v=ea2acd0b";
+         indicatorTag, TOTAL_WEEKS, WEEKS_PER_SEMESTER } from "./improve.js?v=2766d56f";
+import { loadToolResponses } from "./app.js?v=2766d56f";
+import { summarize, rollupByIndicator } from "./tools.js?v=2766d56f";
 
 export async function openImprovement({ store, bundle, roleAr }) {
   only("screenImp"); markNav("imp");

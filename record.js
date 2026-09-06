@@ -1,6 +1,6 @@
-import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=ea2acd0b";
-import { derive, seedRows, committeePositionAr } from "./autofill.js?v=ea2acd0b";
-import { shrinkImage, kb } from "./shrink.js?v=ea2acd0b";
+import { agendaForMeeting, meetingTitle, meetingScope, committeeMeetings, fmtDate } from "./meetings.js?v=2766d56f";
+import { derive, seedRows, committeePositionAr } from "./autofill.js?v=2766d56f";
+import { shrinkImage, kb } from "./shrink.js?v=2766d56f";
 
 /* محرّك عرض السجلات — يقرأ formFields من الحزمة ويبني نموذج إدخال عاملًا.
    قاعدة صارمة: كل نوع حقل له معالج مُسجَّل هنا. ما لا معالج له يظهر كتحذير

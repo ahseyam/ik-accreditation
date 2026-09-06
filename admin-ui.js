@@ -1,6 +1,6 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=ea2acd0b";
-import { FolderStore } from "./storage.js?v=ea2acd0b";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=2766d56f";
+import { FolderStore } from "./storage.js?v=2766d56f";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
