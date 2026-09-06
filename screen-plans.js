@@ -5,14 +5,15 @@
  * الخطة التشغيلية وتحليل سوات والخطة التنفيذية — تُحرَّر وتُطبع بكليشة
  * المدرسة وتُنزَّل ملفًّا قائمًا بذاته.
  */
-import { $, esc, only, markNav } from "./ui-state.js?v=2766d56f";
-import { canEditPlans } from "./scope.js?v=2766d56f";
+import { $, esc, only, markNav } from "./ui-state.js?v=4a7ac37e";
+import { canEditPlans } from "./scope.js?v=4a7ac37e";
 import { roleAr, loadOperationalOverride, loadExecMasterOverride,
-         saveOperationalEdits, saveExecMasterEdits } from "./app.js?v=2766d56f";
-import { printDocument, downloadStandaloneDocument } from "./print.js?v=2766d56f";
-import { setSaver, markDirty, markSaved, guardLeave } from "./draft.js?v=2766d56f";
+         saveOperationalEdits, saveExecMasterEdits } from "./app.js?v=4a7ac37e";
+import { printDocument, downloadStandaloneDocument } from "./print.js?v=4a7ac37e";
+import { setSaver, markDirty, markSaved, guardLeave } from "./draft.js?v=4a7ac37e";
 import { OPS_COLUMNS, buildOperationalRows, groupOperational, groupExecByWeek,
-         groupSwot, filterRows, SWOT_AR } from "./plans.js?v=2766d56f";
+         groupSwot, filterRows, SWOT_AR, operationalDocHtml, executiveDocHtml,
+         swotDocHtml } from "./plans.js?v=4a7ac37e";
 
 let CTX = null;
 let tab = "ops";                 // ops | exec | swot
@@ -221,35 +222,18 @@ export async function saveActive() {
 /* ── الطباعة والتنزيل: من البيانات كاملةً لا من الشاشة ──
  * ⚠️ الشاشة ترسم 60 صفًّا ثم تنتظر الزرّ. فنسخُ الـDOM يُخرج خطّةً ناقصةً
  * بصمت — والمقيّم لا يعلم أن ما بين يديه ناقص. */
+/* ⚠️ يُبنى من **البيانات كاملةً** لا من الشاشة: الشاشة ترسم 60 صفًّا وتنتظر
+   الزرّ، فنسخُ الـDOM يُخرج خطّةً ناقصةً بصمت. والبناء في `plans.js` ليكون
+   ما يُطبع وما يُنزَّل وما يُولَّد ملفًّا في مجلد المدرسة **شيئًا واحدًا**. */
 function buildDoc() {
   const d = document.createElement("div");
   d.className = "p-doc";
-  const sch = CTX.bundle.school;
-  const h = (t, s) => '<div class="p-title"><h1>' + esc(t) + '</h1><div class="p-meta">' +
-    esc(sch.nameAr) + " · العام " + esc(sch.academicYear.greg) + (s ? " · " + esc(s) : "") + "</div></div>";
-  if (tab === "ops") {
-    d.innerHTML = h("الخطة التشغيلية") + groupOperational(opsRows, CTX.bundle.support?.actions ?? [])
-      .map((g) => "<h2>" + esc(g.label) + "</h2><table><thead><tr>" +
-        OPS_COLUMNS.map((c) => "<th>" + esc(c.t) + "</th>").join("") + "</tr></thead><tbody>" +
-        g.rows.map((r) => "<tr>" + OPS_COLUMNS.map((c) => "<td>" + esc(r[c.k] ?? "") + "</td>").join("") + "</tr>").join("") +
-        "</tbody></table>").join("");
-  } else if (tab === "exec") {
-    const byRole = CTX.bundle.exec?.byRole || {};
-    d.innerHTML = h("الخطة التنفيذية", roleAr(execRole)) +
-      [1, 2].map((sem) => {
-        const w = groupExecByWeek(byRole[execRole] || [], sem, execOv, execRole);
-        if (!w.length) return "";
-        return "<h2>" + (sem === 1 ? "الفصل الأول" : "الفصل الثاني") + "</h2>" +
-          "<table><thead><tr><th>الأسبوع</th><th>م</th><th>المهمّة</th><th>المصدر</th></tr></thead><tbody>" +
-          w.flatMap((x) => x.rows.map((t, i) =>
-            "<tr><td>" + x.week + "</td><td>" + (i + 1) + "</td><td>" + esc(t.text) +
-            "</td><td>" + esc(t.source) + "</td></tr>")).join("") + "</tbody></table>";
-      }).join("");
-  } else {
-    d.innerHTML = h("تحليل سوات") + groupSwot(CTX.bundle.results?.swot)
-      .map((s) => "<h2>" + esc(s.label) + "</h2><ul>" +
-        s.items.map((x) => "<li>" + esc(x.text) + "</li>").join("") + "</ul>").join("");
-  }
+  const school = CTX.bundle.school;
+  d.innerHTML =
+    tab === "ops" ? operationalDocHtml({ actions: CTX.bundle.support?.actions ?? [], ov: opsOv, school })
+  : tab === "exec" ? executiveDocHtml({ tasks: CTX.bundle.exec?.byRole?.[execRole] ?? [],
+                                        ov: execOv, role: execRole, roleArFn: roleAr, school })
+  : swotDocHtml({ swot: CTX.bundle.results?.swot, school });
   return d;
 }
 

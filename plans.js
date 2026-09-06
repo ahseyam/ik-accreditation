@@ -4,7 +4,7 @@
  * و`تنفيذية.byRole`)، وكانتا تُعرضان روابطَ PDF ثابتة لا تُحرَّر ولا تُبحث.
  * هذا الملف يحوّلهما إلى بنيةٍ تُعرض وتُطبع وتُنزَّل.
  */
-import { roleAr, normalizeAr } from "./app.js?v=2766d56f";
+import { roleAr, normalizeAr } from "./app.js?v=4a7ac37e";
 
 /** ⚠️ مفتاح المهمّة يُشتقّ هنا وحده — نسخُه في شاشتين يجعلهما تنحرفان بصمت */
 export const execTaskKey = (t) => t.semester + "-" + t.week + "-" + t.order;
@@ -129,4 +129,65 @@ export function filterRows(rows, q) {
   if (!n) return rows;
   return rows.filter((r) =>
     normalizeAr([r.name, r.method, r.who, r.achievementIndicator, r.text].filter(Boolean).join(" ")).includes(n));
+}
+
+
+/* ── بناء مستند الخطة نصًّا ──
+ *
+ * ⚠️ **مصدرٌ واحد للثلاثة**: ما يُطبع، وما يُنزَّل من الموقع، وما يُولَّد ملفًّا
+ * في مجلد المدرسة — كلّها من هنا. ولو بُني كلٌّ على حدة لانحرفت النسخ بصمت:
+ * تُطبع خطّةً وتُنزّل أخرى. ولذلك يعيد **نصًّا** لا عقدة DOM، فيصلح للمتصفّح
+ * وللسكربت معًا.
+ */
+const esc2 = (v) => String(v ?? "").replace(/[&<>"]/g,
+  (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function head(title, school, sub) {
+  return '<div class="p-title"><h1>' + esc2(title) + "</h1><div class=\"p-meta\">" +
+    esc2(school.nameAr) + " · العام " + esc2(school.academicYear?.greg ?? "") +
+    (sub ? " · " + esc2(sub) : "") + "</div></div>";
+}
+
+/** الخطة التشغيلية — كل الإجراءات مجموعةً بنمط الفصل */
+export function operationalDocHtml({ actions, ov, school }) {
+  const rows = buildOperationalRows(actions, ov);
+  return head("الخطة التشغيلية", school) +
+    groupOperational(rows, actions).map((g) =>
+      "<h2>" + esc2(g.label) + "</h2><table><thead><tr>" +
+      OPS_COLUMNS.map((c) => "<th>" + esc2(c.t) + "</th>").join("") +
+      "<th>ما نُفِّذ</th><th>ملاحظات المدرسة</th></tr></thead><tbody>" +
+      g.rows.map((r) => "<tr" + (r.excellence ? ' class="exc"' : "") + ">" +
+        OPS_COLUMNS.map((c) => "<td>" + esc2(r[c.k] ?? "") + "</td>").join("") +
+        /* ⚠️ عمودان فارغان: كل خلايا الخطة التشغيلية معبّأة، فبلا هذين لا يجد
+           المستخدم موضعًا يكتب فيه — يفتح ملفًّا «قابلًا للتحرير» ولا يحرّر. */
+        '<td class="fill"></td><td class="fill"></td></tr>').join("") +
+      "</tbody></table>").join("");
+}
+
+/** الخطة التنفيذية لدورٍ واحد — الفصلان معًا */
+export function executiveDocHtml({ tasks, ov, role, roleArFn, school }) {
+  return head("الخطة التنفيذية", school, roleArFn(role)) +
+    [1, 2].map((sem) => {
+      const w = groupExecByWeek(tasks, sem, ov, role);
+      if (!w.length) return "";
+      return "<h2>" + (sem === 1 ? "الفصل الأول" : "الفصل الثاني") + "</h2>" +
+        "<table><thead><tr><th>الأسبوع</th><th>م</th><th>المهمّة</th><th>المصدر</th>" +
+        "<th>التنفيذ</th><th>ملاحظات</th></tr></thead><tbody>" +
+        w.flatMap((x) => x.rows.map((t, i) =>
+          "<tr" + (t.excellence ? ' class="exc"' : "") + "><td>" + x.week + "</td><td>" + (i + 1) +
+          "</td><td>" + esc2(t.text) + "</td><td>" + esc2(t.source) +
+          /* ⚠️ عمودان فارغان عمدًا: الملفّ يُطبع ويُملأ بالقلم، أو يُحرَّر في
+             المتصفّح. وبلا خانةٍ للتنفيذ يصير المطبوع قراءةً لا أداةَ عمل. */
+          '</td><td class="fill"></td><td class="fill"></td></tr>')).join("") +
+        "</tbody></table>";
+    }).join("");
+}
+
+/** تحليل سوات */
+export function swotDocHtml({ swot, school }) {
+  const g = groupSwot(swot);
+  if (!g.length) return head("تحليل سوات", school) + "<p>لا تحليل في حزمة هذه المدرسة.</p>";
+  return head("تحليل سوات", school) + g.map((s) =>
+    "<h2>" + esc2(s.label) + "</h2><ul>" +
+    s.items.map((x) => "<li>" + esc2(x.text) + "</li>").join("") + "</ul>").join("");
 }
