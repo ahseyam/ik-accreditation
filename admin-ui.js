@@ -1,6 +1,6 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=e3088942";
-import { FolderStore } from "./storage.js?v=e3088942";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=4ff0fd09";
+import { FolderStore } from "./storage.js?v=4ff0fd09";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
@@ -359,6 +359,7 @@ function openSide(r) {
     : p.approvedAt ? '<span class="pill p-warn">بانتظار المشاركة</span>'
     : p.submittedAt ? '<span class="pill p-bad">بانتظار اعتمادك</span>'
     : '<span class="pill p-gray">من الحزمة</span>';
+  const pend = r.pending || [];
   $("side").innerHTML =
     '<button class="close" id="sClose" aria-label="إغلاق">✕</button>' +
     "<h2>" + esc(r.school) + "</h2>" +
@@ -368,19 +369,37 @@ function openSide(r) {
       .map(([l, v]) => '<div class="kpi-b"><div class="v">' + v + '</div><div class="l">' + l + "</div></div>").join("") +
     "</div>" +
     '<div class="muted" style="margin:10px 0 16px">آخر نشاط: <b>' + esc(r.last || "لم تبدأ بعد") + "</b></div>" +
-    (r.pending.length ? '<button class="b-main" id="sApproveAll" style="margin-bottom:14px">' +
-      "اعتماد الـ" + r.pending.length + " المنتظِرة كلّها</button>" : "") +
-    "<h2 style=\"font-size:15px;margin:6px 0 4px\">المنسوبون (" + r.people.length + ")</h2>" +
+    /* ⚠️ «لا يظهر زرّ اعتماد» ليس عطلًا بل غياب ما يُعتمَد — لكنّ الصمت عنه
+       يجعله يبدو عطلًا. تُقال الحال صراحةً، ويظهر الزرّ لكل اسمٍ أدخلته
+       المدرسة، لا للأسماء التي جاءت مع الحزمة. */
+    (pend.length
+      ? '<button class="b-main" id="sApproveAll" style="margin-bottom:12px">' +
+        "اعتماد الـ" + pend.length + " المنتظِرة كلّها</button>"
+      : '<div class="side-note">لا شيء بانتظار اعتمادك هنا. يظهر زرّ الاعتماد ' +
+        "حين تُدخل المدرسة اسمًا جديدًا أو تُعدّله.</div>") +
+    '<h2 class="side-h">المنسوبون (' + r.people.length + ")</h2>" +
     r.people.map((p) =>
       '<div class="prow"><div class="who"><b>' + esc(p.fullName) + "</b>" +
       "<span>" + esc(p.roleAr) + (p.email ? " · " + esc(p.email) : "") + "</span></div>" +
-      "<div>" + st(p) + "</div></div>").join("");
+      '<div class="acts">' + st(p) +
+      (p.submittedAt && !p.approvedAt
+        ? '<button class="b-main b-xs" data-ap1="' + esc(p.id) + '">اعتماد</button>' : "") +
+      "</div></div>").join("");
   $("side").classList.remove("hidden"); $("scrim").classList.remove("hidden");
   $("sClose").onclick = closeSide;
+  $("side").querySelectorAll("[data-ap1]").forEach((b) => {
+    b.onclick = async () => {
+      b.disabled = true; b.textContent = "…";
+      await approve(r, b.dataset.ap1, ME);
+      r.pending = r.people.filter((x) => x.submittedAt && !x.approvedAt);
+      r.needShare = r.people.filter((x) => EDIT_ROLES.includes(x.role) && x.approvedAt && !x.sharedAt && x.email);
+      openSide(r); render();
+    };
+  });
   const aa = $("sApproveAll");
   if (aa) aa.onclick = async () => {
     aa.disabled = true; aa.textContent = "جارٍ الاعتماد…";
-    for (const p of [...r.pending]) await approve(r, p.id, ME);
+    for (const x of [...(r.pending || [])]) await approve(r, x.id, ME);
     r.pending = r.people.filter((p) => p.submittedAt && !p.approvedAt);
     r.needShare = r.people.filter((p) => EDIT_ROLES.includes(p.role) && p.approvedAt && !p.sharedAt && p.email);
     openSide(r); render();

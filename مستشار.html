@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=e3088942">
+<link rel="stylesheet" href="style.css?v=4ff0fd09">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
   .adm h1{font-size:23px;margin:0 0 4px}
@@ -47,7 +47,22 @@
   .side{position:fixed;inset-block:0;inset-inline-start:0;width:min(560px,94vw);background:var(--panel);
         border-inline-end:1px solid var(--line);box-shadow:0 0 34px #0003;z-index:40;overflow:auto;padding:20px}
   .side.hidden{display:none}
-  .side h2{margin:0 0 3px;font-size:18px}
+  /* ⚠️ اللوحة كانت بخطٍّ كبير فلا يظهر منها إلّا أربعة منسوبين — والمقصود
+     رؤيتهم جميعًا بنظرة. صُغِّر كل شيء بمقدارٍ محسوب، والهدف اللمسي محفوظ. */
+  .side h2{margin:0 0 3px;font-size:16px}
+  .side .side-h{font-size:13.5px;margin:14px 0 2px;color:var(--ink-2)}
+  .side .muted{font-size:12px}
+  .side .kpi-b{padding:9px 11px}
+  .side .kpi-b .v{font-size:19px}
+  .side .kpi-b .l{font-size:11px}
+  .side-note{background:var(--soft,#eef1f3);border-radius:9px;padding:9px 12px;
+    font-size:12px;line-height:1.7;color:var(--ink-2);margin-bottom:12px}
+  .prow{padding:7px 0;gap:7px}
+  .prow .who b{font-size:12.5px}
+  .prow .who span{font-size:11px;line-height:1.5}
+  .prow .pill{font-size:10.5px;padding:1px 7px}
+  .prow .acts{gap:5px}
+  .prow .b-xs{padding:4px 9px;font-size:11px;min-height:30px}
   .side .close{position:absolute;inset-block-start:14px;inset-inline-end:16px;background:none;border:0;
                font-size:22px;cursor:pointer;color:var(--ink-2);min-height:44px;min-width:44px}
   .prow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
@@ -104,6 +119,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=e3088942"></script>
+<script type="module" src="admin-ui.js?v=4ff0fd09"></script>
 </body>
 </html>
