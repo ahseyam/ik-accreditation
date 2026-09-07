@@ -1,6 +1,6 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=81ef2448";
-import { FolderStore } from "./storage.js?v=81ef2448";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=e3088942";
+import { FolderStore } from "./storage.js?v=e3088942";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
@@ -185,7 +185,12 @@ function renderSchools() {
     const head = '<summary><span class="g-name">مجمع ' + esc(cx) + "</span>" +
       '<span class="g-n">' + rows.length + " مدرسة</span>" +
       chip(act, "تعمل", "ok") + chip(pend, "بانتظار اعتمادك", "bad") +
-      chip(shr, "بانتظار المشاركة", "warn") + chip(miss, "اسمًا ناقصًا", "gray") + "</summary>";
+      /* ⚠️ «اسمًا ناقصًا» بلون رمادي يُقرأ معلومةً لا مطلبًا — وهو **حاجب**:
+       من لا اسم له لا يستطيع الدخول أصلًا. فاللون منبِّه والصياغة تقول
+       المطلوب لا الحالة. */
+    chip(shr, "بانتظار المشاركة", "warn") +
+    (miss ? '<span class="g-chip need">⚠️ ' + miss + " اسم مستخدم ناقص — مطلوب التعبئة</span>" : "") +
+    "</summary>";
     const body = '<div class="tbl-wrap"><table class="adm-t"><thead><tr>' + th +
       "</tr></thead><tbody>" +
       rows.map((r) => '<tr data-g="' + gi + '" data-i="' + list.indexOf(r) + '">' +

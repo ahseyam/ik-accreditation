@@ -1,10 +1,10 @@
 /* ── شاشة الاتصال: المجلد أوّلًا، ثم الحقيبة، ثم مايكروسوفت ──
    أُخرجت من index.html. لا تقرأ حالة مشتركة ولا تكتبها — كل ما تصنعه محوّل
    تُسلّمه إلى `onStore`، فمن يملك الحالة هو من يضعه فيها. */
-import { $, esc } from "./ui-state.js?v=81ef2448";
-import { FolderStore } from "./storage.js?v=81ef2448";
-import { GraphStore, setGraphConfig, setGraphRoot } from "./graph.js?v=81ef2448";
-import { readPackFile, PackStore } from "./bridge.js?v=81ef2448";
+import { $, esc } from "./ui-state.js?v=e3088942";
+import { FolderStore } from "./storage.js?v=e3088942";
+import { GraphStore, setGraphConfig, setGraphRoot } from "./graph.js?v=e3088942";
+import { readPackFile, PackStore } from "./bridge.js?v=e3088942";
 
 export function renderConnect(state, onStore) {
   const start = onStore;

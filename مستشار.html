@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=81ef2448">
+<link rel="stylesheet" href="style.css?v=e3088942">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
   .adm h1{font-size:23px;margin:0 0 4px}
@@ -22,8 +22,17 @@
   .tab.on{color:var(--brand);border-bottom-color:var(--brand)}
   .tab .n{background:var(--brand-soft,#e9f3f0);border-radius:20px;padding:1px 8px;font-size:12px;margin-inline-start:6px}
   .tab.alert .n{background:#fdecec;color:#a32b22}
-  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}
-  .filters select,.filters input{min-height:40px}
+  /* ⚠️ المُصفّيات كانت تتكدّس أربعة أسطر فتلتهم نصف الشاشة قبل أوّل مدرسة —
+     لأن `.f-in` عرضها 100%. عرضٌ محدود لكلٍّ فتنتظم في سطر، وتنكسر على
+     الجوّال وحده حيث لا يتّسع السطر أصلًا. */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px;align-items:center}
+  .filters select{flex:0 0 auto;width:auto;min-width:110px;max-width:168px}
+  .filters input{flex:1 1 200px;min-width:150px;max-width:330px}
+  .filters select,.filters input{min-height:38px;font-size:13px;padding-block:6px}
+  @media(max-width:720px){.filters select{flex:1 1 44%;max-width:none}
+    .filters input{flex:1 1 100%;max-width:none}}
+  /* المطلوب تعبئته حاجبٌ للدخول — لونٌ ينبّه لا يُهمَل */
+  .g-chip.need{background:#fdecec;color:#a32b22;border:1px solid #f2b8b8}
   table.adm-t{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);
               border:1px solid var(--line);border-radius:13px;overflow:hidden}
   table.adm-t th,table.adm-t td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:center;vertical-align:middle}
@@ -95,6 +104,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=81ef2448"></script>
+<script type="module" src="admin-ui.js?v=e3088942"></script>
 </body>
 </html>
