@@ -3,12 +3,12 @@
    ملكُ هذه الشاشة لا حالة عامّة يقرؤها الجميع. من يريدها يسأل عنها.
    ctx = { store, bundle, me, myTools, recordCounts, settings, roleAr,
            onSettings, afterSave, goList } */
-import { $, esc, only, markNav, setStatus } from "./ui-state.js?v=807495ac";
+import { $, esc, only, markNav, setStatus } from "./ui-state.js?v=81ef2448";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, isVerification,
-         evidenceFromRecords, toolResponsePath } from "./tools.js?v=807495ac";
-import { newEntryId } from "./app.js?v=807495ac";
-import { backupEntry } from "./vault.js?v=807495ac";
-import { renderPublish } from "./publish.js?v=807495ac";
+         evidenceFromRecords, toolResponsePath } from "./tools.js?v=81ef2448";
+import { newEntryId } from "./app.js?v=81ef2448";
+import { backupEntry } from "./vault.js?v=81ef2448";
+import { renderPublish } from "./publish.js?v=81ef2448";
 
 let curTool = null, toolState = null, toolIndex = -1, CTX = null;
 

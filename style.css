@@ -817,3 +817,21 @@ tr.exc-row{background:#fffaf0}
   margin:0 0 12px;font-size:13.5px;line-height:1.9;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .ok-note{background:#e6f5ee;border:1px solid #b7ddc9;border-radius:11px;padding:11px 15px;
   margin:0 0 12px;font-size:13.5px;color:#1d7a52}
+
+/* ── مجموعات المدارس في لوحة الإدارة ── */
+.adm-group{border:1px solid var(--line);border-radius:13px;margin-bottom:11px;background:var(--panel);overflow:hidden}
+.adm-group>summary{cursor:pointer;padding:13px 16px;font-weight:700;min-height:48px;display:flex;
+  align-items:center;gap:10px;flex-wrap:wrap;list-style:none;background:var(--brand-soft,#e9f3f0)}
+.adm-group>summary::-webkit-details-marker{display:none}
+.adm-group>summary::before{content:"▸";transition:transform .15s;display:inline-block;color:var(--brand)}
+.adm-group[open]>summary::before{transform:rotate(-90deg)}
+.adm-group .g-name{font-size:15px;color:var(--brand-ink,#0d443a)}
+.adm-group .g-n{font-size:12.5px;font-weight:600;opacity:.72}
+.g-chip{font-size:11.5px;font-weight:700;border-radius:20px;padding:2px 9px;white-space:nowrap}
+.g-chip.ok{background:#e6f5ee;color:#1d7a52}
+.g-chip.bad{background:#fdecec;color:#a32b22}
+.g-chip.warn{background:#fdf3e0;color:#a97c1f}
+.g-chip.gray{background:var(--soft,#eef1f3);color:var(--ink-2)}
+.adm-group .tbl-wrap{overflow-x:auto}
+.adm-group table.adm-t{border:0;border-radius:0}
+@media print{.adm-group>summary::before{display:none}.adm-group{break-inside:avoid}}

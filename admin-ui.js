@@ -1,6 +1,6 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=807495ac";
-import { FolderStore } from "./storage.js?v=807495ac";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=81ef2448";
+import { FolderStore } from "./storage.js?v=81ef2448";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
@@ -155,6 +155,10 @@ const COLS = [
   { k: "last", l: "آخر نشاط", sm: true },
 ];
 
+/* ⚠️ 47 صفًّا في جدولٍ واحد لا يُتصفَّح: المستشار يبحث عن مجمّعٍ بعينه لا عن
+   قائمةٍ طويلة. تُجمَّع بالمجمع في مجموعاتٍ تُطوى، وكل مجموعة تحمل خلاصتها
+   فيُعرف حالُها بلا فتحها. وتُفتح كلّها تلقائيًّا متى كان هناك بحثٌ أو تصفية
+   — فمجموعةٌ مطويّة تُخفي نتيجةَ بحثٍ تظنّه فارغًا. */
 function renderSchools() {
   const list = filtered().map((r) => ({ ...r, pendingN: r.pending.length, shareN: r.needShare.length }));
   list.sort((a, b) => {
@@ -162,29 +166,49 @@ function renderSchools() {
     return (typeof x === "string" ? String(x).localeCompare(String(y), "ar") : (x || 0) - (y || 0)) * sortDir;
   });
   if (!list.length) { $("body").innerHTML = '<div class="empty">لا مدرسة تطابق التصفية.</div>'; return; }
-  $("body").innerHTML =
-    '<table class="adm-t"><thead><tr>' +
-    COLS.map((c) => '<th data-k="' + c.k + '"' + (c.sm ? ' class="hide-sm"' : "") + ">" + esc(c.l) +
-      (sortKey === c.k ? (sortDir > 0 ? " ↑" : " ↓") : "") + "</th>").join("") +
-    "</tr></thead><tbody>" +
-    list.map((r, i) =>
-      '<tr data-i="' + i + '">' +
-      '<td class="r"><b>' + esc(r.school) + "</b></td>" +
-      '<td class="hide-sm">' + esc(r.complex) + "</td>" +
-      '<td class="hide-sm">' + esc(r.track) + "</td>" +
-      '<td class="hide-sm">' + esc(r.stageGender) + "</td>" +
-      "<td>" + (r.active ? '<span class="pill p-ok">تعمل</span>'
-                         : '<span class="pill p-gray">لم تبدأ</span>') + "</td>" +
-      "<td>" + num(r.missing, "warn") + "</td>" +
-      "<td>" + num(r.pendingN, "bad") + "</td>" +
-      "<td>" + num(r.shareN, "warn") + "</td>" +
-      '<td class="hide-sm">' + r.entries + "</td>" +
-      '<td class="hide-sm">' + r.evidence + "</td>" +
-      '<td class="hide-sm">' + esc(r.last || "—") + "</td></tr>").join("") +
-    "</tbody></table>";
-  $("body").querySelectorAll("th").forEach((th) => {
-    th.onclick = () => {
-      if (sortKey === th.dataset.k) sortDir *= -1; else { sortKey = th.dataset.k; sortDir = 1; }
+
+  const active = !!(($("q").value || "").trim() || $("fComplex").value ||
+                    $("fTrack").value || $("fStage").value || $("fState").value);
+  const by = new Map();
+  for (const r of list) (by.get(r.complex) || by.set(r.complex, []).get(r.complex)).push(r);
+
+  const th = COLS.map((c) => '<th data-k="' + c.k + '"' + (c.sm ? ' class="hide-sm"' : "") + ">" +
+    esc(c.l) + (sortKey === c.k ? (sortDir > 0 ? " ↑" : " ↓") : "") + "</th>").join("");
+
+  let gi = 0;
+  $("body").innerHTML = [...by].map(([cx, rows]) => {
+    const act = rows.filter((r) => r.active).length;
+    const pend = rows.reduce((a, r) => a + r.pendingN, 0);
+    const shr = rows.reduce((a, r) => a + r.shareN, 0);
+    const miss = rows.reduce((a, r) => a + r.missing, 0);
+    const chip = (n, l, cls) => n ? '<span class="g-chip ' + cls + '">' + n + " " + l + "</span>" : "";
+    const head = '<summary><span class="g-name">مجمع ' + esc(cx) + "</span>" +
+      '<span class="g-n">' + rows.length + " مدرسة</span>" +
+      chip(act, "تعمل", "ok") + chip(pend, "بانتظار اعتمادك", "bad") +
+      chip(shr, "بانتظار المشاركة", "warn") + chip(miss, "اسمًا ناقصًا", "gray") + "</summary>";
+    const body = '<div class="tbl-wrap"><table class="adm-t"><thead><tr>' + th +
+      "</tr></thead><tbody>" +
+      rows.map((r) => '<tr data-g="' + gi + '" data-i="' + list.indexOf(r) + '">' +
+        '<td class="r"><b>' + esc(r.school) + "</b></td>" +
+        '<td class="hide-sm">' + esc(r.complex) + "</td>" +
+        '<td class="hide-sm">' + esc(r.track) + "</td>" +
+        '<td class="hide-sm">' + esc(r.stageGender) + "</td>" +
+        "<td>" + (r.active ? '<span class="pill p-ok">تعمل</span>'
+                           : '<span class="pill p-gray">لم تبدأ</span>') + "</td>" +
+        "<td>" + num(r.missing, "warn") + "</td>" +
+        "<td>" + num(r.pendingN, "bad") + "</td>" +
+        "<td>" + num(r.shareN, "warn") + "</td>" +
+        '<td class="hide-sm">' + r.entries + "</td>" +
+        '<td class="hide-sm">' + r.evidence + "</td>" +
+        '<td class="hide-sm">' + esc(r.last || "—") + "</td></tr>").join("") +
+      "</tbody></table></div>";
+    gi++;
+    return '<details class="adm-group"' + (active || by.size === 1 ? " open" : "") + ">" + head + body + "</details>";
+  }).join("");
+
+  $("body").querySelectorAll("th").forEach((th2) => {
+    th2.onclick = () => {
+      if (sortKey === th2.dataset.k) sortDir *= -1; else { sortKey = th2.dataset.k; sortDir = 1; }
       render();
     };
   });
