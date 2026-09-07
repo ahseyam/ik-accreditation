@@ -12,7 +12,7 @@
  * تُنتج مدرستين في عشرين تركيبة من إحدى وعشرين — بنين وبنات. يُثبت ذلك
  * `build-school-index.mjs` عند كل توليد ويسقط إن لم يبقَ المفتاح الرباعي
  * فريدًا. */
-import { $, esc } from "./ui-state.js?v=4a7ac37e";
+import { $, esc } from "./ui-state.js?v=807495ac";
 
 const CODE = "ikc-2026";
 const K_PASS = "ik.gate.pass.v1";

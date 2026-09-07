@@ -1,6 +1,6 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=4a7ac37e";
-import { FolderStore } from "./storage.js?v=4a7ac37e";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=807495ac";
+import { FolderStore } from "./storage.js?v=807495ac";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
@@ -63,8 +63,21 @@ async function scan(root) {
   }
   $("prog").classList.add("hidden");
   $("status").textContent = "اكتمل: " + rows.filter((r) => !r.error).length + " مدرسة";
+  /* ⚠️ اختيار مجلد **مدرسةٍ واحدة** بدل الجذر يُنتج لوحةً تعمل بصفٍّ واحد
+     وأعمدة مجمع ومرحلة فارغة — تبدو سليمة ولا تقول إنها ناقصة. يُقال صراحةً. */
+  const single = found.length === 1 && (found[0].trail || []).length === 0;
+  $("intro").innerHTML = single
+    ? '<div class="howto"><b>اخترتَ مجلد مدرسةٍ واحدة، لا مساحة الاعتماد كلّها.</b><br>' +
+      "لذلك تُعرض مدرسة واحدة، وعمودا المجمع والمرحلة فارغان.<br>" +
+      "للوحة الكاملة (47 مدرسة): اضغط <b>↻ إعادة الفحص</b> واختر مجلد " +
+      "<b>مساحة الاعتماد ١٤٤٨</b> نفسه — الذي يحوي المجمعات الأربعة." +
+      '<div style="margin-top:8px"><button class="b-main b-xs" id="pickRoot">' +
+      "اختيار المجلد الصحيح</button></div></div>"
+    : "";
+  const pr = $("pickRoot");
+  if (pr) pr.onclick = () => $("pick").click();
   $("rescan").classList.remove("hidden"); $("print").classList.remove("hidden");
-  $("intro").innerHTML = ""; $("main").classList.remove("hidden");
+  $("main").classList.remove("hidden");
   fillFilters(); render();
 }
 
