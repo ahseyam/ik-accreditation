@@ -5,15 +5,15 @@
  * الخطة التشغيلية وتحليل سوات والخطة التنفيذية — تُحرَّر وتُطبع بكليشة
  * المدرسة وتُنزَّل ملفًّا قائمًا بذاته.
  */
-import { $, esc, only, markNav } from "./ui-state.js?v=4ff0fd09";
-import { canEditPlans } from "./scope.js?v=4ff0fd09";
+import { $, esc, only, markNav } from "./ui-state.js?v=0e5e4e87";
+import { canEditPlans } from "./scope.js?v=0e5e4e87";
 import { roleAr, loadOperationalOverride, loadExecMasterOverride,
-         saveOperationalEdits, saveExecMasterEdits } from "./app.js?v=4ff0fd09";
-import { printDocument, downloadStandaloneDocument } from "./print.js?v=4ff0fd09";
-import { setSaver, markDirty, markSaved, guardLeave } from "./draft.js?v=4ff0fd09";
+         saveOperationalEdits, saveExecMasterEdits } from "./app.js?v=0e5e4e87";
+import { printDocument, downloadStandaloneDocument } from "./print.js?v=0e5e4e87";
+import { setSaver, markDirty, markSaved, guardLeave } from "./draft.js?v=0e5e4e87";
 import { OPS_COLUMNS, buildOperationalRows, groupOperational, groupExecByWeek,
          groupSwot, filterRows, SWOT_AR, operationalDocHtml, executiveDocHtml,
-         swotDocHtml } from "./plans.js?v=4ff0fd09";
+         swotDocHtml } from "./plans.js?v=0e5e4e87";
 
 let CTX = null;
 let tab = "ops";                 // ops | exec | swot

@@ -12,8 +12,8 @@
  * الأبناء المباشرين فيرى أربعة مجمّعات ويظنّها أربع مدارس. فالمشي هنا
  * تعاودي حتى يُعثر على `manifest.json`.
  */
-import { FolderStore } from "./storage.js?v=4ff0fd09";
-import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=4ff0fd09";
+import { FolderStore } from "./storage.js?v=0e5e4e87";
+import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=0e5e4e87";
 
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
@@ -57,9 +57,12 @@ export async function findSchools(root, onStep, depth = 0, trail = [], trace = n
   return out;
 }
 
-/** آخر نشاط فعلي في المجلد — أحدث ملفٍ كتبته المدرسة، لا تاريخ التوليد */
+/** آخر نشاط فعلي في المجلد — أحدث ملفٍ كتبته المدرسة، لا تاريخ التوليد.
+ *  ⚠️ ويجمع في المشية نفسها **عدد إدخالات كل سجل**: بلا هذا لا تُحسب جاهزية
+ *  المدرسة، وهي أهمّ رقمٍ يحتاجه المستشار — وقد سقط حين أُعيدت كتابة اللوحة. */
 async function lastActivity(store) {
   let latest = null, entries = 0, evidence = 0;
+  const byRecord = {}, evidenceBy = {};
   const walk = async (rel, depth = 0) => {
     if (depth > 5) return;
     let list = [];
@@ -67,16 +70,18 @@ async function lastActivity(store) {
     for (const e of list) {
       const p = rel + "/" + e.name;
       if (e.kind === "directory") { await walk(p, depth + 1); continue; }
-      if (/\/شواهد\//.test(p)) evidence++;
+      const num = (p.match(/\/(?:سجلات|شواهد)\/(\d+)(?:\/|$)/) || [])[1];
+      if (/\/شواهد\//.test(p)) { evidence++; if (num) evidenceBy[num] = (evidenceBy[num] ?? 0) + 1; }
       else if (/\/سجلات\/.*\.json$/.test(p)) {
         entries++;
+        if (num) byRecord[num] = (byRecord[num] ?? 0) + 1;
         const m = e.name.match(/^(\d{4}-\d{2}-\d{2})/);
         if (m && (!latest || m[1] > latest)) latest = m[1];
       }
     }
   };
   await walk("مخرجات");
-  return { latest, entries, evidence };
+  return { latest, entries, evidence, byRecord, evidenceBy };
 }
 
 /** حالة مدرسة واحدة — تُقرأ من مجلدها لا من ذاكرتنا */
@@ -105,6 +110,31 @@ export async function readSchool(handle, trail) {
   }).sort((a, b) => (ROLE_RANK[a.role] ?? 90) - (ROLE_RANK[b.role] ?? 90) || a.orderNum - b.orderNum);
 
   const act = await lastActivity(store);
+
+  /* جاهزية الزيارة — بنفس محرّك الموقع لا بحسابٍ ثانٍ، وإلّا رأى المستشار
+     رقمًا ورأت المدرسة غيره. */
+  let readiness = null, gaps = 0;
+  try {
+    const [records, tools, improvement] = await Promise.all([
+      store.readJson("بيانات/records.json"),
+      store.readJson("بيانات/tools.json"),
+      store.readJson("بيانات/تحسين.json"),
+    ]);
+    const sums = [];
+    for (const t of tools.tools ?? []) {
+      let resp = [];
+      try { resp = await loadToolResponses(store, t.key); } catch { /* لم تُطبَّق */ }
+      sums.push(summarize(t, resp));
+    }
+    const execPlans = await countExecPlans(store).catch(() => ({ saved: 0 }));
+    readiness = computeReadiness({
+      records: records.records, recordCounts: act.byRecord, toolSummaries: sums,
+      improvement, evidence: { files: act.evidence }, execPlans, rosterSize: people.length,
+    });
+    gaps = indicatorStatus({ improvement, records: records.records, recordCounts: act.byRecord,
+      selfByCode: null, verifyTool: (tools.tools ?? []).find((t) => t.key === "EVIDENCE_VERIFICATION"),
+      evidenceByRecord: act.evidenceBy }).filter((x) => x.evidence === 0).length;
+  } catch { /* حزمة ناقصة — تبقى الجاهزية null ولا يُدّعى رقم */ }
   const pending = people.filter((p) => p.submittedAt && !p.approvedAt);
   const needShare = people.filter((p) => EDIT_ROLES.includes(p.role) && p.approvedAt && !p.sharedAt && p.email);
 
@@ -118,6 +148,9 @@ export async function readSchool(handle, trail) {
     pending, needShare,
     entries: act.entries, evidence: act.evidence, last: act.latest,
     active: act.entries > 0,
+    score: readiness ? Math.round(readiness.score) : null,
+    dims: readiness ? readiness.dims : null,
+    gaps,
   };
 }
 

@@ -6,6 +6,11 @@
 <title>استبانة — الاعتماد الخارجي</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
 <style>
+  /* سلّم الخطّ — نسخةٌ محلّية لأن هذه الصفحة قائمةٌ بذاتها ولا تُحمّل style.css.
+     ⚠️ ولولا هذه النسخة لسقط كل `var(--fs-*)` إلى الحجم الموروث صامتًا. */
+  :root{--fs-micro:11px;--fs-xs:12px;--fs-sm:13px;--fs-base:14px;--fs-md:16px;
+        --fs-lg:19px;--fs-xl:23px;--fs-2xl:28px;--fs-num:44px}
+
   @font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:swap;
              src:url("AlJazeera-Regular.v2.woff2") format("woff2")}
   @font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:swap;
@@ -13,26 +18,26 @@
   :root{--ink:#122a25;--ink-2:#43616a;--line:#e2eae9;--bg:#f2f6f5;--panel:#fff;
         --brand:#155e4e;--brand-2:#1d7a63;--brand-soft:#e9f3f0;--gold:#eac83c;--danger:#a32b22}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8;
+  body{margin:0;background:var(--bg);color:var(--ink);font-size:var(--fs-md);line-height:1.8;
        font-family:"Al Jazeera Arabic","Segoe UI",Tahoma,system-ui,Arial,sans-serif}
   .top{background:#0d443a;color:#eaf5f1;padding:16px 18px;display:flex;align-items:center;gap:12px}
   .top .plate{background:#fff;border-radius:10px;padding:6px 11px;display:flex;align-items:center;gap:10px}
   .top .plate img{height:26px}
   .top .plate img.mf{height:17px}
-  .top b{color:var(--gold);font-size:15px;display:block}
-  .top span{font-size:12.5px;color:#a9c8c0}
+  .top b{color:var(--gold);font-size:var(--fs-base);display:block}
+  .top span{font-size:var(--fs-sm);color:#a9c8c0}
   .wrap{max-width:760px;margin:0 auto;padding:22px 16px 90px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;
         margin-bottom:14px;position:relative;overflow:hidden;
         box-shadow:0 1px 2px rgba(18,42,37,.04),0 18px 40px -28px rgba(18,42,37,.3)}
   .card::before{content:"";position:absolute;inset-block-start:0;inset-inline:0;height:3px;
                 background:linear-gradient(90deg,var(--brand),var(--brand-2) 46%,#a97c1f)}
-  h1{font-size:21px;margin:0 0 6px}
-  .sub{color:var(--ink-2);font-size:14px;margin:0 0 6px}
-  .q{font-size:15px;margin-bottom:11px}
-  .q .n{color:var(--ink-2);font-size:13px;margin-inline-end:7px}
+  h1{font-size:var(--fs-xl);margin:0 0 6px}
+  .sub{color:var(--ink-2);font-size:var(--fs-base);margin:0 0 6px}
+  .q{font-size:var(--fs-base);margin-bottom:11px}
+  .q .n{color:var(--ink-2);font-size:var(--fs-sm);margin-inline-end:7px}
   .scale{display:flex;flex-wrap:wrap;gap:8px}
-  .scale label{display:flex;align-items:center;gap:7px;font-size:14px;border:1px solid #cddedb;
+  .scale label{display:flex;align-items:center;gap:7px;font-size:var(--fs-base);border:1px solid #cddedb;
                border-radius:9px;padding:8px 14px;cursor:pointer;background:#fff}
   .scale label:has(input:checked){background:var(--brand);color:#fff;border-color:var(--brand)}
   .bar{position:fixed;inset-inline:0;inset-block-end:0;background:var(--panel);
@@ -41,12 +46,12 @@
   button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 22px;cursor:pointer}
   .go{background:var(--brand);color:#fff}
   .wa{background:#25d366;color:#0b3d24}
-  .prog{font-size:13.5px;color:var(--ink-2)}
-  .note{background:var(--brand-soft);border:1px solid #cfe3dd;border-radius:9px;padding:13px 15px;font-size:14px}
-  .err{background:#fbeceb;border:1px solid #eec9c6;border-radius:9px;padding:13px 15px;font-size:14px;color:var(--danger)}
+  .prog{font-size:var(--fs-sm);color:var(--ink-2)}
+  .note{background:var(--brand-soft);border:1px solid #cfe3dd;border-radius:9px;padding:13px 15px;font-size:var(--fs-base)}
+  .err{background:#fbeceb;border:1px solid #eec9c6;border-radius:9px;padding:13px 15px;font-size:var(--fs-base);color:var(--danger)}
   .done{text-align:center;padding:34px 20px}
-  .done .tick{font-size:44px}
-  code{background:#eef2f2;padding:3px 8px;border-radius:6px;font-size:13px;word-break:break-all}
+  .done .tick{font-size:var(--fs-num)}
+  code{background:#eef2f2;padding:3px 8px;border-radius:6px;font-size:var(--fs-sm);word-break:break-all}
 </style>
 </head>
 <body>
@@ -67,7 +72,7 @@
 </div>
 
 <script type="module">
-import { encodeAnswers } from "./survey.js?v=4ff0fd09";
+import { encodeAnswers } from "./survey.js?v=0e5e4e87";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const q = new URLSearchParams(location.search);
@@ -76,7 +81,7 @@ const school = q.get("s") || "";
 const wa = (q.get("wa") || "").replace(/\D/g, "");
 const api = q.get("api") || "";
 
-const data = await (await fetch("استبانات.json?v=4ff0fd09")).json();
+const data = await (await fetch("استبانات.json?v=0e5e4e87")).json();
 const tool = data.tools.find((t) => t.key === toolKey) || data.tools[0];
 const answers = {};
 

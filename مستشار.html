@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=4ff0fd09">
+<link rel="stylesheet" href="style.css?v=0e5e4e87">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
-  .adm h1{font-size:23px;margin:0 0 4px}
-  .adm .sub{color:var(--ink-2);margin-bottom:18px;font-size:13.5px}
+  .adm h1{font-size:var(--fs-2xl);margin:0 0 4px}
+  .adm .sub{color:var(--ink-2);margin-bottom:18px;font-size:var(--fs-sm)}
   .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
   .bar .grow{flex:1 1 210px;min-width:180px}
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:11px;margin-bottom:20px}
   .kpi-b{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 15px}
-  .kpi-b .v{font-size:25px;font-weight:800;line-height:1.25;color:var(--brand)}
-  .kpi-b .l{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .kpi-b .v{font-size:var(--fs-2xl);font-weight:800;line-height:1.25;color:var(--brand)}
+  .kpi-b .l{font-size:var(--fs-sm);color:var(--ink-2);margin-top:2px}
   .kpi-b.warn .v{color:#a97c1f} .kpi-b.bad .v{color:#a32b22} .kpi-b.ok .v{color:#1d7a52}
   .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);margin-bottom:16px}
   .tab{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
        padding:10px 15px;font:inherit;font-weight:700;color:var(--ink-2);cursor:pointer;min-height:44px}
   .tab.on{color:var(--brand);border-bottom-color:var(--brand)}
-  .tab .n{background:var(--brand-soft,#e9f3f0);border-radius:20px;padding:1px 8px;font-size:12px;margin-inline-start:6px}
+  .tab .n{background:var(--brand-soft,#e9f3f0);border-radius:20px;padding:1px 8px;font-size:var(--fs-xs);margin-inline-start:6px}
   .tab.alert .n{background:#fdecec;color:#a32b22}
   /* ⚠️ المُصفّيات كانت تتكدّس أربعة أسطر فتلتهم نصف الشاشة قبل أوّل مدرسة —
      لأن `.f-in` عرضها 100%. عرضٌ محدود لكلٍّ فتنتظم في سطر، وتنكسر على
@@ -28,20 +28,24 @@
   .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px;align-items:center}
   .filters select{flex:0 0 auto;width:auto;min-width:110px;max-width:168px}
   .filters input{flex:1 1 200px;min-width:150px;max-width:330px}
-  .filters select,.filters input{min-height:38px;font-size:13px;padding-block:6px}
+  .filters select,.filters input{min-height:38px;font-size:var(--fs-sm);padding-block:6px}
   @media(max-width:720px){.filters select{flex:1 1 44%;max-width:none}
     .filters input{flex:1 1 100%;max-width:none}}
   /* المطلوب تعبئته حاجبٌ للدخول — لونٌ ينبّه لا يُهمَل */
   .g-chip.need{background:#fdecec;color:#a32b22;border:1px solid #f2b8b8}
-  table.adm-t{width:100%;border-collapse:collapse;font-size:13px;background:var(--panel);
+  /* ⚠️ هرمية داخل الجدول نفسه: اسم المدرسة هو المعرّف فيأخذ الدرجة الأعلى،
+     وبقيّة الخلايا أرقامٌ ووسومٌ تُقرأ بالمسح لا بالقراءة فتنزل درجة. وكان
+     الاسم غليظًا بحجم البيانات نفسه فبدا أثقل ممّا ينبغي — واللون صار يحمل
+     التمييز فلم يعد الغلظ لازمًا. */
+  table.adm-t{width:100%;border-collapse:collapse;font-size:var(--fs-xs);background:var(--panel);
               border:1px solid var(--line);border-radius:13px;overflow:hidden}
-  table.adm-t th,table.adm-t td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:center;vertical-align:middle}
+  table.adm-t th,table.adm-t td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:center;vertical-align:middle}
   table.adm-t th{background:var(--brand-soft,#e9f3f0);color:var(--brand-ink,#0d443a);font-weight:700;
                  cursor:pointer;user-select:none;white-space:nowrap}
   table.adm-t td.r{text-align:right}
   table.adm-t tbody tr{cursor:pointer}
   table.adm-t tbody tr:hover{background:var(--brand-soft,#e9f3f0)}
-  .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}
+  .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:var(--fs-xs);font-weight:700;white-space:nowrap}
   .p-ok{background:#e6f5ee;color:#1d7a52} .p-warn{background:#fdf3e0;color:#a97c1f}
   .p-bad{background:#fdecec;color:#a32b22} .p-gray{background:var(--soft,#eef1f3);color:var(--ink-2)}
   .side{position:fixed;inset-block:0;inset-inline-start:0;width:min(560px,94vw);background:var(--panel);
@@ -49,36 +53,61 @@
   .side.hidden{display:none}
   /* ⚠️ اللوحة كانت بخطٍّ كبير فلا يظهر منها إلّا أربعة منسوبين — والمقصود
      رؤيتهم جميعًا بنظرة. صُغِّر كل شيء بمقدارٍ محسوب، والهدف اللمسي محفوظ. */
-  .side h2{margin:0 0 3px;font-size:16px}
-  .side .side-h{font-size:13.5px;margin:14px 0 2px;color:var(--ink-2)}
-  .side .muted{font-size:12px}
+  .side h2{margin:0 0 3px;font-size:var(--fs-md)}
+  .side .side-h{font-size:var(--fs-sm);margin:14px 0 2px;color:var(--ink-2)}
+  .side .muted{font-size:var(--fs-xs)}
   .side .kpi-b{padding:9px 11px}
-  .side .kpi-b .v{font-size:19px}
-  .side .kpi-b .l{font-size:11px}
+  .side .kpi-b .v{font-size:var(--fs-lg)}
+  .side .kpi-b .l{font-size:var(--fs-micro)}
   .side-note{background:var(--soft,#eef1f3);border-radius:9px;padding:9px 12px;
-    font-size:12px;line-height:1.7;color:var(--ink-2);margin-bottom:12px}
+    font-size:var(--fs-xs);line-height:1.7;color:var(--ink-2);margin-bottom:12px}
   .prow{padding:7px 0;gap:7px}
-  .prow .who b{font-size:12.5px}
-  .prow .who span{font-size:11px;line-height:1.5}
-  .prow .pill{font-size:10.5px;padding:1px 7px}
+  .prow .who b{font-size:var(--fs-sm)}
+  .prow .who span{font-size:var(--fs-micro);line-height:1.5}
+  .prow .pill{font-size:var(--fs-micro);padding:1px 7px}
   .prow .acts{gap:5px}
-  .prow .b-xs{padding:4px 9px;font-size:11px;min-height:30px}
+  .prow .b-xs{padding:4px 9px;font-size:var(--fs-micro);min-height:30px}
   .side .close{position:absolute;inset-block-start:14px;inset-inline-end:16px;background:none;border:0;
-               font-size:22px;cursor:pointer;color:var(--ink-2);min-height:44px;min-width:44px}
+               font-size:var(--fs-xl);cursor:pointer;color:var(--ink-2);min-height:44px;min-width:44px}
   .prow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;
         border-bottom:1px solid var(--line);padding:10px 0}
-  .prow .who b{display:block;font-size:13.5px}
-  .prow .who span{font-size:12px;color:var(--ink-2)}
+  .prow .who b{display:block;font-size:var(--fs-sm)}
+  .prow .who span{font-size:var(--fs-xs);color:var(--ink-2)}
   .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-  .b-xs{padding:6px 11px;font-size:12px;min-height:38px;border-radius:9px}
+  .b-xs{padding:6px 11px;font-size:var(--fs-xs);min-height:38px;border-radius:9px}
   .scrim{position:fixed;inset:0;background:#0006;z-index:39}.scrim.hidden{display:none}
   .howto{background:#fff8e6;border:1px solid #e8d5a3;border-radius:11px;padding:12px 15px;
-         margin:12px 0;font-size:13px;line-height:1.8}
+         margin:12px 0;font-size:var(--fs-sm);line-height:1.8}
   .mail{font-family:inherit;background:var(--soft,#eef1f3);border-radius:7px;padding:2px 8px;
-        font-size:12.5px;unicode-bidi:plaintext;direction:ltr;display:inline-block}
-  .empty{text-align:center;color:var(--ink-2);padding:40px 20px;font-size:14px}
-  @media(max-width:640px){ .adm{padding:12px 10px 60px} table.adm-t{font-size:12px}
+        font-size:var(--fs-sm);unicode-bidi:plaintext;direction:ltr;display:inline-block}
+  .empty{text-align:center;color:var(--ink-2);padding:40px 20px;font-size:var(--fs-base)}
+  @media(max-width:640px){ .adm{padding:12px 10px 60px} table.adm-t{font-size:var(--fs-xs)}
     table.adm-t th,table.adm-t td{padding:7px 6px} .hide-sm{display:none} }
+  /* ── عائلة ألوان المراحل: لكل مرحلة لون، والمسار درجتان منه ──
+     ⚠️ اللون على **النصّ** لا على خلفية الصفّ: خلفياتٌ ملوّنة لأربع مراحل
+     تجعل الجدول لوحةً لا جدولًا، وتُخفي تمييز الصفّ عند المرور والاختيار. */
+  tr.st-kg   .sch b, tr.st-kg   .stg{color:#6b3fa0}
+  tr.st-pri  .sch b, tr.st-pri  .stg{color:#1d7a52}
+  tr.st-mid  .sch b, tr.st-mid  .stg{color:#12508a}
+  tr.st-high .sch b, tr.st-high .stg{color:#9a5b12}
+  tr.tr-int  .sch b, tr.tr-int  .stg{opacity:.78}         /* العالمي درجةٌ أفتح */
+  tr.tr-int  .trk{font-style:italic;opacity:.85}
+  .sch b{font-size:var(--fs-sm);font-weight:600;border-inline-start:3px solid currentColor;
+         padding-inline-start:8px;display:inline-block;line-height:1.5}
+  .adm-t td.r{line-height:1.5}
+  .stg{font-weight:700;font-size:var(--fs-xs);white-space:nowrap}
+  /* مفتاح الألوان — لونٌ بلا مفتاح لغز */
+  .rd{font-weight:800;font-size:var(--fs-sm)}
+  .rd-ok{color:#1d7a52}.rd-mid{color:#12508a}.rd-low{color:#a97c1f}.rd-st{color:#a32b22}
+  .rd-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .rd-num{font-size:var(--fs-num);font-weight:800;line-height:1;margin-bottom:9px}
+  .rd-row{display:flex;align-items:center;gap:8px;font-size:var(--fs-xs);margin-bottom:4px}
+  .rd-row span:first-child{min-width:104px}
+  .rd-row .bar-m{flex:1}
+  .legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 11px;font-size:var(--fs-xs)}
+  .legend b{font-weight:700}
+  .legend .k{display:inline-flex;align-items:center;gap:5px}
+  .legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
   @media print{ .bar,.tabs,.filters,.side,.scrim,.b-main,.b-ghost{display:none!important}
     .adm{max-width:none} table.adm-t{font-size:9.5pt} }
 </style>
@@ -91,7 +120,11 @@
   <div class="bar">
     <button class="b-main" id="pick">📂 اختر مجلد «مساحة الاعتماد ١٤٤٨»</button>
     <button class="b-ghost hidden" id="rescan">↻ إعادة الفحص</button>
+    <button class="b-ghost hidden" id="csv">⬇️ تصدير جدول</button>
     <button class="b-ghost hidden" id="print">🖨️ طباعة</button>
+    <span style="flex:1"></span>
+    <!-- ⚠️ اللوحة كانت طريقًا مسدودًا: لا رابط يعود إلى الموقع ولا إلى الدليل -->
+    <a class="b-ghost" href="index.html" title="موقع الاعتماد">🏠 الموقع</a>
     <span class="muted" id="status"></span>
   </div>
   <div class="prog hidden" id="prog"><span></span></div>
@@ -100,6 +133,13 @@
   <div class="hidden" id="main">
     <div class="kpis" id="kpis"></div>
     <div class="tabs" id="tabs"></div>
+    <div class="legend hidden" id="legend">
+      <span class="k"><span class="sw" style="background:#6b3fa0"></span>رياض أطفال</span>
+      <span class="k"><span class="sw" style="background:#1d7a52"></span>ابتدائي</span>
+      <span class="k"><span class="sw" style="background:#12508a"></span>متوسط</span>
+      <span class="k"><span class="sw" style="background:#9a5b12"></span>ثانوي</span>
+      <span class="k" style="opacity:.72">— الدرجة الفاتحة والخطّ المائل: <b>عالمي</b></span>
+    </div>
     <div class="filters hidden" id="filters">
       <input class="f-in grow" id="q" placeholder="ابحث باسم مدرسة أو منسوب…" autocomplete="off">
       <select class="f-in" id="fComplex"><option value="">كل المجمعات</option></select>
@@ -109,6 +149,7 @@
         <option value="">كل الحالات</option>
         <option value="active">بدأت العمل</option>
         <option value="idle">لم تبدأ بعد</option>
+        <option value="attention">⚠️ يحتاج انتباهك</option>
         <option value="missing">فيها أسماء ناقصة</option>
       </select>
     </div>
@@ -119,6 +160,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=4ff0fd09"></script>
+<script type="module" src="admin-ui.js?v=0e5e4e87"></script>
 </body>
 </html>

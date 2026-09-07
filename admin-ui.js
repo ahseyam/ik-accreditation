@@ -1,9 +1,18 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=4ff0fd09";
-import { FolderStore } from "./storage.js?v=4ff0fd09";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=0e5e4e87";
+import { FolderStore } from "./storage.js?v=0e5e4e87";
 
 const K_ROOT = "ik.admin.onedriveUrl";
-let rows = [], tab = "schools", sortKey = "school", sortDir = 1, sel = null;
+let rows = [], tab = "schools", sortKey = "stageOrder", sortDir = 1, sel = null;
+let lastScan = null;
+
+/* ⚠️ الترتيب الطبيعي للمراحل زمنيّ لا أبجديّ: الطفل يبدأ روضةً وينتهي ثانويًّا.
+   والترتيب الأبجدي كان يضع «رياض أطفال» بين الثانوي والمتوسط — ترتيبٌ لا
+   يقرؤه أحد. ولكل مرحلة لونها، والمسار درجتان من اللون نفسه. */
+const STAGE_ORDER = { "رياض أطفال": 0, "ابتدائي": 1, "متوسط": 2, "ثانوي": 3 };
+const STAGE_KEY = { "رياض أطفال": "kg", "ابتدائي": "pri", "متوسط": "mid", "ثانوي": "high" };
+const stageClass = (r) => "st-" + (STAGE_KEY[r.stage] || "pri") + " " +
+  (r.track === "عالمي" ? "tr-int" : "tr-nat");
 const ME = "مدير الجودة والتخطيط";
 
 if (!FolderStore.supported()) {
@@ -29,6 +38,24 @@ let lastRoot = null;
 })();
 $("rescan").onclick = () => (lastRoot ? scan(lastRoot) : $("pick").click());
 $("print").onclick = () => window.print();
+/* ⚠️ الطباعة لا تكفي: الإدارة تطلب الأرقام في جدولٍ يُفرَز ويُجمَع. */
+$("csv").onclick = () => {
+  const cols = ["المدرسة", "المجمع", "المسار", "المرحلة", "الجاهزية", "الحالة",
+                "أسماء ناقصة", "بانتظار الاعتماد", "بانتظار المشاركة",
+                "إدخالات", "شواهد", "مؤشرات بلا شاهد", "آخر نشاط"];
+  const q = (v) => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const body = rows.filter((r) => !r.error).map((r) => [r.school, r.complex, r.track, r.stageGender,
+    r.score == null ? "" : r.score + "%", r.active ? "تعمل" : "لم تبدأ", r.missing,
+    r.pending.length, r.needShare.length, r.entries, r.evidence, r.gaps ?? "", r.last || ""]
+    .map(q).join(",")).join("\n");
+  /* ⚠️ BOM أوّل الملفّ: بدونه يفتح إكسل العربية طلاسم — عيبٌ يُتّهم به الملفّ */
+  const blob = new Blob(["\uFEFF" + cols.map(q).join(",") + "\n" + body],
+    { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "حال مدارس ابن خلدون — " + new Date().toISOString().slice(0, 10) + ".csv";
+  document.body.append(a); a.click(); a.remove();
+};
 
 async function scan(root) {
   lastRoot = root;
@@ -62,7 +89,10 @@ async function scan(root) {
     catch (e) { rows.push({ school: f.trail.join(" / "), error: e.message, people: [], pending: [], needShare: [] }); }
   }
   $("prog").classList.add("hidden");
-  $("status").textContent = "اكتمل: " + rows.filter((r) => !r.error).length + " مدرسة";
+  lastScan = new Date();
+  /* ⚠️ لوحةٌ لا تقول متى قرأت تُقرأ حيّةً وهي قديمة — والمستشار يبني عليها قرارًا */
+  $("status").textContent = "اكتمل: " + rows.filter((r) => !r.error).length +
+    " مدرسة · فُحصت " + lastScan.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
   /* ⚠️ اختيار مجلد **مدرسةٍ واحدة** بدل الجذر يُنتج لوحةً تعمل بصفٍّ واحد
      وأعمدة مجمع ومرحلة فارغة — تبدو سليمة ولا تقول إنها ناقصة. يُقال صراحةً. */
   const single = found.length === 1 && (found[0].trail || []).length === 0;
@@ -76,7 +106,7 @@ async function scan(root) {
     : "";
   const pr = $("pickRoot");
   if (pr) pr.onclick = () => $("pick").click();
-  $("rescan").classList.remove("hidden"); $("print").classList.remove("hidden");
+  for (const id of ["rescan", "print", "csv"]) $(id).classList.remove("hidden");
   $("main").classList.remove("hidden");
   fillFilters(); render();
 }
@@ -102,6 +132,9 @@ const filtered = () => {
     if (st === "active" && !r.active) return false;
     if (st === "idle" && r.active) return false;
     if (st === "missing" && !r.missing) return false;
+    /* ⚠️ المستشار لا يبحث عن «حالة» بل عن **ما يحتاجه الآن**: اسمٌ ينتظر
+       اعتماده، أو صلاحيةٌ لم تُمنَح، أو مدرسةٌ لم تبدأ رغم مشاركتها. */
+    if (st === "attention" && !(r.pending.length || r.needShare.length)) return false;
     if (q && !r.school.includes(q) && !r.people.some((p) => (p.fullName || "").includes(q))) return false;
     return true;
   });
@@ -135,6 +168,7 @@ function render() {
     b.onclick = () => { tab = b.dataset.t; render(); };
   });
   $("filters").classList.toggle("hidden", tab !== "schools");
+  $("legend").classList.toggle("hidden", tab !== "schools");
 
   if (tab === "schools") renderSchools();
   else if (tab === "pending") renderPending();
@@ -145,7 +179,8 @@ const COLS = [
   { k: "school", l: "المدرسة", r: true },
   { k: "complex", l: "المجمع", sm: true },
   { k: "track", l: "المسار", sm: true },
-  { k: "stageGender", l: "المرحلة", sm: true },
+  { k: "stageOrder", l: "المرحلة", sm: true },
+  { k: "score", l: "الجاهزية" },
   { k: "state", l: "الحالة" },
   { k: "missing", l: "أسماء ناقصة" },
   { k: "pendingN", l: "بانتظار اعتمادك" },
@@ -162,6 +197,14 @@ const COLS = [
 function renderSchools() {
   const list = filtered().map((r) => ({ ...r, pendingN: r.pending.length, shareN: r.needShare.length }));
   list.sort((a, b) => {
+    if (sortKey === "stageOrder") {
+      /* المرحلة زمنيًّا، ثم الوطني قبل العالمي، ثم بنين قبل بنات، ثم الاسم */
+      const d = (STAGE_ORDER[a.stage] ?? 9) - (STAGE_ORDER[b.stage] ?? 9)
+        || (a.track === "عالمي") - (b.track === "عالمي")
+        || (a.gender === "بنات") - (b.gender === "بنات")
+        || a.school.localeCompare(b.school, "ar");
+      return d * sortDir;
+    }
     const x = a[sortKey], y = b[sortKey];
     return (typeof x === "string" ? String(x).localeCompare(String(y), "ar") : (x || 0) - (y || 0)) * sortDir;
   });
@@ -193,11 +236,14 @@ function renderSchools() {
     "</summary>";
     const body = '<div class="tbl-wrap"><table class="adm-t"><thead><tr>' + th +
       "</tr></thead><tbody>" +
-      rows.map((r) => '<tr data-g="' + gi + '" data-i="' + list.indexOf(r) + '">' +
-        '<td class="r"><b>' + esc(r.school) + "</b></td>" +
+      rows.map((r) => '<tr class="' + stageClass(r) + '" data-g="' + gi + '" data-i="' + list.indexOf(r) + '">' +
+        '<td class="r sch"><b>' + esc(r.school) + "</b></td>" +
         '<td class="hide-sm">' + esc(r.complex) + "</td>" +
-        '<td class="hide-sm">' + esc(r.track) + "</td>" +
-        '<td class="hide-sm">' + esc(r.stageGender) + "</td>" +
+        '<td class="hide-sm trk">' + esc(r.track) + "</td>" +
+        '<td class="hide-sm stg">' + esc(r.stageGender) + "</td>" +
+        "<td>" + (r.score == null ? '<span class="muted">—</span>'
+          : '<span class="rd rd-' + (r.score >= 85 ? "ok" : r.score >= 65 ? "mid" : r.score >= 40 ? "low" : "st") +
+            '">' + r.score + "%</span>") + "</td>" +
         "<td>" + (r.active ? '<span class="pill p-ok">تعمل</span>'
                            : '<span class="pill p-gray">لم تبدأ</span>') + "</td>" +
         "<td>" + num(r.missing, "warn") + "</td>" +
@@ -364,6 +410,17 @@ function openSide(r) {
     '<button class="close" id="sClose" aria-label="إغلاق">✕</button>' +
     "<h2>" + esc(r.school) + "</h2>" +
     '<div class="muted" style="margin-bottom:14px">' + esc(r.trail.join(" / ")) + "</div>" +
+    (r.score == null ? "" :
+      '<div class="rd-box"><div class="rd-num rd-' +
+      (r.score >= 85 ? "ok" : r.score >= 65 ? "mid" : r.score >= 40 ? "low" : "st") + '">' +
+      r.score + '%</div><div class="rd-dims">' +
+      DIMENSIONS.map((d) => {
+        const x = r.dims?.[d.key];
+        return '<div class="rd-row"><span>' + esc(d.label) + "</span>" +
+          '<span class="bar-m"><i style="width:' + (x ? x.pct.toFixed(0) : 0) + '%"></i></span>' +
+          "<b>" + (x ? x.pct.toFixed(0) : 0) + "%</b></div>";
+      }).join("") + "</div></div>" +
+      (r.gaps ? '<div class="side-note">⚠️ <b>' + r.gaps + "</b> مؤشرًا بلا شاهدٍ مرفوع.</div>" : "")) +
     '<div class="kpis" style="grid-template-columns:repeat(3,1fr)">' +
     [["إدخالات", r.entries], ["شواهد", r.evidence], ["أسماء ناقصة", r.missing]]
       .map(([l, v]) => '<div class="kpi-b"><div class="v">' + v + '</div><div class="l">' + l + "</div></div>").join("") +
