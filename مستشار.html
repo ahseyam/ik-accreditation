@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=0e5e4e87">
+<link rel="stylesheet" href="style.css?v=ef643a4e">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
   .adm h1{font-size:var(--fs-2xl);margin:0 0 4px}
@@ -86,12 +86,27 @@
   /* ── عائلة ألوان المراحل: لكل مرحلة لون، والمسار درجتان منه ──
      ⚠️ اللون على **النصّ** لا على خلفية الصفّ: خلفياتٌ ملوّنة لأربع مراحل
      تجعل الجدول لوحةً لا جدولًا، وتُخفي تمييز الصفّ عند المرور والاختيار. */
-  tr.st-kg   .sch b, tr.st-kg   .stg{color:#6b3fa0}
-  tr.st-pri  .sch b, tr.st-pri  .stg{color:#1d7a52}
-  tr.st-mid  .sch b, tr.st-mid  .stg{color:#12508a}
-  tr.st-high .sch b, tr.st-high .stg{color:#9a5b12}
-  tr.tr-int  .sch b, tr.tr-int  .stg{opacity:.78}         /* العالمي درجةٌ أفتح */
-  tr.tr-int  .trk{font-style:italic;opacity:.85}
+  /* ⚠️ **المَسارُ يُحَدِّدُ العائِلةَ اللَونيةَ والمَرحَلةُ تُحَدِّدُ الدَرَجة**
+     (رَصدُ المُستَشار 2026-09-07: «ما زالَت أَسماءُ الوَطَنيِّ بِنَفسِ لَونِ
+     العالَمي»). كانَ التَلوينُ **بِالمَرحَلةِ وَحدَها**، والعالَميُّ يُمَيَّزُ
+     بِـ`opacity:.78` — فَرقٌ لا تَكادُ العَينُ تَراهُ في نَصٍّ صَغيرٍ غَليظ.
+     الآنَ: الوَطَنيُّ أَخضَرُ والعالَميُّ أَزرَق، وأَربَعُ دَرَجاتٍ بِالمَرحَلةِ
+     تَغمَقُ صُعوداً (رِياض ⟵ ثانَوي).
+     ⚠️ **وكُلُّ الدَرَجاتِ الثَماني مَقيسةٌ ≥4.5:1 على الأَبيَض** — أَوَّلُ
+     مُقتَرَحٍ سَقَطَت فيهِ الرَوضةُ عِندَ 4.0 فَغُمِّقَت. اللَونُ الجَميلُ الذي
+     لا يُقرَأُ عَيبٌ لا ذَوق. */
+  tr.tr-nat.st-kg   .sch b, tr.tr-nat.st-kg   .stg{color:#268056}
+  tr.tr-nat.st-pri  .sch b, tr.tr-nat.st-pri  .stg{color:#1a6e4a}
+  tr.tr-nat.st-mid  .sch b, tr.tr-nat.st-mid  .stg{color:#125a3a}
+  tr.tr-nat.st-high .sch b, tr.tr-nat.st-high .stg{color:#0b452c}
+  tr.tr-int.st-kg   .sch b, tr.tr-int.st-kg   .stg{color:#2c78ab}
+  tr.tr-int.st-pri  .sch b, tr.tr-int.st-pri  .stg{color:#1c6398}
+  tr.tr-int.st-mid  .sch b, tr.tr-int.st-mid  .stg{color:#134f7c}
+  tr.tr-int.st-high .sch b, tr.tr-int.st-high .stg{color:#0a3a5e}
+  /* احتِياطٌ لِصَفٍّ بِلا صِنفِ مَسار — لَونٌ مُحايِدٌ لا وَراثةٌ عَمياء */
+  tr:not(.tr-nat):not(.tr-int) .sch b,
+  tr:not(.tr-nat):not(.tr-int) .stg{color:#475569}
+  tr.tr-int  .trk{font-style:italic}
   .sch b{font-size:var(--fs-sm);font-weight:600;border-inline-start:3px solid currentColor;
          padding-inline-start:8px;display:inline-block;line-height:1.5}
   .adm-t td.r{line-height:1.5}
@@ -160,6 +175,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=0e5e4e87"></script>
+<script type="module" src="admin-ui.js?v=ef643a4e"></script>
 </body>
 </html>
