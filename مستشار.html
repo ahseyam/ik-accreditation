@@ -2,9 +2,12 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8">
+<meta name="ik-v" content="27270ee9">
+<!-- ⚠️ صَفحةُ HTML رابِطُها ثابِتٌ فَتُخَزَّنُ في المُتَصَفِّحِ رَغمَ النَشر — وحارِسُ الطَزاجةِ يَنقُلُ الزائِرَ إلى رابِطِ البَصمةِ الجَديدةِ مَرّةً واحِدة. -->
+<script src="fresh.js?v=27270ee9"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=ef643a4e">
+<link rel="stylesheet" href="style.css?v=27270ee9">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
   .adm h1{font-size:var(--fs-2xl);margin:0 0 4px}
@@ -95,14 +98,22 @@
      ⚠️ **وكُلُّ الدَرَجاتِ الثَماني مَقيسةٌ ≥4.5:1 على الأَبيَض** — أَوَّلُ
      مُقتَرَحٍ سَقَطَت فيهِ الرَوضةُ عِندَ 4.0 فَغُمِّقَت. اللَونُ الجَميلُ الذي
      لا يُقرَأُ عَيبٌ لا ذَوق. */
-  tr.tr-nat.st-kg   .sch b, tr.tr-nat.st-kg   .stg{color:#268056}
-  tr.tr-nat.st-pri  .sch b, tr.tr-nat.st-pri  .stg{color:#1a6e4a}
-  tr.tr-nat.st-mid  .sch b, tr.tr-nat.st-mid  .stg{color:#125a3a}
-  tr.tr-nat.st-high .sch b, tr.tr-nat.st-high .stg{color:#0b452c}
-  tr.tr-int.st-kg   .sch b, tr.tr-int.st-kg   .stg{color:#2c78ab}
-  tr.tr-int.st-pri  .sch b, tr.tr-int.st-pri  .stg{color:#1c6398}
-  tr.tr-int.st-mid  .sch b, tr.tr-int.st-mid  .stg{color:#134f7c}
-  tr.tr-int.st-high .sch b, tr.tr-int.st-high .stg{color:#0a3a5e}
+  /* ⚠️ **الدَرَجةُ اللَونيةُ هيَ الفارِق، لا العَتامةُ ولا القَتامة.** كانَ
+     الأَخضَرُ 151° والأَزرَقُ 213° مُتَقارِبَينِ في القَتامةِ فَقَرَأَتهُما
+     العَينُ لَونًا واحِدًا في نَصٍّ صَغيرٍ غَليظ (رَصدُ المُستَشار مَرَّتَين).
+     الآنَ **62° بَينَ العائِلَتَين**: 152° أَخضَرُ صَريحٌ و214° أَزرَقُ صَريح،
+     وأَربَعُ دَرَجاتٍ تَغمَقُ بِالمَرحَلةِ داخِلَ كُلِّ عائِلة.
+     وكُلُّ الثَمانِ مَقيسةٌ ≥4.6:1 على **أَسوَأِ** خَلفياتِ الجَدوَلِ الثَلاث
+     (الأَبيَض · الصَفحة #f2f6f5 · تَظليلُ المُرور #e9f3f0) لا على الأَبيَضِ
+     وَحدَه — فَالصَفُّ تَحتَ المُؤَشِّرِ هوَ أَخفَضُها تَبايُنًا. */
+  tr.tr-nat.st-kg   .sch b, tr.tr-nat.st-kg   .stg{color:#15794b}
+  tr.tr-nat.st-pri  .sch b, tr.tr-nat.st-pri  .stg{color:#126840}
+  tr.tr-nat.st-mid  .sch b, tr.tr-nat.st-mid  .stg{color:#0f5233}
+  tr.tr-nat.st-high .sch b, tr.tr-nat.st-high .stg{color:#0b4128}
+  tr.tr-int.st-kg   .sch b, tr.tr-int.st-kg   .stg{color:#266bc5}
+  tr.tr-int.st-pri  .sch b, tr.tr-int.st-pri  .stg{color:#205aa7}
+  tr.tr-int.st-mid  .sch b, tr.tr-int.st-mid  .stg{color:#194885}
+  tr.tr-int.st-high .sch b, tr.tr-int.st-high .stg{color:#143a6b}
   /* احتِياطٌ لِصَفٍّ بِلا صِنفِ مَسار — لَونٌ مُحايِدٌ لا وَراثةٌ عَمياء */
   tr:not(.tr-nat):not(.tr-int) .sch b,
   tr:not(.tr-nat):not(.tr-int) .stg{color:#475569}
@@ -112,6 +123,8 @@
   .adm-t td.r{line-height:1.5}
   .stg{font-weight:700;font-size:var(--fs-xs);white-space:nowrap}
   /* مفتاح الألوان — لونٌ بلا مفتاح لغز */
+  .lg-h{font-size:var(--fs-xs)}.lg-h b{color:var(--ink)}
+  .lg-sep{border-inline-start:1px solid var(--line);padding-inline-start:12px;margin-inline-start:4px}
   .rd{font-weight:800;font-size:var(--fs-sm)}
   .rd-ok{color:#1d7a52}.rd-mid{color:#12508a}.rd-low{color:#a97c1f}.rd-st{color:#a32b22}
   .rd-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
@@ -149,11 +162,19 @@
     <div class="kpis" id="kpis"></div>
     <div class="tabs" id="tabs"></div>
     <div class="legend hidden" id="legend">
-      <span class="k"><span class="sw" style="background:#6b3fa0"></span>رياض أطفال</span>
-      <span class="k"><span class="sw" style="background:#1d7a52"></span>ابتدائي</span>
-      <span class="k"><span class="sw" style="background:#12508a"></span>متوسط</span>
-      <span class="k"><span class="sw" style="background:#9a5b12"></span>ثانوي</span>
-      <span class="k" style="opacity:.72">— الدرجة الفاتحة والخطّ المائل: <b>عالمي</b></span>
+      <!-- ⚠️ المِفتاحُ كانَ يَعرِضُ لَوحةً مَهجورة (بَنَفسَجي/بُرتُقالي بِالمَرحَلةِ
+           وَحدَها) والجَدوَلُ يَرسُمُ بِعائِلَتَي المَسار — فَمِفتاحٌ يُكَذِّبُ جَدوَلَهُ
+           أَسوَأُ مِن لا مِفتاح. يُشتَقُّ مِنَ اللَوحةِ نَفسِها ويُحدَّثُ مَعَها. -->
+      <span class="k lg-h"><b>وطني</b></span>
+      <span class="k"><span class="sw" style="background:#15794b"></span>رياض</span>
+      <span class="k"><span class="sw" style="background:#126840"></span>ابتدائي</span>
+      <span class="k"><span class="sw" style="background:#0f5233"></span>متوسط</span>
+      <span class="k"><span class="sw" style="background:#0b4128"></span>ثانوي</span>
+      <span class="k lg-h lg-sep"><b>عالمي</b></span>
+      <span class="k"><span class="sw" style="background:#266bc5"></span>رياض</span>
+      <span class="k"><span class="sw" style="background:#205aa7"></span>ابتدائي</span>
+      <span class="k"><span class="sw" style="background:#194885"></span>متوسط</span>
+      <span class="k"><span class="sw" style="background:#143a6b"></span>ثانوي</span>
     </div>
     <div class="filters hidden" id="filters">
       <input class="f-in grow" id="q" placeholder="ابحث باسم مدرسة أو منسوب…" autocomplete="off">
@@ -175,6 +196,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=ef643a4e"></script>
+<script type="module" src="admin-ui.js?v=27270ee9"></script>
 </body>
 </html>
