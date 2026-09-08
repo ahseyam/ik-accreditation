@@ -27,21 +27,14 @@
     --fs-num:44px;     /* الأرقام الكبيرة وحدها */
 
   --head-ink:#8c1c13;--head-soft:#fbf1ef;--head-line:#e3bdb6;
-    --ink:#122a25; --ink-2:#43616a; --line:#e2eae9; --line-2:#cddedb;
-    --bg:#f2f6f5; --panel:#fff;
-    --brand:#155e4e; --brand-2:#1d7a63; --brand-soft:#e9f3f0; --brand-ink:#0d443a;
+    /* ⚠️ `--ink` و`--bg` و`--panel` و`--line` و`--brand-soft` و`--danger` و`--ok`
+       لَم تَعُد تُعَرَّفُ هُنا: صارَت **جِسرًا** إلى رُموزِ HeroUI أَسفَلَ المِلَفّ.
+       تَعريفانِ لِرَمزٍ واحِدٍ في مِلَفٍّ واحِدٍ يَفتَرِقانِ عِندَ أَوَّلِ تَعديل. */
+    --brand-2:#1d7a63; --brand-ink:#0d443a;
     --gold:#a97c1f; --gold-soft:#fbf4e4;
     /* ذهبي الهلال — مستخرَج بِكسليًا من رمز 🌙 في الهيدر (#EAC83C).
        تباينه على خلفية الهيدر #0D443A = 6.7:1 (المعيار 4.5). */
     --gold-bright:#eac83c;
-    --danger:#a32b22; --danger-soft:#fbeceb;
-    --ok:#1d7a52;
-    --r:16px; --r-sm:10px;
-    /* ظلّ مركّب من ثلاث طبقات — الحدّة قريبة والانتشار بعيد، فيبدو الكرت مرفوعًا لا مرسومًا */
-    --sh:0 1px 2px rgba(18,42,37,.04), 0 4px 10px -4px rgba(18,42,37,.08),
-         0 20px 44px -28px rgba(18,42,37,.30);
-    --sh-lift:0 2px 4px rgba(18,42,37,.05), 0 10px 20px -8px rgba(18,42,37,.14),
-              0 28px 56px -30px rgba(18,42,37,.34);
     /* شريط الهوية: أخضر ابن خلدون ← ذهبي */
     --edge:linear-gradient(90deg,var(--brand) 0%,var(--brand-2) 46%,var(--gold) 100%);
     --statusH:34px;   /* ارتفاع شريط الحالة المثبَّت */
@@ -49,15 +42,296 @@
   /* الوضع الليلي — تُبدَّل الرموز وحدها فتبقى القواعد كما هي */
   html[data-theme="dark"]{
     --head-ink:#f0a79c;--head-soft:#2b1a18;--head-line:#4a2b26;
-    --ink:#e6f0ee; --ink-2:#9fb8b3; --line:#22403a; --line-2:#2e544c;
-    --bg:#0d1f1c; --panel:#132a26;
-    --brand:#4fbf9c; --brand-2:#63d2ae; --brand-soft:#17332d; --brand-ink:#0a1815;
+    --brand-2:#63d2ae; --brand-ink:#0a1815;
     --gold:#d9ad55; --gold-soft:#2a2418;
-    --danger:#f08a80; --danger-soft:#33201e; --ok:#5fd3a0;
-    --sh:0 1px 2px rgba(0,0,0,.30), 0 4px 10px -4px rgba(0,0,0,.34),
-         0 20px 44px -28px rgba(0,0,0,.7);
-    --sh-lift:0 2px 4px rgba(0,0,0,.32), 0 10px 20px -8px rgba(0,0,0,.4),
-              0 28px 56px -30px rgba(0,0,0,.75);
+  }
+  /* ═══ HeroUI-TOKENS: مولَّدة — لا تُحرَّر يدويًّا ═══ */
+  :root{
+    color-scheme:light;
+    /* أَوَّليّاتٌ لا تَتَبَدَّلُ بَينَ الوَضعَين */
+    --white:#ffffff;
+    --white:oklch(100.00% 0.0000 89.88);
+    --black:#000000;
+    --black:oklch(0.00% 0.0000 0.00);
+    --snow:#fcfcfc;
+    --snow:oklch(99.11% 0.0000 89.88);
+    --eclipse:#18181b;
+    --eclipse:oklch(21.03% 0.0059 285.89);
+    --spacing:0.25rem;
+    --border-width:1px;
+    --field-border-width:0px;
+    --disabled-opacity:0.5;
+    --ring-offset-width:2px;
+    --cursor-interactive:pointer;
+    --cursor-disabled:not-allowed;
+    /* نِصفُ القُطر: أَساسٌ واحِدٌ وسُلَّمُ Tailwind v4 الذي تَبني عَلَيهِ مُكَوِّناتُ HeroUI */
+    --radius:0.5rem;
+    --field-radius:calc(var(--radius) * 1.5);
+    --radius-xs:0.125rem;--radius-sm:0.25rem;--radius-md:0.375rem;
+    --radius-lg:0.5rem;--radius-xl:0.75rem;--radius-2xl:1rem;--radius-3xl:1.5rem;
+    /* الأَساس */
+    --background:#f2f6f5;
+    --background:oklch(96.98% 0.0044 179.73);
+    --foreground:#122a25;
+    --foreground:oklch(26.37% 0.0318 178.56);
+    /* الأَسطُح: لِلمُكَوِّناتِ غَيرِ العائِمة */
+    --surface:#ffffff;
+    --surface:oklch(100.00% 0.0000 89.88);
+    --surface-foreground:var(--foreground);
+    --surface-secondary:#eff3f2;
+    --surface-secondary:oklch(96.08% 0.0045 179.73);
+    --surface-secondary-foreground:var(--foreground);
+    --surface-tertiary:#e7eeec;
+    --surface-tertiary:oklch(94.33% 0.0079 177.32);
+    --surface-tertiary-foreground:var(--foreground);
+    /* الطَبَقاتُ العائِمة: تَلميحاتٌ ونَوافِذُ وقَوائِم */
+    --overlay:#ffffff;
+    --overlay:oklch(100.00% 0.0000 89.88);
+    --overlay-foreground:var(--foreground);
+    --muted:#43616a;
+    --muted:oklch(47.27% 0.0380 218.43);
+    --default:#e9efed;
+    --default:oklch(94.70% 0.0069 174.37);
+    --default-foreground:var(--foreground);
+    /* دَرَجاتُ الهُوية — المُبَدَّلُ الوَحيدُ عَن HeroUI */
+    --accent:#155e4e;
+    --accent:oklch(43.40% 0.0743 174.39);
+    --accent-foreground:var(--snow);
+    --success:#1d7a52;
+    --success:oklch(51.61% 0.1061 159.82);
+    --success-foreground:var(--snow);
+    --warning:#a97c1f;
+    --warning:oklch(61.56% 0.1170 80.43);
+    --warning-foreground:var(--snow);
+    --danger:#a32b22;
+    --danger:oklch(47.70% 0.1578 28.77);
+    --danger-foreground:var(--snow);
+    /* الحُقول */
+    --field-background:#ffffff;
+    --field-background:oklch(100.00% 0.0000 89.88);
+    --field-foreground:var(--foreground);
+    --field-placeholder:var(--muted);
+    --field-border:transparent;
+    /* حُدودٌ وفَواصِلُ وتَركيز */
+    --border:#e2eae9;
+    --border:oklch(93.07% 0.0087 188.10);
+    --separator:#eaf0ef;
+    --separator:oklch(95.03% 0.0065 185.27);
+    --focus:var(--accent);
+    --link:var(--foreground);
+    --backdrop:rgba(0,0,0,0.5);
+    /* الظِلال — مِن HeroUI حَرفيًّا */
+    --surface-shadow:0 2px 4px 0 rgba(0,0,0,.04),0 1px 2px 0 rgba(0,0,0,.06),0 0 1px 0 rgba(0,0,0,.06);
+    --overlay-shadow:0 2px 8px 0 rgba(0,0,0,.06),0 -6px 12px 0 rgba(0,0,0,.03),0 14px 28px 0 rgba(0,0,0,.08);
+    --field-shadow:0 2px 4px 0 rgba(0,0,0,.04),0 1px 2px 0 rgba(0,0,0,.06),0 0 1px 0 rgba(0,0,0,.06);
+    /* المُشتَقّات — نِسَبُ HeroUI نَفسُها، ولِكُلٍّ احتِياطٌ مَحسوب */
+    --surface-hover:#eaeceb;
+    --surface-hover:color-mix(in oklab,var(--surface) 92%,var(--surface-foreground) 8%);
+    --background-secondary:#e8edec;
+    --background-secondary:color-mix(in oklab,var(--background) 96%,var(--foreground) 4%);
+    --background-tertiary:#dee4e2;
+    --background-tertiary:color-mix(in oklab,var(--background) 92%,var(--foreground) 8%);
+    --background-inverse:var(--foreground);
+    --default-hover:#dfe6e4;
+    --default-hover:color-mix(in oklab,var(--default) 96%,var(--default-foreground) 4%);
+    --accent-hover:#326d5e;
+    --accent-hover:color-mix(in oklab,var(--accent) 90%,var(--accent-foreground) 10%);
+    --success-hover:#3b8762;
+    --success-hover:color-mix(in oklab,var(--success) 90%,var(--success-foreground) 10%);
+    --warning-hover:#b1893d;
+    --warning-hover:color-mix(in oklab,var(--warning) 90%,var(--warning-foreground) 10%);
+    --danger-hover:#ae4438;
+    --danger-hover:color-mix(in oklab,var(--danger) 90%,var(--danger-foreground) 10%);
+    --field-hover:#e4e7e6;
+    --field-hover:color-mix(in oklab,var(--field-background) 90%,var(--field-foreground) 2%);
+    --field-focus:var(--field-background);
+    --field-border-hover:#c6d0cf;
+    --field-border-hover:color-mix(in oklab,var(--field-border,var(--border)) 88%,var(--field-foreground) 10%);
+    --field-border-focus:#a7b3b1;
+    --field-border-focus:color-mix(in oklab,var(--field-border,var(--border)) 74%,var(--field-foreground) 22%);
+    /* الأَنعَمُ: خَلفيةٌ شَفّافةٌ ونَصٌّ مُغمَّق — احتِياطُها فَوقَ السَطح */
+    --default-soft:#f4f7f6;
+    --default-soft:color-mix(in oklab,var(--default) 50%,transparent);
+    --default-soft-foreground:var(--default-foreground);
+    --default-soft-hover:#f2f5f4;
+    --default-soft-hover:color-mix(in oklab,var(--default) 60%,transparent);
+    --accent-soft:#dce5e2;
+    --accent-soft:color-mix(in oklab,var(--accent) 15%,transparent);
+    --accent-soft-foreground:#164e41;
+    --accent-soft-foreground:color-mix(in oklab,var(--accent) 70%,var(--foreground) 30%);
+    --accent-soft-hover:#d0ddd9;
+    --accent-soft-hover:color-mix(in oklab,var(--accent) 20%,transparent);
+    --danger-soft:#f5e0dc;
+    --danger-soft:color-mix(in oklab,var(--danger) 15%,transparent);
+    --danger-soft-foreground:#703226;
+    --danger-soft-foreground:color-mix(in oklab,var(--danger) 70%,var(--foreground) 40%);
+    --danger-soft-hover:#f1d5d1;
+    --danger-soft-hover:color-mix(in oklab,var(--danger) 20%,transparent);
+    --warning-soft:#f2ebdf;
+    --warning-soft:color-mix(in oklab,var(--warning) 15%,transparent);
+    --warning-soft-foreground:#61552b;
+    --warning-soft-foreground:color-mix(in oklab,var(--warning) 80%,var(--foreground) 70%);
+    --warning-soft-hover:#eee4d5;
+    --warning-soft-hover:color-mix(in oklab,var(--warning) 20%,transparent);
+    --success-soft:#dfeae3;
+    --success-soft:color-mix(in oklab,var(--success) 15%,transparent);
+    --success-soft-foreground:#1a563e;
+    --success-soft-foreground:color-mix(in oklab,var(--success) 80%,var(--foreground) 60%);
+    --success-soft-hover:#d4e4da;
+    --success-soft-hover:color-mix(in oklab,var(--success) 20%,transparent);
+    --separator-secondary:#d7dcda;
+    --separator-secondary:color-mix(in oklab,var(--surface) 85%,var(--surface-foreground) 15%);
+    --border-secondary:#c5cbca;
+    --border-secondary:color-mix(in oklab,var(--surface) 78%,var(--surface-foreground) 22%);
+    --border-tertiary:#a7b0ae;
+    --border-tertiary:color-mix(in oklab,var(--surface) 66%,var(--surface-foreground) 34%);
+  }
+  html[data-theme="dark"]{
+    color-scheme:dark;
+    /* الأَساس */
+    --background:#0d1f1c;
+    --background:oklch(22.26% 0.0248 182.03);
+    --foreground:#e6f0ee;
+    --foreground:oklch(94.71% 0.0109 182.87);
+    /* الأَسطُح: لِلمُكَوِّناتِ غَيرِ العائِمة */
+    --surface:#132a26;
+    --surface:oklch(26.46% 0.0302 181.37);
+    --surface-foreground:var(--foreground);
+    --surface-secondary:#183330;
+    --surface-secondary:oklch(29.86% 0.0336 186.29);
+    --surface-secondary-foreground:var(--foreground);
+    --surface-tertiary:#1d3b36;
+    --surface-tertiary:oklch(32.72% 0.0373 181.92);
+    --surface-tertiary-foreground:var(--foreground);
+    /* الطَبَقاتُ العائِمة: تَلميحاتٌ ونَوافِذُ وقَوائِم */
+    --overlay:#132a26;
+    --overlay:oklch(26.46% 0.0302 181.37);
+    --overlay-foreground:var(--foreground);
+    --muted:#9fb8b3;
+    --muted:oklch(76.22% 0.0283 182.14);
+    --default:#1b3a34;
+    --default:oklch(32.24% 0.0387 179.65);
+    --default-foreground:var(--foreground);
+    /* دَرَجاتُ الهُوية — المُبَدَّلُ الوَحيدُ عَن HeroUI */
+    --accent:#4fbf9c;
+    --accent:oklch(73.04% 0.1150 169.47);
+    --accent-foreground:var(--eclipse);
+    --success:#5fd3a0;
+    --success:oklch(78.61% 0.1296 162.21);
+    --success-foreground:var(--eclipse);
+    --warning:#d9ad55;
+    --warning:oklch(77.03% 0.1177 82.71);
+    --warning-foreground:var(--eclipse);
+    --danger:#f08a80;
+    --danger:oklch(74.03% 0.1260 26.45);
+    --danger-foreground:var(--eclipse);
+    /* الحُقول */
+    --field-background:#132a26;
+    --field-background:oklch(26.46% 0.0302 181.37);
+    --field-foreground:var(--foreground);
+    --field-placeholder:var(--muted);
+    --field-border:transparent;
+    /* حُدودٌ وفَواصِلُ وتَركيز */
+    --border:#22403a;
+    --border:oklch(34.59% 0.0377 179.66);
+    --separator:#1e3833;
+    --separator:oklch(31.79% 0.0335 180.38);
+    --focus:var(--accent);
+    --link:var(--foreground);
+    --backdrop:rgba(0,0,0,0.6);
+    /* الظِلال — مِن HeroUI حَرفيًّا */
+    --surface-shadow:0 0 0 0 transparent inset;
+    --overlay-shadow:0 0 1px 0 rgba(255,255,255,.3) inset;
+    --field-shadow:0 0 0 0 transparent inset;
+    /* المُشتَقّات — نِسَبُ HeroUI نَفسُها، ولِكُلٍّ احتِياطٌ مَحسوب */
+    --surface-hover:#223833;
+    --surface-hover:color-mix(in oklab,var(--surface) 92%,var(--surface-foreground) 8%);
+    --background-secondary:#142623;
+    --background-secondary:color-mix(in oklab,var(--background) 96%,var(--foreground) 4%);
+    --background-tertiary:#1c2d2a;
+    --background-tertiary:color-mix(in oklab,var(--background) 92%,var(--foreground) 8%);
+    --background-inverse:var(--foreground);
+    --default-hover:#22403a;
+    --default-hover:color-mix(in oklab,var(--default) 96%,var(--default-foreground) 4%);
+    --accent-hover:#4bac8e;
+    --accent-hover:color-mix(in oklab,var(--accent) 90%,var(--accent-foreground) 10%);
+    --success-hover:#59be91;
+    --success-hover:color-mix(in oklab,var(--success) 90%,var(--success-foreground) 10%);
+    --warning-hover:#c39c50;
+    --warning-hover:color-mix(in oklab,var(--warning) 90%,var(--warning-foreground) 10%);
+    --danger-hover:#d87e75;
+    --danger-hover:color-mix(in oklab,var(--danger) 90%,var(--danger-foreground) 10%);
+    --field-hover:#253b37;
+    --field-hover:color-mix(in oklab,var(--field-background) 90%,var(--field-foreground) 2%);
+    --field-focus:var(--field-background);
+    --field-border-hover:#37534d;
+    --field-border-hover:color-mix(in oklab,var(--field-border,var(--border)) 88%,var(--field-foreground) 10%);
+    --field-border-focus:#516a64;
+    --field-border-focus:color-mix(in oklab,var(--field-border,var(--border)) 74%,var(--field-foreground) 22%);
+    /* الأَنعَمُ: خَلفيةٌ شَفّافةٌ ونَصٌّ مُغمَّق — احتِياطُها فَوقَ السَطح */
+    --default-soft:#17322d;
+    --default-soft:color-mix(in oklab,var(--default) 50%,transparent);
+    --default-soft-foreground:var(--default-foreground);
+    --default-soft-hover:#18342e;
+    --default-soft-hover:color-mix(in oklab,var(--default) 60%,transparent);
+    --accent-soft:#1a3a33;
+    --accent-soft:color-mix(in oklab,var(--accent) 12%,transparent);
+    --accent-soft-foreground:#84ceb4;
+    --accent-soft-foreground:color-mix(in oklab,var(--accent) 70%,var(--foreground) 30%);
+    --accent-soft-hover:#1c3f37;
+    --accent-soft-hover:color-mix(in oklab,var(--accent) 16%,transparent);
+    --danger-soft:#343833;
+    --danger-soft:color-mix(in oklab,var(--danger) 15%,transparent);
+    --danger-soft-foreground:#f0b0a8;
+    --danger-soft-foreground:color-mix(in oklab,var(--danger) 70%,var(--foreground) 40%);
+    --danger-soft-hover:#3e3d37;
+    --danger-soft-hover:color-mix(in oklab,var(--danger) 20%,transparent);
+    --warning-soft:#2a382d;
+    --warning-soft:color-mix(in oklab,var(--warning) 12%,transparent);
+    --warning-soft-foreground:#e0cda1;
+    --warning-soft-foreground:color-mix(in oklab,var(--warning) 80%,var(--foreground) 70%);
+    --warning-soft-hover:#313d2f;
+    --warning-soft-hover:color-mix(in oklab,var(--warning) 16%,transparent);
+    --success-soft:#1b3c33;
+    --success-soft:color-mix(in oklab,var(--success) 12%,transparent);
+    --success-soft-foreground:#a0e0c1;
+    --success-soft-foreground:color-mix(in oklab,var(--success) 80%,var(--foreground) 60%);
+    --success-soft-hover:#1e4238;
+    --success-soft-hover:color-mix(in oklab,var(--success) 16%,transparent);
+    --separator-secondary:#2f4440;
+    --separator-secondary:color-mix(in oklab,var(--surface) 85%,var(--surface-foreground) 15%);
+    --border-secondary:#3c504c;
+    --border-secondary:color-mix(in oklab,var(--surface) 78%,var(--surface-foreground) 22%);
+    --border-tertiary:#546763;
+    --border-tertiary:color-mix(in oklab,var(--surface) 66%,var(--surface-foreground) 34%);
+  }
+  /* ═══ /HeroUI-TOKENS ═══ */
+
+  /* ═══ الجِسر: رُموزُ القِشرةِ القَديمةُ تُشتَقُّ مِن رُموزِ HeroUI ═══
+     ⚠️ **جِسرٌ لا نَسخ.** ثَمانِمِئةِ سَطرٍ مِنَ الأَنماطِ تَستَعمِلُ `--panel`
+        و`--line` و`--sh`؛ فَتُعادُ كِتابَتُها كُلُّها خَطَرٌ بِلا داعٍ، ويَكفي أَن
+        تُشتَقَّ الرُموزُ نَفسُها مِن HeroUI فَتَرِثَ الصَفحةُ لُغَتَهُ دَفعةً واحِدة.
+     ⚠️ ويُعَرَّفُ في `:root` وَحدَه: `var()` تُحَلُّ عِندَ الاستِعمالِ لا عِندَ
+        الإِعلان، فَإِذا حَمَلَ `html` صِنفَ الظَلامِ أَخَذَت قِيَمَهُ هوَ. تَكرارُهُ
+        لِلوَضعِ اللَيليِّ نَسخةٌ ثانيةٌ تَفتَرِق. */
+  :root{
+    --bg:var(--background);
+    --panel:var(--surface);
+    --ink:var(--foreground);
+    --ink-2:var(--muted);
+    --line:var(--border);
+    --line-2:var(--border-secondary);
+    --brand:var(--accent);
+    --brand-soft:var(--accent-soft);
+    --ok:var(--success);
+    /* ⚠️ لا يُجسَرُ `--danger-soft`: HeroUI يُعَرِّفُهُ بِالاسمِ نَفسِه، و
+       `--x:var(--x)` حَلقةٌ يُلغيها المُتَصَفِّحُ فَيَصيرُ اللَونُ فارِغًا. */
+    /* نِصفُ القُطرِ مِن سُلَّمِ HeroUI: 16px لِلبِطاقاتِ و12px لِلعَناصِرِ الصَغيرة */
+    --r:var(--radius-2xl);
+    --r-sm:var(--radius-xl);
+    /* والظِلالُ ظِلالُه: سَطحٌ لِلبِطاقاتِ وعائِمٌ لِلنَوافِذِ والقَوائِم */
+    --sh:var(--surface-shadow);
+    --sh-lift:var(--overlay-shadow);
   }
   html[data-theme="dark"] .sig-pad,html[data-theme="dark"] .f-in{background:var(--panel)}
   html[data-theme="dark"] table.rec-table th,html[data-theme="dark"] th{background:#17332d}
@@ -853,3 +1127,67 @@ tr.exc-row{background:#fffaf0}
 .adm-group .tbl-wrap{overflow-x:auto}
 .adm-group table.adm-t{border:0;border-radius:0}
 @media print{.adm-group>summary::before{display:none}.adm-group{break-inside:avoid}}
+
+/* ═══════════ HeroUI-COMPONENTS: تَشريحُ مُكَوِّناتِ HeroUI v3 ═══════════
+   مَنقولٌ عَن `packages/styles/components/*.css` (Apache-2.0): المَقاساتُ
+   والانتِقالاتُ والحالاتُ وحَلقةُ التَركيزِ كَما هيَ، مُطَبَّقةً على أَصنافِ
+   القِشرةِ القائِمةِ لا على أَصنافٍ جَديدة — فَلا تُلمَسُ صَفحةُ HTML واحِدة.
+   ⚠️ يُوضَعُ **آخِرَ المِلَفّ**: التَخصيصُ نَفسُهُ، فَالمُتَأَخِّرُ يَغلِب. ولا
+      يُرفَعُ تَخصيصُهُ بِـ`!important` — قاعِدةٌ قاهِرةٌ تُعمي مَن يُصلِحُ بَعدَنا. */
+
+/* ── الزِرّ: `.button` عِندَ HeroUI ── */
+button,.b-main,.b-ghost{
+  display:inline-flex;align-items:center;justify-content:center;gap:calc(var(--spacing) * 2);
+  min-height:40px;padding-inline:calc(var(--spacing) * 4);
+  border-radius:var(--radius-3xl);          /* rounded-3xl — كَبسولةُ HeroUI */
+  font-size:var(--fs-base);font-weight:500;white-space:nowrap;
+  border:0 solid transparent;cursor:var(--cursor-interactive);
+  transition:transform 250ms cubic-bezier(.4,0,.2,1),
+             background-color 100ms cubic-bezier(0,0,.2,1),
+             box-shadow 100ms cubic-bezier(0,0,.2,1);
+}
+button:active,.b-main:active,.b-ghost:active{transform:scale(.97)}
+button:disabled,button[aria-disabled="true"]{
+  opacity:var(--disabled-opacity);cursor:var(--cursor-disabled);transform:none}
+/* حَلقةُ التَركيزِ بِإِزاحة — `status-focused` عِندَ HeroUI */
+button:focus-visible,.f-in:focus-visible,a:focus-visible,[tabindex]:focus-visible{
+  outline:2px solid var(--focus);outline-offset:var(--ring-offset-width)}
+.b-main{background:var(--accent);color:var(--accent-foreground)}
+.b-main:hover{background:var(--accent-hover)}
+/* المُفَرَّغُ = `button--outline`: خَلفيةٌ شَفّافةٌ وحَدٌّ، وتَعبِئةٌ خَفيفةٌ عِندَ المُرور */
+.b-ghost{background:transparent;color:var(--accent);
+         border:var(--border-width) solid var(--border)}
+.b-ghost:hover{background:color-mix(in srgb,var(--default) 60%,transparent)}
+.b-sm{min-height:32px;padding-inline:calc(var(--spacing) * 3);font-size:var(--fs-sm)}
+.b-sm:active{transform:scale(.98)}
+@media(min-width:768px){button,.b-main,.b-ghost{min-height:36px}.b-sm{min-height:32px}}
+
+/* ── الحَقل: `--field-*` عِندَ HeroUI — بِلا حَدٍّ وبِظِلٍّ خَفيفٍ ونِصفِ قُطرٍ أَوسَع ── */
+.f-in{
+  border:var(--field-border-width) solid var(--field-border);
+  border-radius:var(--field-radius);
+  background:var(--field-background);color:var(--field-foreground);
+  box-shadow:var(--field-shadow);
+  transition:background-color 100ms cubic-bezier(0,0,.2,1),box-shadow 100ms cubic-bezier(0,0,.2,1);
+}
+.f-in::placeholder{color:var(--field-placeholder)}
+.f-in:hover:not(:focus){background:var(--field-hover)}
+.f-in:focus{outline:2px solid var(--focus);outline-offset:0;background:var(--field-focus)}
+.f-in:disabled{opacity:var(--disabled-opacity);cursor:var(--cursor-disabled)}
+
+/* ── البِطاقةُ والنافِذة: نِصفُ قُطرِ HeroUI وظِلالُه ── */
+.card,.tile,.modal-card{border-radius:min(32px,var(--radius-3xl))}
+.card,.tile{box-shadow:var(--surface-shadow);background:var(--surface)}
+.modal{background:var(--backdrop)}
+.modal-card{box-shadow:var(--overlay-shadow);background:var(--overlay)}
+
+/* ── الشارات: صيغةُ `soft` عِندَ HeroUI — خَلفيةٌ شَفّافةٌ ونَصٌّ مُغمَّق ── */
+.g-chip{border-radius:var(--radius-3xl);padding:2px 10px}
+.g-chip.ok{background:var(--success-soft);color:var(--success-soft-foreground)}
+.g-chip.bad{background:var(--danger-soft);color:var(--danger-soft-foreground)}
+.g-chip.warn{background:var(--warning-soft);color:var(--warning-soft-foreground)}
+.g-chip.gray{background:var(--default-soft);color:var(--muted)}
+
+/* ── الفَواصِل ── */
+hr,.sep{border-color:var(--separator)}
+/* ═══════════ /HeroUI-COMPONENTS ═══════════ */
