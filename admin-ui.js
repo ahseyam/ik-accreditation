@@ -1,11 +1,11 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=e168b883";
-import { FolderStore } from "./storage.js?v=e168b883";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=548454e1";
+import { FolderStore } from "./storage.js?v=548454e1";
 /* ⚠️ `DIMENSIONS` كانَت **مُستَعمَلةً بِلا استيراد**: لَوحةُ المَدرَسةِ تَنهارُ
    بِـReferenceError عِندَ كُلِّ مَدرَسةٍ لَها دَرَجةُ جاهِزية — أَي كُلِّ مَدرَسةٍ
    عامِلة. ولا يَظهَرُ الخَطَأُ إلّا في مِعيارِ المُتَصَفِّح، فَمَرَّ صامِتًا حَتّى
    حَقَنَ المِجَسُّ صَفًّا وفَتَحَ اللَوحة. */
-import { DIMENSIONS } from "./readiness.js?v=e168b883";
+import { DIMENSIONS } from "./readiness.js?v=548454e1";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "stageOrder", sortDir = 1, sel = null;
@@ -86,23 +86,6 @@ let lastRoot = null;
 $("rescan").onclick = () => (lastRoot ? scan(lastRoot) : $("pick").click());
 $("print").onclick = () => window.print();
 /* ⚠️ الطباعة لا تكفي: الإدارة تطلب الأرقام في جدولٍ يُفرَز ويُجمَع. */
-/* ⚠️ أَزرارُ الشَريطِ **تُفَوِّضُ** إلى أَزرارِ الرَأسِ ولا تُكَرِّرُ سُلوكَها:
-   نُسخَتانِ مِنَ السُلوكِ تَفتَرِقانِ عِندَ أَوَّلِ إِصلاحٍ يُصيبُ إِحداهُما. */
-const NS_TOOLS = [["nsRescan", "rescan"], ["nsCsv", "csv"], ["nsPrint", "print"]];
-for (const [ns, hd] of NS_TOOLS) $(ns).onclick = () => { closeNav(); $(hd).click(); };
-/* ⚠️ زِرٌّ يَبدو صالِحًا وهوَ لا يَفعَلُ شَيئًا يُعَلِّمُ المُستَخدِمَ أَنَّ اللَوحةَ
-   عاطِلة: أَدَواتُ الشَريطِ تُعَطَّلُ ما دامَ نَظيرُها في الرَأسِ مَخفيًّا. */
-function syncNavTools() {
-  for (const [ns, hd] of NS_TOOLS) $(ns).disabled = $(hd).classList.contains("hidden");
-}
-syncNavTools();
-$("nsToggle").onclick = () => $("navSide").classList.toggle("open");
-/* والضَغطُ خارِجَ الشَريطِ المُنزَلِقِ يُغلِقُه — وإلّا حَجَبَ الجَدوَلَ على اللَوحي. */
-document.addEventListener("click", (e) => {
-  const n = $("navSide");
-  if (!n.classList.contains("open")) return;
-  if (!n.contains(e.target) && e.target.id !== "nsToggle") closeNav();
-});
 $("csv").onclick = () => {
   const cols = ["المدرسة", "المجمع", "المسار", "المرحلة", "الجاهزية", "الحالة",
                 "أسماء ناقصة", "بانتظار الاعتماد", "بانتظار المشاركة",
@@ -142,7 +125,7 @@ async function scan(root) {
         ? "<br><b>تعذّرت القراءة في:</b> " + T.errors.slice(0, 3).map(esc).join(" · ")
         : "") +
       "</div>";
-    $("rescan").classList.remove("hidden"); syncNavTools();
+    $("rescan").classList.remove("hidden");
     return;
   }
   rows = [];
@@ -171,7 +154,6 @@ async function scan(root) {
   const pr = $("pickRoot");
   if (pr) pr.onclick = () => $("pick").click();
   for (const id of ["rescan", "print", "csv"]) $(id).classList.remove("hidden");
-  syncNavTools();
   $("main").classList.remove("hidden");
   fillFilters(); render();
 }
@@ -229,13 +211,6 @@ function render() {
     ["pending", "بانتظار اعتمادك", pend, pend > 0],
     ["share", "الصلاحيات والمشاركة", share, share > 0],
   ];
-  $("nsTabs").innerHTML = TABS.map(([k, l, n, alert]) =>
-    '<button class="ns-i' + (tab === k ? " on" : "") + (alert ? " alert" : "") + '" data-t="' + k + '">' +
-    esc(l) + '<span class="n">' + n + "</span></button>").join("");
-  $("nsTabs").querySelectorAll(".ns-i").forEach((b) => {
-    b.onclick = () => { tab = b.dataset.t; closeNav(); render(); };
-  });
-  renderNavSchool();
   $("tabs").innerHTML = TABS.map(([k, l, n, alert]) =>
     '<button class="tab' + (tab === k ? " on" : "") + (alert ? " alert" : "") + '" data-t="' + k + '">' +
     esc(l) + '<span class="n">' + n + "</span></button>").join("");
@@ -464,7 +439,6 @@ function bindOd() {
 /* ── لوحة المدرسة الجانبية ── */
 function openSide(r) {
   sel = r;
-  if ($("nsSchool")) renderNavSchool();
   const st = (p) => p.placeholder ? '<span class="pill p-gray">بلا اسم</span>'
     : p.sharedAt ? '<span class="pill p-ok">مشارَك</span>'
     : p.approvedAt ? '<span class="pill p-warn">بانتظار المشاركة</span>'
@@ -500,15 +474,36 @@ function openSide(r) {
       : '<div class="side-note">لا شيء بانتظار اعتمادك هنا. يظهر زرّ الاعتماد ' +
         "حين تُدخل المدرسة اسمًا جديدًا أو تُعدّله.</div>") +
     '<h2 class="side-h">المنسوبون (' + r.people.length + ")</h2>" +
+    /* ⚠️ **عَمَلُ المَنسوبِ وبابُ الدُخولِ بِصِفَتِهِ هُنا** — في مِلَفِّ المَدرَسةِ
+       حَيثُ يَنظُرُ إِلَيهِ مُديرُ التَخطيطِ والجَودةِ أَصلًا، لا في شَريطٍ ثالِث.
+       «إِدخالات/شَواهِد» تُقرَأُ مِنَ المُجَلَّدِ نَفسِه، و«افتح بصفته» يُسَلِّمُ
+       مِقبَضَ المُجَلَّدِ إلى المَوقِعِ ثُمَّ يَفتَحُهُ بِـ`?as=` — بِلا شاشةِ
+       «مَن أَنت» وبِلا بَحثٍ يَدَويٍّ في أَربَعةَ عَشَرَ سَطرًا. */
     r.people.map((p) =>
       '<div class="prow"><div class="who"><b>' + esc(p.fullName) + "</b>" +
-      "<span>" + esc(p.roleAr) + (p.email ? " · " + esc(p.email) : "") + "</span></div>" +
+      "<span>" + esc(p.roleAr) + (p.email ? " · " + esc(p.email) : "") +
+      ' · <span class="wk" title="إدخالات · شواهد · آخر نشاط">' +
+      (p.entries || 0) + "\u200f/" + (p.evidence || 0) +
+      (p.lastAt ? " · " + esc(p.lastAt) : "") + "</span></span></div>" +
       '<div class="acts">' + st(p) +
       (p.submittedAt && !p.approvedAt
         ? '<button class="b-main b-xs" data-ap1="' + esc(p.id) + '">اعتماد</button>' : "") +
+      '<button class="b-ghost b-xs" data-as="' +
+        encodeURIComponent(p.employeeNo || p.role) + '" title="افتح المنصّة بصفته">↗ بصفته</button>' +
       "</div></div>").join("");
   $("side").classList.remove("hidden"); $("scrim").classList.remove("hidden");
   $("sClose").onclick = closeSide;
+  $("side").querySelectorAll("[data-as]").forEach((b) => {
+    b.onclick = async () => {
+      const t = b.textContent; b.disabled = true; b.textContent = "…";
+      try {
+        await FolderStore.adopt(r.handle);
+        window.open("index.html?as=" + b.dataset.as, "_blank", "noopener");
+        b.textContent = t;
+      } catch (e) { b.textContent = "⚠️"; setTimeout(() => (b.textContent = t), 1600); }
+      b.disabled = false;
+    };
+  });
   $("side").querySelectorAll("[data-ap1]").forEach((b) => {
     b.onclick = async () => {
       b.disabled = true; b.textContent = "…";
@@ -527,55 +522,12 @@ function openSide(r) {
     openSide(r); render();
   };
 }
-/* ⚠️ الشَريطُ لا يَعرِضُ رابِطًا مَيِّتًا: قَبلَ اختِيارِ مَدرَسةٍ يَقولُ ما يَنقُص
-   لا يَعرِضُ أَزرارًا لا تَعمَل. والفَتحُ في المَوقِعِ يُسَلِّمُ مِقبَضَ المُجَلَّدِ
-   إلى المَوقِعِ ثُمَّ يَفتَحُهُ في لِسانٍ جَديد — فَلا يَفقِدُ المُستَشارُ لَوحَتَه. */
-function renderNavSchool() {
-  const box = $("nsSchool");
-  if (!sel) {
-    box.innerHTML = '<span class="ns-sch">لم تُحدَّد مدرسة بعد — اضغط اسم مدرسة في الجدول.</span>';
-    return;
-  }
-  /* ⚠️ **الشَريطُ يَفتَحُ المَنَصّةَ بِصِفةِ كُلِّ مَنسوبٍ لا بِصِفةٍ واحِدة.**
-     قالَ مُديرُ التَخطيطِ والجَودة: «لا أَستَطيعُ الوُصولَ لِلمُستَخدِمينَ ولا
-     تَفَقُّدَ ما قاموا بِه ولا التَحَرُّكَ بِكُلِّ الأَدوار». فَلِكُلِّ مَنسوبٍ
-     سَطرٌ يَحمِلُ عَمَلَهُ (إِدخالاتٌ وشَواهِدُ وآخِرُ نَشاط) وزِرًّا يَفتَحُ
-     المَنَصّةَ **مُسَجَّلًا بِاسمِه** — لا شاشةَ «مَن أَنت» ثُمَّ بَحثٌ يَدَوي. */
-  const st = (sel.people || []).map((pp) => {
-    const n = (pp.entries || 0), ev = (pp.evidence || 0);
-    const key = encodeURIComponent(pp.employeeNo || pp.role);
-    return '<button class="ns-i ns-p" data-as="' + key + '" title="' +
-      esc(pp.fullName + " — " + pp.roleAr) + '">' +
-      '<span class="ns-nm">' + esc(pp.fullName) + "</span>" +
-      '<span class="n">' + (n || ev ? n + "/" + ev : "—") + "</span></button>";
-  }).join("");
-  box.innerHTML = '<span class="ns-sch">' + markGender(sel.school, esc) + "</span>" +
-    '<button class="ns-i" id="nsOpenSide">🗂 ملفّ المدرسة</button>' +
-    '<button class="ns-i" id="nsOpenSite">↗ افتح المدرسة في الموقع</button>' +
-    (st ? '<div class="ns-t2">منسوبوها — افتح بصفته <span class="ns-hint">إدخالات/شواهد</span></div>' + st : "");
-  $("nsOpenSide").onclick = () => { closeNav(); openSide(sel); };
-  box.querySelectorAll(".ns-p").forEach((b2) => {
-    b2.onclick = async () => {
-      const t = b2.textContent; b2.disabled = true;
-      try {
-        await FolderStore.adopt(sel.handle);
-        window.open("index.html?as=" + b2.dataset.as, "_blank", "noopener");
-      } catch (e) { b2.textContent = "⚠️ تعذّر"; setTimeout(() => (b2.textContent = t), 1600); }
-      b2.disabled = false;
-    };
-  });
-  $("nsOpenSite").onclick = async () => {
-    const b = $("nsOpenSite"); b.disabled = true; b.textContent = "… يُجهَّز";
-    try {
-      await FolderStore.adopt(sel.handle);
-      window.open("index.html", "_blank", "noopener");
-      b.textContent = "↗ افتح المدرسة في الموقع";
-    } catch (e) { b.textContent = "⚠️ تعذّر الفتح"; }
-    b.disabled = false;
-  };
-}
-function closeNav() { $("navSide").classList.remove("open"); }
-function closeSide() { $("side").classList.add("hidden"); $("scrim").classList.add("hidden"); sel = null; if ($("nsSchool")) renderNavSchool(); }
+/* ⚠️ **حُذِفَ الشَريطُ الجانِبيُّ لِلَوحةِ الإِدارة** بِطَلَبِ مُديرِ التَخطيطِ
+   والجَودةِ مَرَّتَين: «لا داعِيَ لَه». وما كانَ فيهِ مِن فائِدةٍ — مَنسوبو
+   المَدرَسةِ وعَمَلُهُم وبابُ الدُخولِ بِصِفَتِهِم — انتَقَلَ إلى **مِلَفِّ
+   المَدرَسة**، وهوَ مَوضِعُهُ الطَبيعي. طَبَقةُ تَنَقُّلٍ ثالِثةٌ فَوقَ تَبويباتٍ
+   ورَأسٍ تُشَتِّتُ ولا تُضيف. */
+function closeSide() { $("side").classList.add("hidden"); $("scrim").classList.add("hidden"); sel = null; }
 $("scrim").onclick = closeSide;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sel) closeSide(); });
 

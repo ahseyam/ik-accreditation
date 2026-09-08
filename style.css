@@ -395,7 +395,7 @@
              text-decoration:none;border-bottom:1px solid var(--line);cursor:pointer}
   .results a:hover{background:var(--brand-soft)}
   .results .k{font-size:var(--fs-xs);color:var(--ink-2);margin-inline-start:8px}
-  .menu-pop{position:absolute;inset-block-start:52px;inset-inline-end:22px;background:var(--panel);
+  .menu-pop{position:fixed;inset-block-start:52px;inset-inline-end:22px;background:var(--panel);
     border:1px solid var(--line);border-radius:var(--r-sm);box-shadow:var(--sh-lift);
     min-width:230px;z-index:20;padding:7px}
   .menu-pop button{display:flex;width:100%;justify-content:space-between;align-items:center;
@@ -705,7 +705,7 @@
   min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px;
   box-shadow:0 2px 6px rgba(0,0,0,.4)}
 #bellBtn{position:relative}
-.alerts-pop{position:absolute;inset-block-start:56px;inset-inline-end:16px;background:var(--panel);
+.alerts-pop{position:fixed;inset-block-start:56px;inset-inline-end:16px;background:var(--panel);
   border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh-lift);
   width:min(420px,calc(100vw - 32px));max-height:min(72vh,560px);overflow:auto;z-index:30}
 .alerts-pop .ah{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;
@@ -1041,7 +1041,14 @@ html[data-theme="dark"] .dev.no{background:#2b1a18;border-color:#4a2b26}
 }
 
 /* ── قائمة الخروج ورابط لوحة الإدارة ───────────────────────────── */
-.exit-pop{position:absolute;inset-block-start:calc(100% + 8px);inset-inline-end:12px;z-index:30;
+/* ⚠️ **`calc(100% + 8px)` كانَت تَعني «تَحتَ الشَريط» ولا أَبَ مُوضَعٌ لَها.**
+   `#exitPop` شَقيقُ الشَريطِ لا ابنُه، فَـ`absolute` بِلا أَبٍ مُوضَعٍ تَرجِعُ
+   إلى الكُتلةِ الأولى، و«100%» صارَت ارتِفاعَها كُلَّه: فَتَحَت القائِمةُ عِندَ
+   908px في شاشةٍ ارتِفاعُها 900 — **خارِجَ المَرأى**. يَضغَطُ المُستَخدِمُ «خُروج»
+   فَلا يَرى شَيئًا ويَقولُ «الزِرُّ لا يَعمَل»، والزِرُّ يَعمَل.
+   العِلاجُ `fixed` ومَوضِعٌ يُحسَبُ مِن مُستَطيلِ الزِرِّ عِندَ الفَتح — فَيَصيبُ
+   وإِن التَفَّ الشَريطُ إلى سَطرَينِ على الجَوّال. */
+.exit-pop{position:fixed;inset-block-start:60px;inset-inline-end:12px;z-index:30;
           background:var(--panel);border:1px solid var(--line);border-radius:13px;
           box-shadow:0 12px 30px #0002;min-width:min(330px,92vw);overflow:hidden}
 .exit-pop .ah{padding:12px 15px;border-bottom:1px solid var(--line);font-weight:800;
