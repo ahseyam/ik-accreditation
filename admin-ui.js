@@ -1,6 +1,11 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=27270ee9";
-import { FolderStore } from "./storage.js?v=27270ee9";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=bab17f74";
+import { FolderStore } from "./storage.js?v=bab17f74";
+/* ⚠️ `DIMENSIONS` كانَت **مُستَعمَلةً بِلا استيراد**: لَوحةُ المَدرَسةِ تَنهارُ
+   بِـReferenceError عِندَ كُلِّ مَدرَسةٍ لَها دَرَجةُ جاهِزية — أَي كُلِّ مَدرَسةٍ
+   عامِلة. ولا يَظهَرُ الخَطَأُ إلّا في مِعيارِ المُتَصَفِّح، فَمَرَّ صامِتًا حَتّى
+   حَقَنَ المِجَسُّ صَفًّا وفَتَحَ اللَوحة. */
+import { DIMENSIONS } from "./readiness.js?v=bab17f74";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "stageOrder", sortDir = 1, sel = null;
@@ -9,9 +14,51 @@ let lastScan = null;
 /* ⚠️ الترتيب الطبيعي للمراحل زمنيّ لا أبجديّ: الطفل يبدأ روضةً وينتهي ثانويًّا.
    والترتيب الأبجدي كان يضع «رياض أطفال» بين الثانوي والمتوسط — ترتيبٌ لا
    يقرؤه أحد. ولكل مرحلة لونها، والمسار درجتان من اللون نفسه. */
-const STAGE_ORDER = { "رياض أطفال": 0, "ابتدائي": 1, "متوسط": 2, "ثانوي": 3 };
-const STAGE_KEY = { "رياض أطفال": "kg", "ابتدائي": "pri", "متوسط": "mid", "ثانوي": "high" };
-const stageClass = (r) => "st-" + (STAGE_KEY[r.stage] || "pri") + " " +
+/* ⚠️ **خَريطةٌ واحِدةٌ لِلمَرحَلة، والبَحثُ بِالرَمزِ وبِاللَفظِ مَعًا.**
+   كانَ لِلتَرتيبِ خَريطةٌ ولِلتَلوينِ أُخرى، وكِلتاهُما بِمَفاتيحَ عَرَبيةٍ بَينَما
+   الحُزمةُ تَحمِلُ رَمزًا إنجليزيًّا — فَسَقَطَتا إلى الاحتِياطِ بِلا خَطَأٍ ولا
+   أَثَر: كُلُّ المَدارِسِ رُتِّبَت أَبجَديًّا وصُبِغَت لَونَ «ابتدائي». وشَكا
+   المُستَشارُ مَرَّتَين مِنَ اللَونِ ومَرّةً مِنَ التَرتيب، والعِلّةُ واحِدة. */
+const STAGES = [
+  { code: "KG",      ar: "رياض أطفال", key: "kg"   },
+  { code: "PRIMARY", ar: "ابتدائي",    key: "pri"  },
+  { code: "MIDDLE",  ar: "متوسط",      key: "mid"  },
+  { code: "HIGH",    ar: "ثانوي",      key: "high" },
+];
+const stageOf = (r) => STAGES.find((s) => s.code === r.stage || s.ar === r.stage)
+  /* واحتِياطًا مِن مُجَلَّدِ المَرحَلةِ نَفسِهِ («ابتدائي — بنين») لا مِن رَقمٍ أَعمى */
+  ?? STAGES.find((s) => String(r.stageGender || "").startsWith(s.ar)) ?? null;
+/* ⚠️ الجِنسُ يُشتَقُّ مِنَ المُجَلَّدِ إن غابَ عَنِ الحُزمة — والمُقارَنةُ تَتَجاهَلُ
+   الحَرَكات: «بَنات» بِفَتحةٍ لا تُساوي «بنات» في `===`. */
+const strip = (t) => String(t || "").replace(/[\u064b-\u0652\u0670]/g, "");
+/* ⚠️ **يُهرَّبُ النَصُّ أَوَّلًا ثُمَّ تُلَوَّنُ الكَلِمة**: لَو عُكِسَ التَرتيبُ
+   لَابتَلَعَ `esc` وُسومَ اللَونِ فَظَهَرَت حُروفًا. والبَحثُ يَقبَلُ الحَرَكة
+   لِأَنَّ الأَسماءَ مَكتوبةٌ «بَنين» و«بَنات» بِفَتحةٍ على الباء. */
+const markGender = (name, escFn) => escFn(name)
+  .replace(/بَ?نين/g, '<span class="g-m">$&</span>')
+  .replace(/بَ?نات/g, '<span class="g-f">$&</span>');
+/* ⚠️ التَرتيبُ يُقاسُ بِاستِدعاءِ **هذِهِ** الدالّةِ لا بِنَسخِ مَنطِقِها في
+   الفاحِص: نُسخةٌ في الفاحِصِ تُثبِتُ الفاحِصَ لا اللَوحة. لِذا تُكشَفُ في
+   `window.ADMIN_TEST` — والصَفحةُ ساكِنةٌ بِلا سِرٍّ يُكشَف. */
+function sortRows(list) {
+  return list.sort((a, b) => {
+    if (sortKey === "stageOrder") {
+      /* المرحلة زمنيًّا (رياض ⟵ ثانوي)، ثم الوطني قبل العالمي، ثم بنين قبل بنات، ثم الاسم */
+      const d = (STAGES.indexOf(stageOf(a)) + 1 || 9) - (STAGES.indexOf(stageOf(b)) + 1 || 9)
+        || (a.track === "عالمي") - (b.track === "عالمي")
+        || (genderOf(a) === "بنات") - (genderOf(b) === "بنات")
+        || a.school.localeCompare(b.school, "ar");
+      return d * sortDir;
+    }
+    const x = a[sortKey], y = b[sortKey];
+    return (typeof x === "string" ? String(x).localeCompare(String(y), "ar") : (x || 0) - (y || 0)) * sortDir;
+  });
+}
+const genderOf = (r) => {
+  const g = strip(r.gender) || strip(r.stageGender).split("—").pop().trim();
+  return g.includes("بنات") ? "بنات" : g.includes("بنين") ? "بنين" : "";
+};
+const stageClass = (r) => "st-" + (stageOf(r)?.key ?? "pri") + " " +
   (r.track === "عالمي" ? "tr-int" : "tr-nat");
 const ME = "مدير الجودة والتخطيط";
 
@@ -39,6 +86,23 @@ let lastRoot = null;
 $("rescan").onclick = () => (lastRoot ? scan(lastRoot) : $("pick").click());
 $("print").onclick = () => window.print();
 /* ⚠️ الطباعة لا تكفي: الإدارة تطلب الأرقام في جدولٍ يُفرَز ويُجمَع. */
+/* ⚠️ أَزرارُ الشَريطِ **تُفَوِّضُ** إلى أَزرارِ الرَأسِ ولا تُكَرِّرُ سُلوكَها:
+   نُسخَتانِ مِنَ السُلوكِ تَفتَرِقانِ عِندَ أَوَّلِ إِصلاحٍ يُصيبُ إِحداهُما. */
+const NS_TOOLS = [["nsRescan", "rescan"], ["nsCsv", "csv"], ["nsPrint", "print"]];
+for (const [ns, hd] of NS_TOOLS) $(ns).onclick = () => { closeNav(); $(hd).click(); };
+/* ⚠️ زِرٌّ يَبدو صالِحًا وهوَ لا يَفعَلُ شَيئًا يُعَلِّمُ المُستَخدِمَ أَنَّ اللَوحةَ
+   عاطِلة: أَدَواتُ الشَريطِ تُعَطَّلُ ما دامَ نَظيرُها في الرَأسِ مَخفيًّا. */
+function syncNavTools() {
+  for (const [ns, hd] of NS_TOOLS) $(ns).disabled = $(hd).classList.contains("hidden");
+}
+syncNavTools();
+$("nsToggle").onclick = () => $("navSide").classList.toggle("open");
+/* والضَغطُ خارِجَ الشَريطِ المُنزَلِقِ يُغلِقُه — وإلّا حَجَبَ الجَدوَلَ على اللَوحي. */
+document.addEventListener("click", (e) => {
+  const n = $("navSide");
+  if (!n.classList.contains("open")) return;
+  if (!n.contains(e.target) && e.target.id !== "nsToggle") closeNav();
+});
 $("csv").onclick = () => {
   const cols = ["المدرسة", "المجمع", "المسار", "المرحلة", "الجاهزية", "الحالة",
                 "أسماء ناقصة", "بانتظار الاعتماد", "بانتظار المشاركة",
@@ -78,7 +142,7 @@ async function scan(root) {
         ? "<br><b>تعذّرت القراءة في:</b> " + T.errors.slice(0, 3).map(esc).join(" · ")
         : "") +
       "</div>";
-    $("rescan").classList.remove("hidden");
+    $("rescan").classList.remove("hidden"); syncNavTools();
     return;
   }
   rows = [];
@@ -107,6 +171,7 @@ async function scan(root) {
   const pr = $("pickRoot");
   if (pr) pr.onclick = () => $("pick").click();
   for (const id of ["rescan", "print", "csv"]) $(id).classList.remove("hidden");
+  syncNavTools();
   $("main").classList.remove("hidden");
   fillFilters(); render();
 }
@@ -157,11 +222,21 @@ function render() {
   ].map(([l, v, c]) => '<div class="kpi-b ' + c + '"><div class="v">' + esc(String(v)) +
       '</div><div class="l">' + esc(l) + "</div></div>").join("");
 
-  $("tabs").innerHTML = [
+  /* ⚠️ **مَصدَرٌ واحِدٌ لِلأَقسام**: التَبويباتُ في الأَعلى والشَريطُ الجانِبي
+     يَرسُمانِ مِن قائِمةٍ واحِدة — قائِمَتانِ تَفتَرِقانِ عِندَ أَوَّلِ قِسمٍ يُضاف. */
+  const TABS = [
     ["schools", "المدارس", ok.length, false],
     ["pending", "بانتظار اعتمادك", pend, pend > 0],
     ["share", "الصلاحيات والمشاركة", share, share > 0],
-  ].map(([k, l, n, alert]) =>
+  ];
+  $("nsTabs").innerHTML = TABS.map(([k, l, n, alert]) =>
+    '<button class="ns-i' + (tab === k ? " on" : "") + (alert ? " alert" : "") + '" data-t="' + k + '">' +
+    esc(l) + '<span class="n">' + n + "</span></button>").join("");
+  $("nsTabs").querySelectorAll(".ns-i").forEach((b) => {
+    b.onclick = () => { tab = b.dataset.t; closeNav(); render(); };
+  });
+  renderNavSchool();
+  $("tabs").innerHTML = TABS.map(([k, l, n, alert]) =>
     '<button class="tab' + (tab === k ? " on" : "") + (alert ? " alert" : "") + '" data-t="' + k + '">' +
     esc(l) + '<span class="n">' + n + "</span></button>").join("");
   $("tabs").querySelectorAll(".tab").forEach((b) => {
@@ -196,18 +271,7 @@ const COLS = [
    — فمجموعةٌ مطويّة تُخفي نتيجةَ بحثٍ تظنّه فارغًا. */
 function renderSchools() {
   const list = filtered().map((r) => ({ ...r, pendingN: r.pending.length, shareN: r.needShare.length }));
-  list.sort((a, b) => {
-    if (sortKey === "stageOrder") {
-      /* المرحلة زمنيًّا، ثم الوطني قبل العالمي، ثم بنين قبل بنات، ثم الاسم */
-      const d = (STAGE_ORDER[a.stage] ?? 9) - (STAGE_ORDER[b.stage] ?? 9)
-        || (a.track === "عالمي") - (b.track === "عالمي")
-        || (a.gender === "بنات") - (b.gender === "بنات")
-        || a.school.localeCompare(b.school, "ar");
-      return d * sortDir;
-    }
-    const x = a[sortKey], y = b[sortKey];
-    return (typeof x === "string" ? String(x).localeCompare(String(y), "ar") : (x || 0) - (y || 0)) * sortDir;
-  });
+  sortRows(list);
   if (!list.length) { $("body").innerHTML = '<div class="empty">لا مدرسة تطابق التصفية.</div>'; return; }
 
   const active = !!(($("q").value || "").trim() || $("fComplex").value ||
@@ -237,7 +301,7 @@ function renderSchools() {
     const body = '<div class="tbl-wrap"><table class="adm-t"><thead><tr>' + th +
       "</tr></thead><tbody>" +
       rows.map((r) => '<tr class="' + stageClass(r) + '" data-g="' + gi + '" data-i="' + list.indexOf(r) + '">' +
-        '<td class="r sch"><b>' + esc(r.school) + "</b></td>" +
+        '<td class="r sch"><b>' + markGender(r.school, esc) + "</b></td>" +
         '<td class="hide-sm">' + esc(r.complex) + "</td>" +
         '<td class="hide-sm trk">' + esc(r.track) + "</td>" +
         '<td class="hide-sm stg">' + esc(r.stageGender) + "</td>" +
@@ -400,6 +464,7 @@ function bindOd() {
 /* ── لوحة المدرسة الجانبية ── */
 function openSide(r) {
   sel = r;
+  if ($("nsSchool")) renderNavSchool();
   const st = (p) => p.placeholder ? '<span class="pill p-gray">بلا اسم</span>'
     : p.sharedAt ? '<span class="pill p-ok">مشارَك</span>'
     : p.approvedAt ? '<span class="pill p-warn">بانتظار المشاركة</span>'
@@ -408,7 +473,7 @@ function openSide(r) {
   const pend = r.pending || [];
   $("side").innerHTML =
     '<button class="close" id="sClose" aria-label="إغلاق">✕</button>' +
-    "<h2>" + esc(r.school) + "</h2>" +
+    "<h2>" + markGender(r.school, esc) + "</h2>" +
     '<div class="muted" style="margin-bottom:14px">' + esc(r.trail.join(" / ")) + "</div>" +
     (r.score == null ? "" :
       '<div class="rd-box"><div class="rd-num rd-' +
@@ -462,6 +527,37 @@ function openSide(r) {
     openSide(r); render();
   };
 }
-function closeSide() { $("side").classList.add("hidden"); $("scrim").classList.add("hidden"); sel = null; }
+/* ⚠️ الشَريطُ لا يَعرِضُ رابِطًا مَيِّتًا: قَبلَ اختِيارِ مَدرَسةٍ يَقولُ ما يَنقُص
+   لا يَعرِضُ أَزرارًا لا تَعمَل. والفَتحُ في المَوقِعِ يُسَلِّمُ مِقبَضَ المُجَلَّدِ
+   إلى المَوقِعِ ثُمَّ يَفتَحُهُ في لِسانٍ جَديد — فَلا يَفقِدُ المُستَشارُ لَوحَتَه. */
+function renderNavSchool() {
+  const box = $("nsSchool");
+  if (!sel) {
+    box.innerHTML = '<span class="ns-sch">لم تُحدَّد مدرسة بعد — اضغط اسم مدرسة في الجدول.</span>';
+    return;
+  }
+  box.innerHTML = '<span class="ns-sch">' + markGender(sel.school, esc) + "</span>" +
+    '<button class="ns-i" id="nsOpenSide">🗂 ملفّ المدرسة</button>' +
+    '<button class="ns-i" id="nsOpenSite">↗ افتح المدرسة في الموقع</button>';
+  $("nsOpenSide").onclick = () => { closeNav(); openSide(sel); };
+  $("nsOpenSite").onclick = async () => {
+    const b = $("nsOpenSite"); b.disabled = true; b.textContent = "… يُجهَّز";
+    try {
+      await FolderStore.adopt(sel.handle);
+      window.open("index.html", "_blank", "noopener");
+      b.textContent = "↗ افتح المدرسة في الموقع";
+    } catch (e) { b.textContent = "⚠️ تعذّر الفتح"; }
+    b.disabled = false;
+  };
+}
+function closeNav() { $("navSide").classList.remove("open"); }
+function closeSide() { $("side").classList.add("hidden"); $("scrim").classList.add("hidden"); sel = null; if ($("nsSchool")) renderNavSchool(); }
 $("scrim").onclick = closeSide;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && sel) closeSide(); });
+
+/* ⚠️ `seed` تَحقِنُ صُفوفًا وتَرسُم: حِوارُ اختِيارِ المُجَلَّدِ حِوارٌ أَصليٌّ لا
+   يَضغَطُهُ آليٌّ، فَبِدونِها يَبقى نِصفُ اللَوحةِ (الأَقسامُ والشَريطُ والجَدوَل)
+   بِلا قِياسٍ إلى الأَبَد. */
+window.ADMIN_TEST = { STAGES, stageOf, genderOf, sortRows, stageClass, markGender,
+  seed(rs) { rows = rs; render(); },
+  select(i) { openSide(rows[i]); } };

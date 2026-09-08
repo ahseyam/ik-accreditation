@@ -2,12 +2,12 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8">
-<meta name="ik-v" content="27270ee9">
+<meta name="ik-v" content="bab17f74">
 <!-- ⚠️ صَفحةُ HTML رابِطُها ثابِتٌ فَتُخَزَّنُ في المُتَصَفِّحِ رَغمَ النَشر — وحارِسُ الطَزاجةِ يَنقُلُ الزائِرَ إلى رابِطِ البَصمةِ الجَديدةِ مَرّةً واحِدة. -->
-<script src="fresh.js?v=27270ee9"></script>
+<script src="fresh.js?v=bab17f74"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=27270ee9">
+<link rel="stylesheet" href="style.css?v=bab17f74">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
   .adm h1{font-size:var(--fs-2xl);margin:0 0 4px}
@@ -51,6 +51,40 @@
   .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:var(--fs-xs);font-weight:700;white-space:nowrap}
   .p-ok{background:#e6f5ee;color:#1d7a52} .p-warn{background:#fdf3e0;color:#a97c1f}
   .p-bad{background:#fdecec;color:#a32b22} .p-gray{background:var(--soft,#eef1f3);color:var(--ink-2)}
+  /* ⚠️ **الشَريطُ الجانِبي**: كانَتِ اللَوحةُ ثَلاثةَ تَبويباتٍ ورابِطًا واحِدًا،
+     فَقالَ المُستَشار: «لا أَستَطيعُ الوُصولَ لِكُلِّ ما بِداخِلِ المَنَصّة». الشَريطُ
+     يَجمَعُ أَقسامَ اللَوحةِ وصَفحاتِ المَوقِعِ وأَدَواتِهِ في مَكانٍ واحِدٍ ثابِت.
+     وهوَ على جِهةِ البِدايةِ (يَمينُ العَرَبية)، ولَوحةُ المَدرَسةِ تَعلوهُ
+     بِـz-index أَعلى — فَلا تَتَزاحَمانِ على المَوضِعِ نَفسِه. */
+  .ns{position:fixed;inset-block:0;inset-inline-start:0;width:214px;z-index:30;overflow:auto;
+      background:var(--panel);border-inline-end:1px solid var(--line);padding:14px 10px 24px}
+  .ns-h{font-size:var(--fs-sm);font-weight:800;color:var(--brand);padding:2px 8px 10px}
+  .ns-t{font-size:var(--fs-2xs);font-weight:700;color:var(--ink-2);padding:12px 8px 5px;
+        border-top:1px solid var(--line);margin-top:8px}
+  .ns-g{display:flex;flex-direction:column;gap:2px}
+  .ns-i{display:flex;align-items:center;gap:7px;width:100%;text-align:start;background:none;border:0;
+        border-radius:9px;padding:8px 9px;font:inherit;font-size:var(--fs-xs);color:var(--ink);
+        cursor:pointer;min-height:36px;text-decoration:none}
+  .ns-i:hover{background:var(--brand-soft)}
+  .ns-i.on{background:var(--brand-soft);color:var(--brand);font-weight:700}
+  .ns-i[disabled]{opacity:.45;cursor:default}
+  .ns-i .n{margin-inline-start:auto;font-size:var(--fs-2xs);font-weight:700;color:var(--ink-2)}
+  .ns-i.alert .n{color:var(--danger)}
+  .ns-sch{font-size:var(--fs-2xs);color:var(--ink-2);padding:4px 9px 6px;line-height:1.6}
+  .adm{margin-inline-start:214px}
+  #nsToggle{display:none}
+  /* ⚠️ تَحتَ 1100px يَصيرُ الشَريطُ مُنزَلِقًا بِزِرٍّ: شَريطٌ ثابِتٌ يَبتَلِعُ
+     خُمسَ الشاشةِ على اللَوحي فَيَختَنِقُ الجَدوَلُ ذو الثَمانِ أَعمِدة. */
+  @media(max-width:1100px){
+    /* ⚠️ كانَ هُنا `html[dir="rtl"] .ns` يُكَرِّرُ القاعِدةَ نَفسَها — وتَخصيصُهُ
+       (0,2,1) يَغلِبُ `.ns.open` (0,2,0) فَبَقِيَ الشَريطُ خارِجَ الشاشةِ وصِنفُ
+       الحالةِ مَوضوعٌ لا أَثَرَ لَه. و`translateX` غَيرُ حَسّاسٍ لِلاتِّجاهِ أَصلًا
+       فَالقاعِدةُ زائِدةٌ فَوقَ ضَرَرِها. */
+    .ns{transform:translateX(100%);transition:transform .18s;box-shadow:0 0 30px #0003}
+    .ns.open{transform:none}
+    .adm{margin-inline-start:0}
+    #nsToggle{display:inline-flex}
+  }
   .side{position:fixed;inset-block:0;inset-inline-start:0;width:min(560px,94vw);background:var(--panel);
         border-inline-end:1px solid var(--line);box-shadow:0 0 34px #0003;z-index:40;overflow:auto;padding:20px}
   .side.hidden{display:none}
@@ -118,8 +152,17 @@
   tr:not(.tr-nat):not(.tr-int) .sch b,
   tr:not(.tr-nat):not(.tr-int) .stg{color:#475569}
   tr.tr-int  .trk{font-style:italic}
+  /* ⚠️ **سَطرٌ واحِدٌ بِلا التِفاف** بِطَلَبِ المُستَشار: الاسمُ المُلتَفُّ
+     يُضاعِفُ ارتِفاعَ الصَفِّ فَيَقِلُّ ما يُرى مِنَ المَدارِسِ في الشاشة.
+     والفائِضُ يَنزَلِقُ داخِلَ `.tbl-wrap` (overflow-x:auto) لا يَدفَعُ الصَفحة. */
   .sch b{font-size:var(--fs-sm);font-weight:600;border-inline-start:3px solid currentColor;
-         padding-inline-start:8px;display:inline-block;line-height:1.5}
+         padding-inline-start:8px;display:inline-block;line-height:1.5;white-space:nowrap}
+  /* ⚠️ **بَنين بُنّيٌّ وبَنات أَحمَرُ قاتِمٌ داخِلَ الاسمِ نَفسِه.** قاعِدةٌ
+     مُباشِرةٌ على الوَسمِ تَغلِبُ لَونَ العائِلةِ المَوروثَ مِنَ `b` بِلا
+     مُزايَدةٍ في التَخصيص. و28° و358° بَعيدَتانِ عَن 152° و214° فَلا تَختَلِطُ
+     بِعائِلَتَي المَسار، وكِلتاهُما ≥5.5:1 على أَسوَأِ خَلفياتِ الجَدوَل. */
+  .g-m{color:#834e21}
+  .g-f{color:#8b181c}
   .adm-t td.r{line-height:1.5}
   .stg{font-weight:700;font-size:var(--fs-xs);white-space:nowrap}
   /* مفتاح الألوان — لونٌ بلا مفتاح لغز */
@@ -136,16 +179,35 @@
   .legend b{font-weight:700}
   .legend .k{display:inline-flex;align-items:center;gap:5px}
   .legend .sw{width:11px;height:11px;border-radius:3px;display:inline-block}
-  @media print{ .bar,.tabs,.filters,.side,.scrim,.b-main,.b-ghost{display:none!important}
+  @media print{ .bar,.tabs,.filters,.side,.ns,.scrim,.b-main,.b-ghost{display:none!important}
+    .adm{margin-inline-start:0}
     .adm{max-width:none} table.adm-t{font-size:9.5pt} }
 </style>
 </head>
 <body>
+<nav class="ns" id="navSide" aria-label="تنقّل لوحة المستشار">
+  <div class="ns-h">لوحة المستشار</div>
+  <div class="ns-g" id="nsTabs"><span class="ns-sch">اختر مجلد المساحة أولًا.</span></div>
+  <div class="ns-t">المدرسة المحدَّدة</div>
+  <div class="ns-g" id="nsSchool"><span class="ns-sch">لم تُحدَّد مدرسة بعد — اضغط اسم مدرسة في الجدول.</span></div>
+  <div class="ns-t">صفحات الموقع</div>
+  <div class="ns-g">
+    <a class="ns-i" href="index.html">🏠 موقع الاعتماد</a>
+    <a class="ns-i" href="استبانة.html">📋 الاستبانة</a>
+  </div>
+  <div class="ns-t">أدوات اللوحة</div>
+  <div class="ns-g">
+    <button class="ns-i" id="nsRescan">↻ إعادة الفحص</button>
+    <button class="ns-i" id="nsCsv">⬇️ تصدير الجدول</button>
+    <button class="ns-i" id="nsPrint">🖨️ طباعة اللوحة</button>
+  </div>
+</nav>
 <div class="adm">
   <h1>لوحة إدارة المنصّة</h1>
   <p class="sub" id="who">مدير الجودة والتخطيط · مدارس ابن خلدون — الاعتماد الخارجي</p>
 
   <div class="bar">
+    <button class="b-ghost" id="nsToggle" aria-label="فتح شريط التنقّل">☰</button>
     <button class="b-main" id="pick">📂 اختر مجلد «مساحة الاعتماد ١٤٤٨»</button>
     <button class="b-ghost hidden" id="rescan">↻ إعادة الفحص</button>
     <button class="b-ghost hidden" id="csv">⬇️ تصدير جدول</button>
@@ -175,6 +237,9 @@
       <span class="k"><span class="sw" style="background:#205aa7"></span>ابتدائي</span>
       <span class="k"><span class="sw" style="background:#194885"></span>متوسط</span>
       <span class="k"><span class="sw" style="background:#143a6b"></span>ثانوي</span>
+      <span class="k lg-h lg-sep"><b>داخل الاسم</b></span>
+      <span class="k"><span class="sw" style="background:#834e21"></span>بَنين</span>
+      <span class="k"><span class="sw" style="background:#8b181c"></span>بَنات</span>
     </div>
     <div class="filters hidden" id="filters">
       <input class="f-in grow" id="q" placeholder="ابحث باسم مدرسة أو منسوب…" autocomplete="off">
@@ -196,6 +261,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=27270ee9"></script>
+<script type="module" src="admin-ui.js?v=bab17f74"></script>
 </body>
 </html>

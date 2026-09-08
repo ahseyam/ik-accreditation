@@ -11,7 +11,7 @@
  * ⚠️ ولا تستورد هذه الوحدة من `print.js` ولا من `export-print.js` — كلاهما
  * يستورد منها، فالاستيراد المتبادل يُنشئ حلقةً تُفرغ أحد الطرفين وقت التحميل.
  */
-import { esc } from "./ui-state.js?v=27270ee9";
+import { esc } from "./ui-state.js?v=bab17f74";
 
 /** يحوّل مخزنًا ثنائيًّا إلى base64 على دفعات */
 export const b64 = (buf) => {

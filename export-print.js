@@ -15,10 +15,10 @@
  * ⚠️ **حدٌّ يجب أن يُقال للمستخدم**: OneDrive على الويب **لا يعرض HTML** بل
  * ينزّله. فالطباعة تكون من المجلد المُزامَن على الحاسب. مكتوبٌ في الفهرس نفسه.
  */
-import { buildPrintDoc, printCss } from "./print.js?v=27270ee9";
-import { roleAr } from "./app.js?v=27270ee9";
-import { esc } from "./ui-state.js?v=27270ee9";
-import { standaloneAssets, page, wrap } from "./standalone.js?v=27270ee9";
+import { buildPrintDoc, printCss } from "./print.js?v=bab17f74";
+import { roleAr } from "./app.js?v=bab17f74";
+import { esc } from "./ui-state.js?v=bab17f74";
+import { standaloneAssets, page, wrap } from "./standalone.js?v=bab17f74";
 
 export const OUT_DIR = "للطباعة";
 

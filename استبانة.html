@@ -2,9 +2,9 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="ik-v" content="27270ee9">
+<meta name="ik-v" content="bab17f74">
 <!-- ⚠️ صَفحةُ HTML رابِطُها ثابِتٌ فَتُخَزَّنُ في المُتَصَفِّحِ رَغمَ النَشر — وحارِسُ الطَزاجةِ يَنقُلُ الزائِرَ إلى رابِطِ البَصمةِ الجَديدةِ مَرّةً واحِدة. -->
-<script src="fresh.js?v=27270ee9"></script>
+<script src="fresh.js?v=bab17f74"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>استبانة — الاعتماد الخارجي</title>
 <link rel="icon" href="ibn-khaldun-mark-240.webp">
@@ -75,7 +75,7 @@
 </div>
 
 <script type="module">
-import { encodeAnswers } from "./survey.js?v=27270ee9";
+import { encodeAnswers } from "./survey.js?v=bab17f74";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 const q = new URLSearchParams(location.search);
@@ -84,7 +84,7 @@ const school = q.get("s") || "";
 const wa = (q.get("wa") || "").replace(/\D/g, "");
 const api = q.get("api") || "";
 
-const data = await (await fetch("استبانات.json?v=27270ee9")).json();
+const data = await (await fetch("استبانات.json?v=bab17f74")).json();
 const tool = data.tools.find((t) => t.key === toolKey) || data.tools[0];
 const answers = {};
 

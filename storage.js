@@ -87,6 +87,12 @@ export class FolderStore {
   }
   static async forgetRoot(key = "adminRoot") { await idbSet(key, undefined); }
 
+  /** يُسَلِّمُ مِقبَضَ مُجَلَّدِ مَدرَسةٍ إلى المَوقِعِ لِيَفتَحَها كَما لَو اختارَها المُستَخدِم.
+   *  ⚠️ يَكتُبُ في مِفتاحِ المَوقِعِ `root` **قَصدًا** — فَهوَ الطَريقُ الوَحيدُ
+   *  لِيَنتَقِلَ المُستَشارُ مِنَ اللَوحةِ إلى داخِلِ مَدرَسةٍ بِعَينِها. ولِذا
+   *  لا يُستَدعى إلّا مِن لَوحةِ المُستَشارِ وبِإيماءةٍ صَريحةٍ مِنه. */
+  static async adopt(handle) { await idbSet("root", handle); }
+
   async _dir(parts, create = false) {
     let dir = this.root;
     for (const part of parts) dir = await dir.getDirectoryHandle(part, { create });

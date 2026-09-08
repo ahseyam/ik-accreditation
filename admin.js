@@ -12,8 +12,8 @@
  * الأبناء المباشرين فيرى أربعة مجمّعات ويظنّها أربع مدارس. فالمشي هنا
  * تعاودي حتى يُعثر على `manifest.json`.
  */
-import { FolderStore } from "./storage.js?v=27270ee9";
-import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=27270ee9";
+import { FolderStore } from "./storage.js?v=bab17f74";
+import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=bab17f74";
 
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
@@ -143,7 +143,10 @@ export async function readSchool(handle, trail) {
     school: school.nameAr,
     complex: trail[0] ?? "—", track: trail[1] ?? manifest.track ?? "—",
     stageGender: trail[2] ?? "—",
-    stage: school.stage, people,
+    /* ⚠️ `school.stage` رَمزٌ إنجليزي (KG/PRIMARY/MIDDLE/HIGH) لا لَفظٌ عَرَبي،
+       و`gender` لَم يَكُن يَصِلُ إلى الصَفِّ أَصلًا — فَسَقَطَ التَرتيبُ الزَمَنيُّ
+       والتَلوينُ بِالمَرحَلةِ صامِتَينِ إلى احتِياطِهِما (الكُلُّ «ابتدائي»). */
+    stage: school.stage, gender: school.gender ?? null, people,
     missing: people.filter((p) => p.placeholder).length,
     pending, needShare,
     entries: act.entries, evidence: act.evidence, last: act.latest,
