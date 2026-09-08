@@ -1,4 +1,4 @@
-import { FolderStore, HttpStore, safeName } from "./storage.js?v=818eb572";
+import { FolderStore, HttpStore, safeName } from "./storage.js?v=e168b883";
 
 export const ROLE_AR = {
   PRINCIPAL: "مدير المدرسة", EDUCATIONAL_VP: "وكيل الشؤون التعليمية",
@@ -9,7 +9,7 @@ export const ROLE_AR = {
   ADMIN_ASSISTANT: "المساعد الإداري", DATA_ENTRY: "مُدخل البيانات",
   RECEPTIONIST: "موظف الاستقبال", RESOURCES_LIBRARIAN: "أمين مصادر التعلم",
   LAB_TECHNICIAN: "محضّر المختبر", SUBJECT_SUPERVISOR: "مشرف المادة",
-  EXCELLENCE_COMMITTEE: "لجنة التميّز", SUPER_ADMIN: "المستشار",
+  EXCELLENCE_COMMITTEE: "لجنة التميّز", SUPER_ADMIN: "مدير التخطيط والجودة",
 };
 export const FREQ_AR = {
   DAILY: "يومي", WEEKLY: "أسبوعي", MONTHLY: "شهري", PER_SEMESTER: "كل فصل",

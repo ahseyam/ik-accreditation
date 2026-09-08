@@ -4,7 +4,7 @@
  * و`تنفيذية.byRole`)، وكانتا تُعرضان روابطَ PDF ثابتة لا تُحرَّر ولا تُبحث.
  * هذا الملف يحوّلهما إلى بنيةٍ تُعرض وتُطبع وتُنزَّل.
  */
-import { roleAr, normalizeAr } from "./app.js?v=818eb572";
+import { roleAr, normalizeAr } from "./app.js?v=e168b883";
 
 /** ⚠️ مفتاح المهمّة يُشتقّ هنا وحده — نسخُه في شاشتين يجعلهما تنحرفان بصمت */
 export const execTaskKey = (t) => t.semester + "-" + t.week + "-" + t.order;

@@ -1,11 +1,11 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=818eb572";
-import { FolderStore } from "./storage.js?v=818eb572";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=e168b883";
+import { FolderStore } from "./storage.js?v=e168b883";
 /* ⚠️ `DIMENSIONS` كانَت **مُستَعمَلةً بِلا استيراد**: لَوحةُ المَدرَسةِ تَنهارُ
    بِـReferenceError عِندَ كُلِّ مَدرَسةٍ لَها دَرَجةُ جاهِزية — أَي كُلِّ مَدرَسةٍ
    عامِلة. ولا يَظهَرُ الخَطَأُ إلّا في مِعيارِ المُتَصَفِّح، فَمَرَّ صامِتًا حَتّى
    حَقَنَ المِجَسُّ صَفًّا وفَتَحَ اللَوحة. */
-import { DIMENSIONS } from "./readiness.js?v=818eb572";
+import { DIMENSIONS } from "./readiness.js?v=e168b883";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "stageOrder", sortDir = 1, sel = null;
@@ -60,7 +60,7 @@ const genderOf = (r) => {
 };
 const stageClass = (r) => "st-" + (stageOf(r)?.key ?? "pri") + " " +
   (r.track === "عالمي" ? "tr-int" : "tr-nat");
-const ME = "مدير الجودة والتخطيط";
+const ME = "مدير التخطيط والجودة";
 
 if (!FolderStore.supported()) {
   $("intro").innerHTML = '<div class="err"><b>هذه اللوحة تحتاج قراءة المجلدات.</b><br>' +
@@ -536,10 +536,34 @@ function renderNavSchool() {
     box.innerHTML = '<span class="ns-sch">لم تُحدَّد مدرسة بعد — اضغط اسم مدرسة في الجدول.</span>';
     return;
   }
+  /* ⚠️ **الشَريطُ يَفتَحُ المَنَصّةَ بِصِفةِ كُلِّ مَنسوبٍ لا بِصِفةٍ واحِدة.**
+     قالَ مُديرُ التَخطيطِ والجَودة: «لا أَستَطيعُ الوُصولَ لِلمُستَخدِمينَ ولا
+     تَفَقُّدَ ما قاموا بِه ولا التَحَرُّكَ بِكُلِّ الأَدوار». فَلِكُلِّ مَنسوبٍ
+     سَطرٌ يَحمِلُ عَمَلَهُ (إِدخالاتٌ وشَواهِدُ وآخِرُ نَشاط) وزِرًّا يَفتَحُ
+     المَنَصّةَ **مُسَجَّلًا بِاسمِه** — لا شاشةَ «مَن أَنت» ثُمَّ بَحثٌ يَدَوي. */
+  const st = (sel.people || []).map((pp) => {
+    const n = (pp.entries || 0), ev = (pp.evidence || 0);
+    const key = encodeURIComponent(pp.employeeNo || pp.role);
+    return '<button class="ns-i ns-p" data-as="' + key + '" title="' +
+      esc(pp.fullName + " — " + pp.roleAr) + '">' +
+      '<span class="ns-nm">' + esc(pp.fullName) + "</span>" +
+      '<span class="n">' + (n || ev ? n + "/" + ev : "—") + "</span></button>";
+  }).join("");
   box.innerHTML = '<span class="ns-sch">' + markGender(sel.school, esc) + "</span>" +
     '<button class="ns-i" id="nsOpenSide">🗂 ملفّ المدرسة</button>' +
-    '<button class="ns-i" id="nsOpenSite">↗ افتح المدرسة في الموقع</button>';
+    '<button class="ns-i" id="nsOpenSite">↗ افتح المدرسة في الموقع</button>' +
+    (st ? '<div class="ns-t2">منسوبوها — افتح بصفته <span class="ns-hint">إدخالات/شواهد</span></div>' + st : "");
   $("nsOpenSide").onclick = () => { closeNav(); openSide(sel); };
+  box.querySelectorAll(".ns-p").forEach((b2) => {
+    b2.onclick = async () => {
+      const t = b2.textContent; b2.disabled = true;
+      try {
+        await FolderStore.adopt(sel.handle);
+        window.open("index.html?as=" + b2.dataset.as, "_blank", "noopener");
+      } catch (e) { b2.textContent = "⚠️ تعذّر"; setTimeout(() => (b2.textContent = t), 1600); }
+      b2.disabled = false;
+    };
+  });
   $("nsOpenSite").onclick = async () => {
     const b = $("nsOpenSite"); b.disabled = true; b.textContent = "… يُجهَّز";
     try {

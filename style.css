@@ -1154,10 +1154,16 @@ button:focus-visible,.f-in:focus-visible,a:focus-visible,[tabindex]:focus-visibl
   outline:2px solid var(--focus);outline-offset:var(--ring-offset-width)}
 .b-main{background:var(--accent);color:var(--accent-foreground)}
 .b-main:hover{background:var(--accent-hover)}
-/* المُفَرَّغُ = `button--outline`: خَلفيةٌ شَفّافةٌ وحَدٌّ، وتَعبِئةٌ خَفيفةٌ عِندَ المُرور */
-.b-ghost{background:transparent;color:var(--accent);
-         border:var(--border-width) solid var(--border)}
-.b-ghost:hover{background:color-mix(in srgb,var(--default) 60%,transparent)}
+/* المُفَرَّغُ = `button--outline` عِندَ HeroUI: خَلفيةٌ شَفّافةٌ وحَدٌّ.
+   ⚠️ **ولَونُهُ `currentColor` لا `--accent`.** ثَبَّتُّهُ على الأَخضَرِ فَاختَفى
+      في الشَريطِ العُلويِّ الداكِنِ (`--brand-ink`) عِندَ **1.44:1** — أَخضَرُ على
+      أَخضَر. والشَريطُ يُعَرِّفُ `color:#eaf5f1` بِالفِعل، فَالوِراثةُ تُصَحِّحُ
+      نَفسَها في كُلِّ سِياق: فاتِحٌ على الداكِنِ وداكِنٌ على الفاتِح. وهذا نَصُّ
+      HeroUI نَفسِه (`--button-fg: var(--default-foreground)`).
+   ⚠️ والحَدُّ كَذلِك: `--border` فاتِحٌ يَختَفي على السَطحِ الفاتِح. */
+.b-ghost{background:transparent;color:currentColor;
+         border:var(--border-width) solid color-mix(in srgb,currentColor 32%,transparent)}
+.b-ghost:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
 .b-sm{min-height:32px;padding-inline:calc(var(--spacing) * 3);font-size:var(--fs-sm)}
 .b-sm:active{transform:scale(.98)}
 @media(min-width:768px){button,.b-main,.b-ghost{min-height:36px}.b-sm{min-height:32px}}

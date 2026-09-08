@@ -1,4 +1,4 @@
-/* ── لوحة إدارة المنصّة — لمدير الجودة والتخطيط وحده ──
+/* ── لوحة إدارة المنصّة — لمدير التخطيط والجودة وحده ──
  *
  * ⚠️ **ما تفعله هذه اللوحة وما لا تفعله.** تقرأ الأربعين مجلدًا من مجلدك
  * الجذر، وتكتب فيها اعتمادك لبيانات المنسوبين. أمّا **منح صلاحية OneDrive
@@ -12,8 +12,9 @@
  * الأبناء المباشرين فيرى أربعة مجمّعات ويظنّها أربع مدارس. فالمشي هنا
  * تعاودي حتى يُعثر على `manifest.json`.
  */
-import { FolderStore } from "./storage.js?v=818eb572";
-import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE } from "./app.js?v=818eb572";
+import { FolderStore } from "./storage.js?v=e168b883";
+import { staffActivity, joinStaff } from "./staff.js?v=e168b883";
+import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE, personFolder } from "./app.js?v=e168b883";
 
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
@@ -135,6 +136,18 @@ export async function readSchool(handle, trail) {
       selfByCode: null, verifyTool: (tools.tools ?? []).find((t) => t.key === "EVIDENCE_VERIFICATION"),
       evidenceByRecord: act.evidenceBy }).filter((x) => x.evidence === 0).length;
   } catch { /* حزمة ناقصة — تبقى الجاهزية null ولا يُدّعى رقم */ }
+  /* ⚠️ **ما قامَ بِهِ كُلُّ مَنسوبٍ** يُقرَأُ مِنَ المُجَلَّدِ في المِشيةِ نَفسِها:
+     بِدونِهِ يَرى مُديرُ التَخطيطِ والجَودةِ أَسماءً بِلا عَمَل، ولا يَعرِفُ مَن
+     بَدَأَ ومَن لَم يَبدَأ. */
+  let work = {};
+  try { work = await staffActivity(store); } catch { /* حزمة ناقصة */ }
+  /* ⚠️ اسمُ المُجَلَّدِ يُؤخَذُ مِن `personFolder` نَفسِها لا يُعادُ بِناؤُهُ هُنا:
+     نُسخةٌ ثانيةٌ مِن قاعِدةِ التَسميةِ تَفتَرِقُ عِندَ أَوَّلِ حَرفٍ مَمنوع. */
+  const folderOf = personFolder;
+  for (const row of joinStaff(people, work, folderOf)) {
+    row.person.entries = row.entries; row.person.evidence = row.evidence;
+    row.person.lastAt = row.latest; row.person.recordsTouched = row.records;
+  }
   const pending = people.filter((p) => p.submittedAt && !p.approvedAt);
   const needShare = people.filter((p) => EDIT_ROLES.includes(p.role) && p.approvedAt && !p.sharedAt && p.email);
 
@@ -166,7 +179,7 @@ export async function approve(row, personId, by) {
     if (!cur) return ov;                       // لا يُعتمد ما لم تُدخله المدرسة
     ov.people[personId] = { ...cur, approvedAt: now, approvedBy: by };
     ov.history = ov.history || [];
-    ov.history.push({ at: now, note: "اعتمد مدير الجودة والتخطيط بيانات هذه الوظيفة", by });
+    ov.history.push({ at: now, note: "اعتمد مدير التخطيط والجودة بيانات هذه الوظيفة", by });
     return ov;
   }, { people: {}, history: [] });
   const p = row.people.find((x) => x.id === personId);

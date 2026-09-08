@@ -2,12 +2,12 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="utf-8">
-<meta name="ik-v" content="818eb572">
+<meta name="ik-v" content="e168b883">
 <!-- ⚠️ صَفحةُ HTML رابِطُها ثابِتٌ فَتُخَزَّنُ في المُتَصَفِّحِ رَغمَ النَشر — وحارِسُ الطَزاجةِ يَنقُلُ الزائِرَ إلى رابِطِ البَصمةِ الجَديدةِ مَرّةً واحِدة. -->
-<script src="fresh.js?v=818eb572"></script>
+<script src="fresh.js?v=e168b883"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>لوحة إدارة المنصّة — الاعتماد الخارجي</title>
-<link rel="stylesheet" href="style.css?v=818eb572">
+<link rel="stylesheet" href="style.css?v=e168b883">
 <style>
   .adm{max-width:1500px;margin:0 auto;padding:18px 16px 70px}
   .adm h1{font-size:var(--fs-2xl);margin:0 0 4px}
@@ -71,6 +71,13 @@
   .ns-i .n{margin-inline-start:auto;font-size:var(--fs-2xs);font-weight:700;color:var(--ink-2)}
   .ns-i.alert .n{color:var(--danger)}
   .ns-sch{font-size:var(--fs-2xs);color:var(--ink-2);padding:4px 9px 6px;line-height:1.6}
+  .ns-t2{font-size:var(--fs-2xs);font-weight:700;color:var(--ink-2);padding:10px 9px 4px;
+         display:flex;justify-content:space-between;gap:6px}
+  .ns-hint{font-weight:400;opacity:.75}
+  /* ⚠️ اسمُ المَنسوبِ يُقَصُّ ولا يَلتَفّ: التِفافُهُ يُضاعِفُ ارتِفاعَ السَطرِ
+     فَلا يَظهَرُ مِنَ الأَربَعةَ عَشَرَ إلّا سِتّة. */
+  .ns-p .ns-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .ns-p{font-size:var(--fs-2xs);min-height:30px;padding:5px 9px}
   .adm{margin-inline-start:214px}
   #nsToggle{display:none}
   /* ⚠️ تَحتَ 1100px يَصيرُ الشَريطُ مُنزَلِقًا بِزِرٍّ: شَريطٌ ثابِتٌ يَبتَلِعُ
@@ -185,8 +192,8 @@
 </style>
 </head>
 <body>
-<nav class="ns" id="navSide" aria-label="تنقّل لوحة المستشار">
-  <div class="ns-h">لوحة المستشار</div>
+<nav class="ns" id="navSide" aria-label="تنقّل لوحة مدير التخطيط والجودة">
+  <div class="ns-h">لوحة مدير التخطيط والجودة</div>
   <div class="ns-g" id="nsTabs"><span class="ns-sch">اختر مجلد المساحة أولًا.</span></div>
   <div class="ns-t">المدرسة المحدَّدة</div>
   <div class="ns-g" id="nsSchool"><span class="ns-sch">لم تُحدَّد مدرسة بعد — اضغط اسم مدرسة في الجدول.</span></div>
@@ -204,7 +211,7 @@
 </nav>
 <div class="adm">
   <h1>لوحة إدارة المنصّة</h1>
-  <p class="sub" id="who">مدير الجودة والتخطيط · مدارس ابن خلدون — الاعتماد الخارجي</p>
+  <p class="sub" id="who">مدير التخطيط والجودة · مدارس ابن خلدون — الاعتماد الخارجي</p>
 
   <div class="bar">
     <button class="b-ghost" id="nsToggle" aria-label="فتح شريط التنقّل">☰</button>
@@ -261,6 +268,6 @@
 <div class="scrim hidden" id="scrim"></div>
 <aside class="side hidden" id="side"></aside>
 
-<script type="module" src="admin-ui.js?v=818eb572"></script>
+<script type="module" src="admin-ui.js?v=e168b883"></script>
 </body>
 </html>
