@@ -1,11 +1,11 @@
 /* واجهة لوحة إدارة المنصّة — العرض والتفاعل. المنطق في admin.js. */
-import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=548454e1";
-import { FolderStore } from "./storage.js?v=548454e1";
+import { $, esc, findSchools, readSchool, approve, markShared, unmarkShared, EDIT_ROLES } from "./admin.js?v=8442b289";
+import { FolderStore } from "./storage.js?v=8442b289";
 /* ⚠️ `DIMENSIONS` كانَت **مُستَعمَلةً بِلا استيراد**: لَوحةُ المَدرَسةِ تَنهارُ
    بِـReferenceError عِندَ كُلِّ مَدرَسةٍ لَها دَرَجةُ جاهِزية — أَي كُلِّ مَدرَسةٍ
    عامِلة. ولا يَظهَرُ الخَطَأُ إلّا في مِعيارِ المُتَصَفِّح، فَمَرَّ صامِتًا حَتّى
    حَقَنَ المِجَسُّ صَفًّا وفَتَحَ اللَوحة. */
-import { DIMENSIONS } from "./readiness.js?v=548454e1";
+import { DIMENSIONS } from "./readiness.js?v=8442b289";
 
 const K_ROOT = "ik.admin.onedriveUrl";
 let rows = [], tab = "schools", sortKey = "stageOrder", sortDir = 1, sel = null;

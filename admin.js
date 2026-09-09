@@ -12,9 +12,9 @@
  * الأبناء المباشرين فيرى أربعة مجمّعات ويظنّها أربع مدارس. فالمشي هنا
  * تعاودي حتى يُعثر على `manifest.json`.
  */
-import { FolderStore } from "./storage.js?v=548454e1";
-import { staffActivity, joinStaff } from "./staff.js?v=548454e1";
-import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE, personFolder } from "./app.js?v=548454e1";
+import { FolderStore } from "./storage.js?v=8442b289";
+import { staffActivity, joinStaff } from "./staff.js?v=8442b289";
+import { roleAr, ROLE_RANK, loadRosterOverride, ROSTER_OVERRIDE, personFolder } from "./app.js?v=8442b289";
 
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s ?? "").replace(/[&<>"]/g,
