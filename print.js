@@ -1,6 +1,6 @@
-import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=8442b289";
-import { standaloneAssets, page, wrap } from "./standalone.js?v=8442b289";
-/* طبقة الطباعة — كليشة ابن خلدون تتكرّر على كل ورقة.
+import { interpolate, interpScope, arabizeText, stripDecor, headingLevel, isSerialCol, isNoiseCol } from "./record.js?v=581262ee";
+import { standaloneAssets, brandFiles, geomFor, page, wrap } from "./standalone.js?v=581262ee";
+/* طبقة الطباعة — كليشة الجهة تتكرّر على كل ورقة.
    التقنية مقيسة سلفًا في محرّر الخطط القائم بذاته، ولا تُعاد من الصفر:
      ① @page margin:0  ⇒ الورقة 297mm بالضبط
      ② خلفية على html بـrepeat-y وbackground-size: 100% 297mm
@@ -137,12 +137,15 @@ export function buildPrintDoc(template, state, ctx) {
 
 /** يركّب الإطار (ترويسة/تذييل متكرّران) بلا طباعة — يُستدعى من الحارس أيضًا */
 export async function preparePrint(template, state, ctx) {
-  const [sheet, header, footer, geom] = await Promise.all([
-    ctx.store.fileUrl("كليشة/ورقة.jpg"),
-    ctx.store.fileUrl("كليشة/ترويسة.png"),
-    ctx.store.fileUrl("كليشة/تذييل.png"),
+  const orientation = ctx.orientation || "portrait";
+  const f = await brandFiles(ctx.store, orientation);   // الورقة والشريطان بحسب الاتجاه
+  const [sheet, header, footer, geomRaw] = await Promise.all([
+    ctx.store.fileUrl(f.sheet),
+    ctx.store.fileUrl(f.header),
+    ctx.store.fileUrl(f.footer),
     ctx.store.readJson("كليشة/قياسات.json"),
   ]);
+  const geom = geomFor(geomRaw, orientation);
 
   document.getElementById("printRoot")?.remove();
   document.getElementById("printStyle")?.remove();
@@ -150,6 +153,7 @@ export async function preparePrint(template, state, ctx) {
   // الإطار: جدول ملفّ — thead وtfoot يتكرّران على كل ورقة بمواصفة CSS
   const root = el("div", "print-root");
   root.id = "printRoot";
+  root.append(el("div", "p-sheet"));   // ورقة الكليشة — ثابتة فتتكرّر على كل صفحة
   const frame = el("table", "p-frame");
   const thead = el("thead");
   const trh = el("tr"); const tdh = el("td", "p-lh-head"); trh.append(tdh); thead.append(trh);
@@ -166,8 +170,7 @@ export async function preparePrint(template, state, ctx) {
 
   const style = document.createElement("style");
   style.id = "printStyle";
-  style.textContent = printCss({ sheet, header, footer, geom },
-    { orientation: ctx.orientation || "portrait" });
+  style.textContent = printCss({ sheet, header, footer, geom }, { orientation });
   document.head.append(style);
 
   /* ⚠️ **تحميل مسبق إلزامي**: الصور الثلاث مذكورة داخل «@media print» وحدها،
@@ -209,30 +212,45 @@ export async function printRecord(template, state, ctx) {
    ⚠️ وتبليط الورقة يتبع الاتجاه: طول الصفحة بعد الدوران هو عرضها قبله،
    ولولا ذلك لتكرّرت الكليشة في غير موضعها. */
 export function printCss(o, { standalone = false, orientation = "portrait" } = {}) {
+  // لا تبليط: الورقة عنصرٌ بمقاس الصفحة بالمليمتر (انظر `.p-sheet` أدناه)
   const land = orientation === "landscape";
-  const tileH = land ? o.geom.pageWmm : o.geom.pageHmm;
   const headH = o.geom.headerCm + "cm";
   const footH = o.geom.footerCm + "cm";
   return [
-    standalone ? "" : ".print-root{display:none}",
+    standalone ? "@media screen{.p-sheet{display:none}}" : ".print-root{display:none}",
     standalone ? "@page{size:A4 " + orientation + ";margin:0}" : "@media print{",
     "  @page{size:A4 " + orientation + ";margin:0}",
     /* ⚠️ يجب أن يطابق هذا المُحدِّد بنية الصفحة الحالية. بعد إعادة البناء صار
        المتن داخل «.app > main > .wrap» فلم يعد «body>.wrap» يطابق شيئًا،
        فطُبعت الواجهة كلها **فوق الكليشة**. قِيس: تطابق الترويسة 44% بدل 84%. */
     "  .app,.status{display:none!important}",
-    /* ⚠️ الخلفية على «html وbody» معًا لا على الجذر وحده. قِسناه: بالجذر وحده
-       تظهر الكليشة في لقطة وسيط الطباعة لكن **تخرج الأوراق بيضاء تمامًا** من
-       page.pdf — خلفية الجذر تُنقَل إلى القُماشة ولا تُرسَم في المطبوع. وبإضافة
-       body صار أقصى فارق لوني عن الكليشة الأصلية على الحافّة = 1 على كل ورقة.
-       والتبليط كل 297mm يطابق حافّة كل ورقة لأن «@page margin:0» يجعلها 297mm. */
-    '  html,body{background-image:url("' + o.sheet + '")!important;',
-    "       background-repeat:repeat-y!important;background-position:top center!important;",
-    "       background-size:100% " + tileH + "mm!important;",
-    "       background-color:transparent!important;margin:0;",
+    /* ⚠️ **الكليشة ورقةً لكل صفحة لا خلفيةً مبلّطة** (قِيس 2026-09-27):
+       كانت تُرسم خلفيةً على «html وbody» مبلّطةً كل ارتفاعِ ورقة. والتبليط
+       يُقاس من أعلى المستند لا من حافّة كل ورقة، فيتراكم فارق التقريب حتى
+       تنزلق الورقة كلها: في خطة تشغيلية عرضية قِسناها **سليمة حتى الورقة 137
+       ثم تهبط الكليشة إلى 544 نقطة من 596** — فيبقى نصّ الشريط في الأعلى
+       (لأنه رأس جدول يتكرّر بآلية أخرى) وينزل الشعاران إلى أسفل الورقة،
+       فتبدو الكليشة مقلوبة. والعيب في المحرّك لا في جهةٍ بعينها: ظهر في حزم
+       الجهتين كلتيهما، وإن تأخّر في إحداهما إلى الورقة 442.
+       والعلاج: عنصرٌ `position:fixed` بمقاس صندوق الصفحة — والمتصفّح يعيد
+       رسمه على **كل ورقة** بمقاسها، فلا تبليط ولا تراكم. مقيس بعد الإصلاح:
+       صفر انزلاق في 259 ورقة عرضية. [[feedback_print_layout_invariants]] */
+    "  html,body{background:none!important;margin:0;",
+    "       -webkit-print-color-adjust:exact;print-color-adjust:exact}",
+    /* ⚠️ **بمقاس الصفحة لا بمقاس النافذة**: `inset:0` وحده يجعل المتصفّح
+       يقيس العنصر بصندوق العرض، فخرجت طباعة سجلٍ قصير وورقتُها مسحوقة
+       (تذييلها في ثلثي الصفحة والبياض تحته). المقاس يُكتب صريحًا بالمليمتر. */
+    "  .p-sheet{position:fixed;top:0;left:0;z-index:-1;",
+    "       width:" + (land ? o.geom.pageHmm : o.geom.pageWmm) + "mm;",
+    "       height:" + (land ? o.geom.pageWmm : o.geom.pageHmm) + "mm;",
+    '       background-image:url("' + o.sheet + '")!important;',
+    "       background-repeat:no-repeat!important;background-position:center!important;",
+    "       background-size:100% 100%!important;",
     "       -webkit-print-color-adjust:exact;print-color-adjust:exact}",
     "  .print-root{display:block}",
-    "  table.p-frame{width:100%;border-collapse:collapse;background:none}",
+    "  table.p-frame{width:100%;border-collapse:collapse;background:none;",
+    /* شريط التذييل يبقى في أسفل الورقة ولو قصُر المتن — وإلّا تبع آخر سطر */
+    "       height:" + (land ? o.geom.pageWmm : o.geom.pageHmm) + "mm}",
     "  table.p-frame>thead{display:table-header-group}",
     "  table.p-frame>tfoot{display:table-footer-group}",
     // الهامشان يصيران ترويسة الجدول وتذييله — يتكرّران بالمواصفة
@@ -343,8 +361,8 @@ export function snapshotForPrint(section, title, subtitle) {
  * ترسم صفوفها تدريجيًّا لأجل الأداء، فنسخُ الـDOM يُخرج خطّةً ناقصةً بصمت.
  */
 export async function downloadStandaloneDocument(docNode, ctx, filename) {
-  const { sheet, header, footer, geom, fonts } = await standaloneAssets(ctx.store);
   const orientation = ctx.orientation || "portrait";
+  const { sheet, header, footer, geom, fonts } = await standaloneAssets(ctx.store, orientation);
   const css = printCss({ sheet, header, footer, geom }, { standalone: true, orientation });
   const html = wrap(filename, css, page(docNode.outerHTML, true, geom), fonts,
     { widthMm: orientation === "landscape" ? geom.pageHmm : geom.pageWmm });

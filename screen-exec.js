@@ -2,10 +2,10 @@
    أُخرجت من index.html بحالتها: `execState` ملكُ هذه الشاشة، ويُقرأ من
    الخارج بـcurrentExecState() لا بمشاركة متغيّر.
    ctx = { CTX.store, CTX.bundle, CTX.me, afterSave } */
-import { $, esc, only, markNav } from "./ui-state.js?v=8442b289";
-import { execPlanPath, roleAr } from "./app.js?v=8442b289";
-import { currentWeek } from "./autofill.js?v=8442b289";
-import { backupEntry } from "./vault.js?v=8442b289";
+import { $, esc, only, markNav } from "./ui-state.js?v=581262ee";
+import { execPlanPath, roleAr } from "./app.js?v=581262ee";
+import { currentWeek } from "./autofill.js?v=581262ee";
+import { backupEntry } from "./vault.js?v=581262ee";
 
 let execState = null, CTX = null;
 export const currentExecState = () => execState;

@@ -2,16 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="ik-v" content="8442b289">
+<meta name="ik-v" content="581262ee">
 <!-- ⚠️ صَفحةُ HTML رابِطُها ثابِتٌ فَتُخَزَّنُ في المُتَصَفِّحِ رَغمَ النَشر — وحارِسُ الطَزاجةِ يَنقُلُ الزائِرَ إلى رابِطِ البَصمةِ الجَديدةِ مَرّةً واحِدة. -->
-<script src="fresh.js?v=8442b289"></script>
+<script src="fresh.js?v=581262ee"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- ⚠️ الصفحة نفسها تُراجَع في كل فتح، والوحدات مختومة ببصمة محتواها.
      بدون هذا يبقى المستخدم على نسخة قديمة ويظنّ أن الإصلاح لم يحدث. -->
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<title>الاعتماد الخارجي — مدارس ابن خلدون</title>
-<link rel="icon" href="ibn-khaldun-mark-240.webp">
-<link rel="stylesheet" href="style.css?v=8442b289">
+<!-- الاسم يأتي من «هوية.json» عبر identity.js — ولا يُكتب اسم جهةٍ في الشيفرة -->
+<title>الاعتماد الخارجي</title>
+<link rel="icon" href="" data-brand="favicon">
+<link rel="stylesheet" href="style.css?v=581262ee">
 </head>
 <body>
 <div class="app">
@@ -28,12 +29,12 @@
 
   <main>
     <div class="bar" id="topbar">
-      <div class="logos" title="شركة معارف للتعليم — مدارس ابن خلدون">
-        <img src="ibn-khaldun-mark-240.webp" alt="مدارس ابن خلدون">
+      <div class="logos" data-brand="group-title">
+        <img src="" alt="" data-brand="logo">
         <span class="divider"></span>
-        <img class="mf" src="maarif.png" alt="شركة معارف للتعليم">
+        <img class="mf" src="" alt="" data-brand="logo2">
       </div>
-      <div class="crumb" id="ctx">مدارس ابن خلدون · السجلات والشواهد للتقويم الخارجي</div>
+      <div class="crumb" id="ctx" data-brand="crumb"></div>
       <div class="row-break" aria-hidden="true"></div>
       <div class="sp"></div>
       <div class="h-search hidden" id="searchBox">
@@ -59,11 +60,11 @@
 
       <section id="screenGate" class="card">
         <div class="hero">
-          <img src="building.png" alt="مدارس ابن خلدون">
+          <img src="" alt="" data-brand="building">
           <div class="hero-t">
             <b>الاعتماد الخارجي</b>
-            <span>مدارس ابن خلدون الأهلية</span>
-            <span class="kicker">شركة معارف للتعليم — رابطٌ واحد لكل المدارس</span>
+            <span data-brand="orgFull"></span>
+            <span class="kicker"><span data-brand="group"></span> — رابطٌ واحد لكل المدارس</span>
           </div>
         </div>
         <h1 id="gateH1">إلى أي مدرسة تنتمي؟</h1>
@@ -116,11 +117,11 @@
 
       <section id="screenWho" class="card hidden">
         <div class="hero">
-          <img src="building.png" alt="مدارس ابن خلدون">
+          <img src="" alt="" data-brand="building">
           <div class="hero-t">
             <b>الاعتماد الخارجي</b>
-            <span id="heroSchool">مدارس ابن خلدون</span>
-            <span class="kicker">شركة معارف للتعليم — السجلات والشواهد للتقويم الخارجي</span>
+            <span id="heroSchool" data-brand="orgFull"></span>
+            <span class="kicker"><span data-brand="group"></span> — السجلات والشواهد للتقويم الخارجي</span>
           </div>
         </div>
         <h1>من أنت؟</h1>
@@ -128,8 +129,8 @@
         <div class="who-gap hidden" id="whoGap"></div>
         <div class="connbar" id="connBar"></div>
         <aside id="whoArt">
-          <img src="building.png" alt="مدارس ابن خلدون">
-          <div class="wa-t">مدارس ابن خلدون</div>
+          <img src="" alt="" data-brand="building">
+          <div class="wa-t" data-brand="logoAlt"></div>
           <div class="wa-s">السجلات والشواهد للتقويم الخارجي</div>
         </aside>
         <ul class="people" id="peopleList"></ul>
@@ -334,49 +335,50 @@
 <div class="status hidden" id="status"><span class="dot"></span><span id="statusText"></span></div>
 
 <script type="module">
-import { FolderStore } from "./storage.js?v=8442b289";   // ReadOnlyStore أُلغي من الواجهة
-import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=8442b289";
-import { renderGuide } from "./guide.js?v=8442b289";
-import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=8442b289";
-import { setupMissing, editPerson } from "./roster-edit.js?v=8442b289";
-import { vaultBridge } from "./vault-bridge.js?v=8442b289";
-import { renderPublish } from "./publish.js?v=8442b289";
-import { globalSearch } from "./search.js?v=8442b289";
-import { renderConnect } from "./connect.js?v=8442b289";
-import { openImprovement } from "./screen-improve.js?v=8442b289";
-import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=8442b289";
-import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=8442b289";
-import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=8442b289";
-import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=8442b289";
-import { openSupport, trackErrors } from "./support.js?v=8442b289";
-import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=8442b289";
+import { FolderStore } from "./storage.js?v=581262ee";   // ReadOnlyStore أُلغي من الواجهة
+import { GraphStore, setGraphConfig, setGraphRoot, loadShippedConfig } from "./graph.js?v=581262ee";
+import { renderGuide } from "./guide.js?v=581262ee";
+import { PREF, THEME_AR, nextTheme, savePrefs, zoomIn, zoomOut, initPrefs } from "./prefs.js?v=581262ee";
+import { setupMissing, editPerson } from "./roster-edit.js?v=581262ee";
+import { vaultBridge } from "./vault-bridge.js?v=581262ee";
+import { renderPublish } from "./publish.js?v=581262ee";
+import { globalSearch } from "./search.js?v=581262ee";
+import { renderConnect } from "./connect.js?v=581262ee";
+import { openImprovement } from "./screen-improve.js?v=581262ee";
+import { openTool, bindToolScreen, currentTool, currentToolIndex } from "./screen-tool.js?v=581262ee";
+import { openRecord, bindRecordScreen, currentRecord } from "./screen-record.js?v=581262ee";
+import { goExec, bindExecScreen, currentExecState } from "./screen-exec.js?v=581262ee";
+import { guardUnload, pendingDrafts, guardLeave, setSaver, flushDraft } from "./draft.js?v=581262ee";
+import { openSupport, trackErrors } from "./support.js?v=581262ee";
+import { saveSession, loadSession, clearSession, canResume } from "./session.js?v=581262ee";
 import { buildWorkPack, workPackName, buildEntryPack, entryPackName, importEntries,
-         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=8442b289";
+         deliver, readPackFile, PackStore, relay, setRelay, syncFromCloud } from "./bridge.js?v=581262ee";
 import { openSource, loadBundle, recordsFor, planFileFor, operationalPlanFile,
          stampConnection, roleAr, freqAr, STAGE_AR, personFolder,
          entryPath, entryDir, evidenceDir, newEntryId,
          countSavedRecords, loadToolResponses, sortHierarchy, roleRank,
          loadRosterOverride, applyRosterOverride, saveRosterEdit,
-         loadSignature, saveSignature, execPlanPath } from "./app.js?v=8442b289";
-import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=8442b289";
-import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=8442b289";
-import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=8442b289";
-import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=8442b289";
+         loadSignature, saveSignature, execPlanPath } from "./app.js?v=581262ee";
+import { renderRecordForm, UNSUPPORTED, setFillContext, buildGuide, buildLabelCanon} from "./record.js?v=581262ee";
+import { fillContext, currentWeek, semesterLabel } from "./autofill.js?v=581262ee";
+import { committeeMeetings, nextMeeting, meetingTitle, meetingScope } from "./meetings.js?v=581262ee";
+import { printRecord, preparePrint, printDocument, snapshotForPrint } from "./print.js?v=581262ee";
 import { flattenTool, scaleMax, levelFromEvidence, isEvidenceBased, summarize,
-         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=8442b289";
-import { scopeTools, canSeeImprovement } from "./scope.js?v=8442b289";
+         rollupByIndicator, evidenceFromRecords, toolResponsePath, isVerification } from "./tools.js?v=581262ee";
+import { scopeTools, canSeeImprovement } from "./scope.js?v=581262ee";
 import { loadSettings, saveSettings, vaultKeeper, backupEntry, vaultIndex,
-         fullBackup } from "./vault.js?v=8442b289";
-import { surveyLink, extractCodes } from "./survey.js?v=8442b289";
+         fullBackup } from "./vault.js?v=581262ee";
+import { surveyLink, extractCodes } from "./survey.js?v=581262ee";
 import { DIMENSIONS, dimensionBasis, countEvidence, countExecPlans, computeReadiness,
-         readinessLabel, indicatorStatus, evidenceGaps } from "./readiness.js?v=8442b289";
+         readinessLabel, indicatorStatus, evidenceGaps } from "./readiness.js?v=581262ee";
 import { buildImprovementPlan, buildImprovementMirror, PROC_COLUMNS,
-         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=8442b289";
+         TOTAL_WEEKS, WEEKS_PER_SEMESTER, indicatorTag, shortLabel } from "./improve.js?v=581262ee";
 
-import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=8442b289";
-import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=8442b289";
-import { goPlansScreen, bindPlansScreen, printPlans, downloadPlans, searchPlans, saveActive as savePlans } from "./screen-plans.js?v=8442b289";
-import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=8442b289";
+import { S, $, esc, show, only, markNav, setStatus, SCREEN_TITLE } from "./ui-state.js?v=581262ee";
+import { renderGate, chosenSchool, clearGate, gatePassed } from "./gate.js?v=581262ee";
+import { loadIdentity } from "./identity.js?v=581262ee";
+import { goPlansScreen, bindPlansScreen, printPlans, downloadPlans, searchPlans, saveActive as savePlans } from "./screen-plans.js?v=581262ee";
+import { buildAlerts, myEntryDates, urgentCount, levelAr } from "./alerts.js?v=581262ee";
 
 /* طباعة أي شاشة يستعرضها المستخدم أو يعبّئها — بالكليشة نفسها */
 async function printCurrent() {
@@ -1106,7 +1108,7 @@ $("vaultPrintExport").onclick = async () => {
   if (store?.readOnly) { st.textContent = "⚠️ وضع القراءة — لا يمكن الكتابة في المجلد"; return; }
   st.textContent = "جارٍ التصدير…";
   try {
-    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=8442b289");
+    const { exportPrintable, OUT_DIR } = await import("./export-print.js?v=581262ee");
     const r = await exportPrintable(store, bundle, me,
       (n, name) => { st.textContent = "صُدِّر " + n + " سجلًّا… (" + name + ")"; });
     st.textContent = r.records === 0
@@ -1373,6 +1375,7 @@ async function afterGate(row) {
 }
 
 (async function boot() {
+  await loadIdentity();               // هوية الجهة من «هوية.json» — تُركَّب قبل رسم أي شاشة
   await loadShippedConfig();          // المعرّف المشحون مع القشرة إن وُجد
   if (dataUrl) {                      // مسار التطوير والفحص الآلي — بلا بوّابة
     const restored = await openSource({ dataUrl });

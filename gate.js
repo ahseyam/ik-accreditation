@@ -12,7 +12,8 @@
  * تُنتج مدرستين في عشرين تركيبة من إحدى وعشرين — بنين وبنات. يُثبت ذلك
  * `build-school-index.mjs` عند كل توليد ويسقط إن لم يبقَ المفتاح الرباعي
  * فريدًا. */
-import { $, esc } from "./ui-state.js?v=8442b289";
+import { IDENT } from "./identity.js?v=581262ee";
+import { $, esc } from "./ui-state.js?v=581262ee";
 
 const CODE = "ikc-2026";
 const K_PASS = "ik.gate.pass.v1";
@@ -22,7 +23,9 @@ let INDEX = null;
 
 export async function loadSchoolIndex() {
   if (INDEX) return INDEX;
-  const r = await fetch("مدارس.json");
+  /* ⚠️ فهرس المدارس من هوية الجهة: قشرة قادة تحمل فهرسها، ولا تظهر مدرسةُ
+     جهةٍ في بوّابة جهةٍ أخرى. */
+  const r = await fetch(IDENT.schoolsFile);
   if (!r.ok) throw new Error("تعذّر تحميل فهرس المدارس.");
   INDEX = (await r.json()).rows || [];
   return INDEX;

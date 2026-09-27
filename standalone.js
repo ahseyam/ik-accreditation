@@ -11,7 +11,7 @@
  * ⚠️ ولا تستورد هذه الوحدة من `print.js` ولا من `export-print.js` — كلاهما
  * يستورد منها، فالاستيراد المتبادل يُنشئ حلقةً تُفرغ أحد الطرفين وقت التحميل.
  */
-import { esc } from "./ui-state.js?v=8442b289";
+import { esc } from "./ui-state.js?v=581262ee";
 
 /** يحوّل مخزنًا ثنائيًّا إلى base64 على دفعات */
 export const b64 = (buf) => {
@@ -34,12 +34,40 @@ export async function shellAsset(url, mime) {
   return "data:" + mime + ";base64," + b64(await r.arrayBuffer());
 }
 
+/**
+ * ملفّات الكليشة حسب اتجاه الورقة.
+ *
+ * ⚠️ **الطولية على ورقة عرضية تُمَطّ**: الخطة التشغيلية تُطبع عرضية، وكانت
+ *    ورقة الكليشة الطولية تُمدّ على 29.7سم فيخرج سطر الخطة خارج شريطه الملوّن.
+ *    فصارت لكل حزمة ورقتان وشريطان، ويُختار بالاتجاه.
+ * ⚠️ **وارتدادٌ للحزم القديمة**: حزمةٌ بُنيت قبل هذا لا تحمل الملفات العرضية،
+ *    فتعمل بالطولية كما كانت بدل أن تخرج بيضاء.
+ */
+export async function brandFiles(store, orientation = "portrait") {
+  const land = orientation === "landscape";
+  const pick = async (l, p) => {
+    if (!land) return p;
+    try { return (await store.exists(l)) ? l : p; } catch { return p; }
+  };
+  return {
+    sheet: await pick("كليشة/ورقة-عرضية.jpg", "كليشة/ورقة.jpg"),
+    header: await pick("كليشة/ترويسة-عرضية.png", "كليشة/ترويسة.png"),
+    footer: await pick("كليشة/تذييل-عرضية.png", "كليشة/تذييل.png"),
+  };
+}
+
+/** قياسات الاتجاه المطلوب — الحقول العرضية إن وُجدت، وإلّا الطولية */
+export function geomFor(geom, orientation = "portrait") {
+  return orientation === "landscape" && geom?.landscape ? { ...geom, ...geom.landscape } : geom;
+}
+
 /** كل ما يلزم ملفًّا قائمًا بذاته: الكليشة الثلاث والقياسات والخطّان */
-export async function standaloneAssets(store) {
-  const [sheet, header, footer, geom, reg, bold] = await Promise.all([
-    asset(store, "كليشة/ورقة.jpg", "image/jpeg"),
-    asset(store, "كليشة/ترويسة.png", "image/png"),
-    asset(store, "كليشة/تذييل.png", "image/png"),
+export async function standaloneAssets(store, orientation = "portrait") {
+  const f = await brandFiles(store, orientation);
+  const [sheet, header, footer, geomRaw, reg, bold] = await Promise.all([
+    asset(store, f.sheet, "image/jpeg"),
+    asset(store, f.header, "image/png"),
+    asset(store, f.footer, "image/png"),
     store.readJson("كليشة/قياسات.json"),
     shellAsset("AlJazeera-Regular.v2.woff2", "font/woff2").catch(() => null),
     shellAsset("AlJazeera-Bold.v2.woff2", "font/woff2").catch(() => null),
@@ -50,6 +78,7 @@ export async function standaloneAssets(store) {
     reg && '@font-face{font-family:"Al Jazeera Arabic";font-weight:400;font-display:block;src:url("' + reg + '") format("woff2")}',
     bold && '@font-face{font-family:"Al Jazeera Arabic";font-weight:700;font-display:block;src:url("' + bold + '") format("woff2")}',
   ].filter(Boolean).join("\n");
+  const geom = geomFor(geomRaw, orientation);
   return { sheet, header, footer, geom, fonts };
 }
 
@@ -70,5 +99,8 @@ export function wrap(title, css, body, fonts, { widthMm = 210 } = {}) {
     "\n.print-root{display:block}" +
     "\n@media screen{body{background:#e9eeee;padding:10px 0}" +
     "table.p-frame{width:" + widthMm + "mm;margin:0 auto 14px;background:#fff;box-shadow:0 2px 12px #0002}}" +
-    "</style></head><body>" + body + "</body></html>";
+    /* ⚠️ ورقة الكليشة عنصرٌ ثابت يتكرّر مع كل صفحة عند الطباعة — لا خلفيةً
+       مبلّطة، وإلّا انزلقت عن موضعها في المستندات الطويلة (قِيس: من الورقة
+       138 في خطة تشغيلية عرضية). وهي مخفيّة على الشاشة بـ@media screen. */
+    "</style></head><body><div class=\"p-sheet\"></div>" + body + "</body></html>";
 }
